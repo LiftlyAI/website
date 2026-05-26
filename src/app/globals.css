@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background-color: #0d0d0d;
+  color: #f0ede8;
+  min-height: 100vh;
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 25% 25%, rgba(240, 237, 232, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(240, 237, 232, 0.018) 1px, transparent 1px);
+  background-size: 32px 32px;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Industrial scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #383838;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #525252;
+}
+
+/* Selection */
+::selection {
+  background: #e8440a;
+  color: #0d0d0d;
+}
+
+/* Subtle chalk-line border utility */
+@layer components {
+  .chalk-border {
+    @apply border border-iron-700;
+    box-shadow: inset 0 0 0 1px rgba(240, 237, 232, 0.02);
+  }
+
+  .chalk-card {
+    @apply bg-iron-900 chalk-border rounded-sm;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(240, 237, 232, 0.012) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .stencil-heading {
+    @apply font-display tracking-wider uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .data-num {
+    @apply font-mono tabular-nums;
+  }
+
+  .accent-divider {
+    height: 2px;
+    background: linear-gradient(90deg, #e8440a 0%, #e8440a 60%, transparent 100%);
+  }
+
+  .btn-primary {
+    @apply font-display uppercase tracking-widest text-sm px-5 py-3
+           bg-blood text-iron-950 hover:bg-blood-glow
+           transition-colors duration-150
+           disabled:bg-iron-700 disabled:text-iron-400 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply font-display uppercase tracking-widest text-sm px-5 py-3
+           bg-transparent text-chalk hover:bg-iron-800
+           border border-iron-600 hover:border-blood
+           transition-colors duration-150;
+  }
+
+  .input-iron {
+    @apply w-full bg-iron-900 chalk-border px-3 py-2.5
+           text-chalk placeholder-iron-400 font-mono text-sm
+           focus:outline-none focus:border-blood focus:ring-0;
+  }
+}
+
+/* Loading screen plate animation */
+.plate-loader {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 8px solid #262626;
+  border-top: 8px solid #e8440a;
+  animation: plate-spin 1.2s linear infinite;
+  position: relative;
+}
+.plate-loader::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: #141414;
+  border: 2px solid #383838;
+}

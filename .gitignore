@@ -1,0 +1,32 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+*.log
+.DS_Store
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# SQLite
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python CV sidecar
+cv-service/.venv/
+cv-service/__pycache__/
+cv-service/models/
+cv-service/_smoke.*
+cv-service/_nohuman.*
+cv-service/_resp.json
+
+# Editor
+.vscode/
+.idea/
+*.swp
