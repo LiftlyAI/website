@@ -286,6 +286,8 @@ function FormCheckCard({
             </pre>
           )}
 
+          <LogAsSessionControl check={check} />
+
           <CalibrateControl
             formCheckId={check.id}
             current={check.estimatedRPE}
@@ -294,6 +296,60 @@ function FormCheckCard({
         </div>
       )}
     </Card>
+  );
+}
+
+function LogAsSessionControl({ check }: { check: FormCheckResult }) {
+  const cv = check.cv && check.cv.pose ? check.cv : null;
+  const reps = cv?.summary?.repCount ?? 0;
+  const ready = check.loadKg != null && check.estimatedRPE != null && reps > 0;
+  const [state, setState] = useState<'idle' | 'saving' | 'done'>('idle');
+  const [msg, setMsg] = useState('');
+
+  async function logIt() {
+    setState('saving');
+    setMsg('');
+    try {
+      const res = await fetch('/api/session/log-from-formcheck', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ formCheckId: check.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'failed');
+      setState('done');
+      setMsg(
+        `Logged ${data.reps} × ${data.weight} ${data.unit} @ RPE ${data.rpe}. ` +
+          `Your program will auto-adjust the next session of this lift.`,
+      );
+    } catch (e) {
+      setState('idle');
+      setMsg(e instanceof Error ? e.message : 'failed');
+    }
+  }
+
+  return (
+    <div className="bg-iron-900/50 border border-iron-800 p-3">
+      <SectionTitle>Log this set as a session — feeds your program</SectionTitle>
+      {!ready ? (
+        <div className="text-xs text-chalk-mute">
+          Add the load on this clip (and make sure reps + RPE were measured) to log it.
+        </div>
+      ) : state === 'done' ? (
+        <div className="text-sm text-rpe-easy flex items-center gap-2">
+          <Check className="w-4 h-4" /> {msg}
+        </div>
+      ) : (
+        <div className="flex items-end gap-3 flex-wrap">
+          <Button onClick={logIt} disabled={state === 'saving'} size="sm">
+            {state === 'saving'
+              ? 'Saving…'
+              : `Log ${reps} × ${check.loadKg} kg @ RPE ${check.estimatedRPE}`}
+          </Button>
+          {msg && <span className="text-xs text-rpe-max font-mono">{msg}</span>}
+        </div>
+      )}
+    </div>
   );
 }
 

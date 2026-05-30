@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
 import { getDb } from '@/lib/db';
-import { getAnthropic, COACH_MODEL, safeParseJson } from '@/lib/anthropic';
+import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import { NUTRITION_SYSTEM_PROMPT, buildNutritionUserPrompt } from '@/lib/prompts/nutrition';
 import { macroTargets } from '@/lib/calculations';
 import type { AthleteProfile, MealPlan } from '@/lib/types';
@@ -23,18 +23,19 @@ export async function POST() {
   const profile = JSON.parse(row.profile_json) as AthleteProfile;
   const targets = macroTargets(profile);
 
-  const client = getAnthropic();
-  const res = await client.messages.create({
-    model: COACH_MODEL,
-    max_tokens: 2000,
-    temperature: 0.6,
-    system: NUTRITION_SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: buildNutritionUserPrompt(profile, targets) }],
-  });
-  const text = res.content
-    .map((b) => (b.type === 'text' ? b.text : ''))
-    .join('')
-    .trim();
+  let text = '';
+  try {
+    text = await aiGenerate({
+      system: NUTRITION_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: buildNutritionUserPrompt(profile, targets) }],
+      maxTokens: 3000,
+      temperature: 0.6,
+      json: true,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'AI call failed';
+    return NextResponse.json({ error: msg }, { status: isAiKeyError(err) ? 400 : 502 });
+  }
   const plan = safeParseJson<MealPlan>(text);
   if (!plan) {
     return NextResponse.json({ error: 'failed to parse meal plan' }, { status: 500 });

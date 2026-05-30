@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
-import { getAnthropic, COACH_MODEL, safeParseJson } from '@/lib/anthropic';
+import { aiGenerate, safeParseJson } from '@/lib/ai';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import { noviceMaxEstimate } from '@/lib/calculations';
 import type { AthleteProfile, Program } from '@/lib/types';
@@ -69,36 +69,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, programId });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'program generation failed';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const status = /ANTHROPIC_API_KEY/i.test(msg) ? 400 : 500;
+    return NextResponse.json({ error: msg }, { status });
   }
 }
 
 async function generateProgram(profile: AthleteProfile): Promise<Program> {
-  const client = getAnthropic();
   const totalWeeks =
     profile.experience === 'novice' ? 8 : profile.experience === 'intermediate' ? 12 : 16;
 
-  const res = await client.messages.create({
-    model: COACH_MODEL,
-    max_tokens: 16000,
-    temperature: 0.4,
+  const text = await aiGenerate({
     system: PROGRAM_SYSTEM_PROMPT,
     messages: [{ role: 'user', content: buildProgramUserPrompt(profile) }],
+    maxTokens: 32000,
+    temperature: 0.4,
+    json: true,
   });
-
-  const text = res.content
-    .map((b) => (b.type === 'text' ? b.text : ''))
-    .join('')
-    .trim();
 
   let program = safeParseJson<Program>(text);
 
-  // One repair pass.
+  // One repair pass — same model, lower temperature, JSON-only system prompt.
   if (!program || !Array.isArray(program.weeks) || program.weeks.length === 0) {
-    const repair = await client.messages.create({
-      model: COACH_MODEL,
-      max_tokens: 16000,
-      temperature: 0.2,
+    const repairText = await aiGenerate({
       system:
         'You take broken or partial JSON and return ONLY a valid JSON object with the requested schema. No prose, no markdown.',
       messages: [
@@ -107,11 +99,10 @@ async function generateProgram(profile: AthleteProfile): Promise<Program> {
           content: `Repair this output into the program schema. The total weeks should be ${totalWeeks}. Output ONLY valid JSON.\n\nORIGINAL:\n${text}`,
         },
       ],
+      maxTokens: 32000,
+      temperature: 0.2,
+      json: true,
     });
-    const repairText = repair.content
-      .map((b) => (b.type === 'text' ? b.text : ''))
-      .join('')
-      .trim();
     program = safeParseJson<Program>(repairText);
   }
 

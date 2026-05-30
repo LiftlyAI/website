@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
-import { getAnthropic, COACH_MODEL, safeParseJson } from '@/lib/anthropic';
+import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import { buildFormCheckPrompt, systemPromptFor } from '@/lib/prompts/formcheck';
 import { analyzeVideo, CvServiceError } from '@/lib/cvService';
 import { estimateRpe, type CalibrationPoint } from '@/lib/velocity';
@@ -83,7 +83,6 @@ export async function POST(req: NextRequest) {
   // 3. Qualitative coaching, grounded in the measured numbers + path -------
   let aiText = '';
   try {
-    const client = getAnthropic();
     const userPrompt = buildFormCheckPrompt({
       lift,
       cv,
@@ -93,36 +92,23 @@ export async function POST(req: NextRequest) {
       stance,
       athlete,
     });
-    const content: Array<
-      | { type: 'text'; text: string }
-      | {
-          type: 'image';
-          source: { type: 'base64'; media_type: 'image/png'; data: string };
-        }
-    > = [{ type: 'text', text: userPrompt }];
-    if (cv.overlayPng) {
-      content.push({
-        type: 'image',
-        source: { type: 'base64', media_type: 'image/png', data: cv.overlayPng },
-      });
-    }
-    const res = await client.messages.create({
-      model: COACH_MODEL,
-      max_tokens: 2000,
-      temperature: 0.3,
+    aiText = await aiGenerate({
       system: systemPromptFor(lift as LiftType),
-      messages: [{ role: 'user', content }],
+      messages: [{ role: 'user', content: userPrompt }],
+      images: cv.overlayPng
+        ? [{ mediaType: 'image/png', dataBase64: cv.overlayPng }]
+        : undefined,
+      maxTokens: 2000,
+      temperature: 0.3,
+      json: true,
     });
-    aiText = res.content
-      .map((b) => (b.type === 'text' ? b.text : ''))
-      .join('')
-      .trim();
   } catch (err: unknown) {
     // CV still succeeded — degrade gracefully rather than losing the analysis.
+    const why = isAiKeyError(err)
+      ? 'No AI key configured (set GEMINI_API_KEY or ANTHROPIC_API_KEY in .env.local).'
+      : 'AI coaching commentary was unavailable for this submission.';
     aiText = JSON.stringify({
-      overall:
-        'Bar-path metrics captured. AI coaching commentary was unavailable for this submission ' +
-        '(check ANTHROPIC_API_KEY). The measured numbers below are still valid.',
+      overall: `Bar-path metrics captured. ${why} The measured numbers below are still valid.`,
       _error: err instanceof Error ? err.message : 'ai unavailable',
     });
   }

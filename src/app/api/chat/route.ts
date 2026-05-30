@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
-import { getAnthropic, COACH_MODEL } from '@/lib/anthropic';
+import { aiStream, isAiKeyError } from '@/lib/ai';
 import { buildChatSystemPrompt } from '@/lib/prompts/chat';
 import type { AthleteProfile, FormCheckResult, Program } from '@/lib/types';
 
@@ -99,25 +99,30 @@ export async function POST(req: NextRequest) {
     recentFormChecks,
   });
 
-  const client = getAnthropic();
-  const stream = client.messages.stream({
-    model: COACH_MODEL,
-    max_tokens: 1500,
-    temperature: 0.7,
-    system,
-    messages: [...history, { role: 'user', content: parsed.data.message }],
-  });
+  let stream: AsyncIterable<string>;
+  try {
+    stream = aiStream({
+      system,
+      messages: [
+        ...history.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        { role: 'user' as const, content: parsed.data.message },
+      ],
+      maxTokens: 1500,
+      temperature: 0.7,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'AI call failed';
+    return NextResponse.json({ error: msg }, { status: isAiKeyError(err) ? 400 : 502 });
+  }
 
   const encoder = new TextEncoder();
   let acc = '';
   const responseStream = new ReadableStream({
     async start(controller) {
       try {
-        for await (const ev of stream) {
-          if (ev.type === 'content_block_delta' && ev.delta.type === 'text_delta') {
-            acc += ev.delta.text;
-            controller.enqueue(encoder.encode(ev.delta.text));
-          }
+        for await (const chunk of stream) {
+          acc += chunk;
+          controller.enqueue(encoder.encode(chunk));
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'stream error';

@@ -1,13 +1,25 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Video } from 'lucide-react';
-import { Card, CardHeader } from '@/components/ui/Card';
+import { ChevronDown, Video, Zap, AlertTriangle } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { RPEBadge } from '@/components/ui/RPEBadge';
 import { cn } from '@/lib/utils';
 import type { AthleteProfile, Program, ProgramDay, Exercise } from '@/lib/types';
 import { LogSessionModal } from './LogSessionModal';
+
+interface AdjustResult {
+  suggestedWeight: number;
+  basisE1rm: number;
+  lastActualRPE: number | null;
+  reason: string;
+  source: 'history' | 'profile-1rm' | 'planned';
+  deloadSuggested: boolean;
+  repRegressionTo: number | null;
+  lift: string;
+}
+type AdjustMap = Record<string, AdjustResult>;
 
 export function ProgramView({
   profile,
@@ -25,6 +37,28 @@ export function ProgramView({
   const [logOpen, setLogOpen] = useState<{
     day: ProgramDay;
   } | null>(null);
+  const [adjustments, setAdjustments] = useState<AdjustMap>({});
+
+  // Re-pull autoregulated targets whenever the lifter switches weeks; this is
+  // how a logged set on Monday flows into Wednesday's suggested load.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/program/adjust', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ weekNumber: selectedWeek }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.adjustments) setAdjustments(data.adjustments);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedWeek, programId]);
+
+  const deloadFlag = Object.values(adjustments).some((a) => a.deloadSuggested);
 
   return (
     <div className="px-8 py-10 max-w-6xl">
@@ -72,14 +106,27 @@ export function ProgramView({
         </div>
       </div>
 
+      {deloadFlag && (
+        <div className="mb-5 bg-rpe-mod/10 border border-rpe-mod/40 p-3 text-sm text-rpe-mod flex gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Your e1RM has dropped over the last couple of sessions on at least one
+            compound. Suggested weights are <strong>auto-deloaded -10%</strong> this
+            week — push the next block once you feel fresh again.
+          </span>
+        </div>
+      )}
+
       {/* Days */}
       <div className="space-y-4">
         {week.days.map((day) => (
           <DayCard
             key={day.dayNumber}
             day={day}
+            weekNumber={selectedWeek}
             unit={profile.unit}
             onLog={() => setLogOpen({ day })}
+            adjustments={adjustments}
           />
         ))}
       </div>
@@ -98,12 +145,16 @@ export function ProgramView({
 
 function DayCard({
   day,
+  weekNumber,
   unit,
   onLog,
+  adjustments,
 }: {
   day: ProgramDay;
+  weekNumber: number;
   unit: 'lbs' | 'kg';
   onLog: () => void;
+  adjustments: AdjustMap;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -126,7 +177,12 @@ function DayCard({
         <div className="mt-5">
           <div className="space-y-2">
             {day.exercises.map((ex, i) => (
-              <ExerciseRow key={i} exercise={ex} unit={unit} />
+              <ExerciseRow
+                key={i}
+                exercise={ex}
+                unit={unit}
+                adjustment={adjustments[`w${weekNumber}-d${day.dayNumber}-e${i}`]}
+              />
             ))}
           </div>
           <div className="flex gap-3 mt-5 flex-wrap">
@@ -146,7 +202,25 @@ function DayCard({
   );
 }
 
-function ExerciseRow({ exercise, unit }: { exercise: Exercise; unit: 'lbs' | 'kg' }) {
+function ExerciseRow({
+  exercise,
+  unit,
+  adjustment,
+}: {
+  exercise: Exercise;
+  unit: 'lbs' | 'kg';
+  adjustment?: AdjustResult;
+}) {
+  // Only treat the suggestion as "different" if it's from real history AND
+  // actually differs from the original — otherwise just show the plan.
+  const overrideActive =
+    adjustment &&
+    adjustment.source !== 'planned' &&
+    adjustment.suggestedWeight > 0 &&
+    adjustment.suggestedWeight !== exercise.estimatedWeight;
+  const adjustedReps = adjustment?.repRegressionTo ?? exercise.reps;
+  const displayUnit = exercise.unit ?? unit;
+
   return (
     <div className="border-l-2 border-iron-700 hover:border-blood transition-colors pl-4 py-2">
       <div className="flex items-baseline justify-between gap-3 flex-wrap">
@@ -158,23 +232,63 @@ function ExerciseRow({ exercise, unit }: { exercise: Exercise; unit: 'lbs' | 'kg
                 COMP
               </span>
             )}
+            {overrideActive && (
+              <span
+                title={adjustment.reason}
+                className="font-mono text-[9px] tracking-widest border border-rpe-easy text-rpe-easy px-1.5 py-0.5 inline-flex items-center gap-1"
+              >
+                <Zap className="w-2.5 h-2.5" /> AUTO
+              </span>
+            )}
+            {adjustment?.deloadSuggested && (
+              <span className="font-mono text-[9px] tracking-widest border border-rpe-mod text-rpe-mod px-1.5 py-0.5">
+                DELOAD
+              </span>
+            )}
           </div>
           <div className="font-mono text-xs text-chalk-mute mt-0.5">
-            {exercise.sets} × {exercise.reps}
-            {exercise.estimatedWeight !== undefined && (
+            {exercise.sets} ×{' '}
+            {adjustment?.repRegressionTo ? (
+              <>
+                <span className="text-chalk">{adjustedReps}</span>
+                <span className="line-through text-chalk-mute/60 ml-1">{exercise.reps}</span>
+              </>
+            ) : (
+              exercise.reps
+            )}
+            {(overrideActive || exercise.estimatedWeight !== undefined) && (
               <>
                 {' '}
-                @ <span className="text-chalk">{exercise.estimatedWeight}</span>
-                <span className="text-chalk-mute">{exercise.unit ?? unit}</span>
+                @{' '}
+                {overrideActive ? (
+                  <>
+                    <span className="text-rpe-easy">{adjustment.suggestedWeight}</span>
+                    <span className="text-chalk-mute">{displayUnit}</span>
+                    {exercise.estimatedWeight !== undefined && (
+                      <span className="line-through text-chalk-mute/60 ml-1.5">
+                        {exercise.estimatedWeight}
+                        {displayUnit}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-chalk">{exercise.estimatedWeight}</span>
+                    <span className="text-chalk-mute">{displayUnit}</span>
+                  </>
+                )}
               </>
             )}
-            {exercise.percentageOfMax && (
+            {exercise.percentageOfMax && !overrideActive && (
               <span className="text-chalk-mute"> · {exercise.percentageOfMax}% 1RM</span>
             )}
           </div>
         </div>
         <RPEBadge rpe={exercise.targetRPE} />
       </div>
+      {overrideActive && (
+        <div className="text-[11px] text-rpe-easy/80 mt-1 font-mono">{adjustment.reason}</div>
+      )}
       {exercise.notes && (
         <div className="text-xs text-chalk-mute mt-2 font-body italic">"{exercise.notes}"</div>
       )}

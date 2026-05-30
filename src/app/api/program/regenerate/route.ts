@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
-import { getAnthropic, COACH_MODEL, safeParseJson } from '@/lib/anthropic';
+import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import type { AthleteProfile, Program } from '@/lib/types';
 
@@ -23,21 +23,31 @@ export async function POST() {
 
   const profile = JSON.parse(row.profile_json) as AthleteProfile;
 
-  const client = getAnthropic();
-  const res = await client.messages.create({
-    model: COACH_MODEL,
-    max_tokens: 16000,
-    temperature: 0.5,
-    system: PROGRAM_SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: buildProgramUserPrompt(profile) }],
-  });
-  const text = res.content
-    .map((b) => (b.type === 'text' ? b.text : ''))
-    .join('')
-    .trim();
+  let text = '';
+  try {
+    text = await aiGenerate({
+      system: PROGRAM_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: buildProgramUserPrompt(profile) }],
+      maxTokens: 32000,
+      temperature: 0.4,
+      json: true,
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'AI call failed';
+    return NextResponse.json({ error: msg }, { status: isAiKeyError(err) ? 400 : 502 });
+  }
   const program = safeParseJson<Program>(text);
   if (!program || !Array.isArray(program.weeks)) {
-    return NextResponse.json({ error: 'failed to parse program' }, { status: 500 });
+    // Surface a snippet of the raw output so this is diagnosable instead of
+    // a silent dead end.
+    return NextResponse.json(
+      {
+        error: 'failed to parse program',
+        rawPreview: text.slice(0, 400),
+        rawLength: text.length,
+      },
+      { status: 502 },
+    );
   }
 
   db.prepare(
