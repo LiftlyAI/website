@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
-import { Bebas_Neue, Inter, JetBrains_Mono } from 'next/font/google';
+import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const bebas = Bebas_Neue({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: '400',
   variable: '--font-display',
   display: 'swap',
 });
@@ -22,13 +21,13 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'IRON LEDGER — Powerlifting Coach',
+  title: 'Liftly — AI Powerlifting Coach',
   description: 'AI-powered block periodization, form check, and nutrition for serious lifters.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bebas.variable} ${inter.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrains.variable}`}>
       <body className="font-body antialiased">{children}</body>
     </html>
   );

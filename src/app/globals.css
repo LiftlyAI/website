@@ -6,60 +6,88 @@
   color-scheme: dark;
 }
 
+/* Keyboard focus — visible blue ring on every interactive element. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* Respect reduced-motion: neutralize spinner, pulses, transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 html,
 body {
-  background-color: #0d0d0d;
-  color: #f0ede8;
+  background-color: #05070d; /* near-black */
+  color: #f4f7fb; /* cool white */
   min-height: 100vh;
 }
 
+/* Subtle blue depth — a soft glow from the top, faint grid texture */
 body {
   background-image:
-    radial-gradient(circle at 25% 25%, rgba(240, 237, 232, 0.025) 1px, transparent 1px),
-    radial-gradient(circle at 75% 75%, rgba(240, 237, 232, 0.018) 1px, transparent 1px);
-  background-size: 32px 32px;
+    radial-gradient(900px circle at 50% -200px, rgba(59, 130, 246, 0.12), transparent 60%),
+    radial-gradient(700px circle at 100% 0, rgba(99, 102, 241, 0.08), transparent 55%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Industrial scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d0d0d;
+  background: #0c111c;
 }
 ::-webkit-scrollbar-thumb {
-  background: #383838;
-  border-radius: 0;
+  background: #2c3548;
+  border-radius: 6px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #525252;
+  background: #3d4862;
 }
 
 /* Selection */
 ::selection {
-  background: #e8440a;
-  color: #0d0d0d;
+  background: #3b82f6;
+  color: #ffffff;
 }
 
-/* Subtle chalk-line border utility */
 @layer components {
   .chalk-border {
-    @apply border border-iron-700;
-    box-shadow: inset 0 0 0 1px rgba(240, 237, 232, 0.02);
+    border: 1px solid theme('colors.iron.700');
   }
 
+  /* Elevated panel with hairline border + soft depth */
   .chalk-card {
-    @apply bg-iron-900 chalk-border rounded-sm;
-    background-image:
-      radial-gradient(circle at 10% 10%, rgba(240, 237, 232, 0.012) 1px, transparent 1px);
-    background-size: 24px 24px;
+    @apply bg-iron-900 chalk-border rounded-xl shadow-card;
   }
 
+  /* Interactive cards: lift + blue edge on hover */
+  .card-interactive {
+    @apply transition-all duration-200 hover:border-blood/60 hover:-translate-y-0.5 hover:shadow-glow-sm;
+  }
+
+  /* Modern display headings (Space Grotesk) */
   .stencil-heading {
-    @apply font-display tracking-wider uppercase;
-    letter-spacing: 0.08em;
+    @apply font-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   .data-num {
@@ -68,45 +96,53 @@ body {
 
   .accent-divider {
     height: 2px;
-    background: linear-gradient(90deg, #e8440a 0%, #e8440a 60%, transparent 100%);
+    border-radius: 2px;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 45%, transparent 100%);
   }
 
+  /* Primary = electric blue fill with subtle glow */
   .btn-primary {
-    @apply font-display uppercase tracking-widest text-sm px-5 py-3
-           bg-blood text-iron-950 hover:bg-blood-glow
-           transition-colors duration-150
-           disabled:bg-iron-700 disabled:text-iron-400 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px]
+           font-body font-semibold text-sm px-5 py-3 rounded-lg
+           bg-blood text-white shadow-glow-sm
+           hover:bg-blood-glow hover:shadow-glow
+           active:bg-blood-dim
+           transition-all duration-150
+           disabled:bg-iron-700 disabled:text-iron-400 disabled:shadow-none disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply font-display uppercase tracking-widest text-sm px-5 py-3
-           bg-transparent text-chalk hover:bg-iron-800
-           border border-iron-600 hover:border-blood
-           transition-colors duration-150;
+    @apply inline-flex items-center justify-center gap-2 min-h-[44px]
+           font-body font-medium text-sm px-5 py-3 rounded-lg
+           bg-iron-900/60 text-chalk hover:bg-iron-800
+           border border-iron-700 hover:border-blood/60
+           transition-all duration-150;
   }
 
   .input-iron {
-    @apply w-full bg-iron-900 chalk-border px-3 py-2.5
-           text-chalk placeholder-iron-400 font-mono text-sm
-           focus:outline-none focus:border-blood focus:ring-0;
+    @apply w-full bg-iron-900 chalk-border rounded-lg px-3.5 py-2.5
+           text-chalk placeholder-iron-400 font-body text-sm
+           transition-colors duration-150
+           focus:border-blood focus:bg-iron-800;
   }
 }
 
-/* Loading screen plate animation */
+/* Loading plate animation */
 .plate-loader {
   width: 88px;
   height: 88px;
   border-radius: 50%;
-  border: 8px solid #262626;
-  border-top: 8px solid #e8440a;
+  border: 8px solid #1e2636;
+  border-top: 8px solid #3b82f6;
   animation: plate-spin 1.2s linear infinite;
   position: relative;
+  box-shadow: 0 0 24px -4px rgba(59, 130, 246, 0.5);
 }
 .plate-loader::after {
   content: '';
   position: absolute;
   inset: 12px;
   border-radius: 50%;
-  background: #141414;
-  border: 2px solid #383838;
+  background: #0c111c;
+  border: 2px solid #1e2636;
 }

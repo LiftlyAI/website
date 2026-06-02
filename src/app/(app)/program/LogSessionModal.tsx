@@ -81,7 +81,7 @@ export function LogSessionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-iron-950/90 backdrop-blur-sm flex items-start justify-center p-4 md:p-8 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-start justify-center p-4 md:p-8 overflow-y-auto">
       <div className="w-full max-w-2xl chalk-card my-auto">
         <div className="flex items-center justify-between p-5 border-b border-iron-800">
           <div>

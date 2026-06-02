@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,8 +39,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6 bg-iron-950">
       <div className="w-full max-w-md">
         <Link href="/" className="block mb-10">
-          <div className="stencil-heading text-3xl text-chalk leading-none">IRON</div>
-          <div className="stencil-heading text-3xl text-blood leading-none">LEDGER</div>
+          <LiftlyLogo size={40} className="text-chalk" />
         </Link>
 
         <h1 className="stencil-heading text-3xl text-chalk mb-2">Sign in</h1>

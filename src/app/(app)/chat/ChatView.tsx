@@ -81,15 +81,15 @@ export function ChatView({
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="border-b border-iron-800 px-8 py-4">
+    <div className="flex flex-col h-[calc(100dvh-6rem)] lg:h-screen">
+      <div className="border-b border-iron-800 px-4 sm:px-8 py-4">
         <div className="font-mono text-xs text-chalk-mute tracking-widest">YOUR COACH</div>
         <div className="stencil-heading text-2xl text-chalk leading-none">
           ASK ANYTHING<span className="text-blood">.</span>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
         {messages.length === 0 && (
           <div className="max-w-md mx-auto text-center mt-12">
             <p className="text-sm text-chalk-mute mb-6">
@@ -139,7 +139,7 @@ export function ChatView({
           e.preventDefault();
           send(input);
         }}
-        className="border-t border-iron-800 px-8 py-4"
+        className="border-t border-iron-800 px-4 sm:px-8 py-4"
       >
         <div className="max-w-3xl mx-auto flex gap-2">
           <input

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
+import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
 
 export default async function Landing() {
   const session = await getSession();
@@ -16,10 +17,8 @@ export default async function Landing() {
           <div className="font-mono text-xs text-blood tracking-[0.4em] mb-6">
             ──── AI POWERLIFTING COACH ────
           </div>
-          <h1 className="stencil-heading text-7xl md:text-9xl text-chalk leading-none mb-6">
-            IRON
-            <br />
-            <span className="text-blood">LEDGER</span>
+          <h1 className="leading-none mb-6 text-chalk">
+            <LiftlyLogo size={112} />
           </h1>
           <p className="text-chalk-dim max-w-xl text-lg mb-10 font-body">
             Block periodization. Real form check from your phone. Macros that respect your sport.

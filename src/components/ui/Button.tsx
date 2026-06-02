@@ -18,9 +18,9 @@ const sizes: Record<Size, string> = {
 };
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-blood text-iron-950 hover:bg-blood-glow',
-  ghost: 'bg-transparent text-chalk border border-iron-600 hover:border-blood hover:bg-iron-800',
-  danger: 'bg-rpe-max text-iron-950 hover:bg-red-400',
+  primary: 'bg-blood text-white shadow-glow-sm hover:bg-blood-glow hover:shadow-glow active:bg-blood-dim',
+  ghost: 'bg-iron-900/60 text-chalk border border-iron-700 hover:border-blood/60 hover:bg-iron-800',
+  danger: 'bg-rpe-max/15 text-rpe-max border border-rpe-max/40 hover:bg-rpe-max/25',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -30,7 +30,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'font-display uppercase tracking-widest transition-colors duration-150',
+          'inline-flex items-center justify-center gap-2 min-h-[44px] rounded-lg',
+          'font-body font-semibold transition-all duration-150',
           'disabled:bg-iron-700 disabled:text-iron-400 disabled:cursor-not-allowed disabled:border-iron-700',
           sizes[size],
           variants[variant],

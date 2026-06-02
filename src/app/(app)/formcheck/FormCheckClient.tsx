@@ -22,13 +22,13 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
   const [checks, setChecks] = useState(initialChecks);
 
   return (
-    <div className="px-8 py-10 max-w-5xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
       <div className="mb-8 flex items-baseline justify-between flex-wrap gap-4">
         <div>
           <div className="font-mono text-xs text-chalk-mute tracking-widest mb-1">
             COACH'S DESK
           </div>
-          <h1 className="stencil-heading text-5xl text-chalk leading-none">FORM CHECK</h1>
+          <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">FORM CHECK</h1>
           <div className="accent-divider mt-3 max-w-[120px]" />
           <p className="text-sm text-chalk-mute mt-3 max-w-xl">
             Bench, squat, deadlift. The lifter is found in the clip (a standing
@@ -561,7 +561,7 @@ function UploadModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-iron-950/90 backdrop-blur-sm flex items-start justify-center p-4 md:p-8 overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-ink/70 backdrop-blur-sm flex items-start justify-center p-4 md:p-8 overflow-y-auto">
       <div className="w-full max-w-xl chalk-card my-auto">
         <div className="flex items-center justify-between p-5 border-b border-iron-800">
           <div>

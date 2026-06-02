@@ -44,7 +44,7 @@ export default async function FormCheckPage() {
   }));
 
   return (
-    <Suspense fallback={<div className="px-8 py-10 text-chalk-mute">Loading…</div>}>
+    <Suspense fallback={<div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 text-chalk-mute">Loading…</div>}>
       <FormCheckClient initialChecks={formChecks} />
     </Suspense>
   );

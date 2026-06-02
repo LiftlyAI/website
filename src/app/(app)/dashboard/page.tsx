@@ -83,7 +83,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="px-8 py-10 max-w-7xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">
       {/* Hero strip */}
       <div className="mb-10">
         <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">
@@ -93,7 +93,7 @@ export default async function Dashboard() {
             day: 'numeric',
           }).toUpperCase()}
         </div>
-        <h1 className="stencil-heading text-5xl text-chalk leading-none">
+        <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">
           GOOD TO SEE YOU,&nbsp;
           <span className="text-blood">{profile.name.split(' ')[0].toUpperCase()}</span>
         </h1>
@@ -238,7 +238,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="block chalk-card px-4 py-3 hover:border-blood transition-colors group"
+      className="block chalk-card card-interactive px-4 py-3 group"
     >
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-3 text-sm text-chalk">

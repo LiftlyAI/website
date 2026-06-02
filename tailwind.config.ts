@@ -5,37 +5,56 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Premium black + electric-blue dark theme. Token NAMES are kept
+        // (iron/chalk/blood) so the 300+ existing usages flip automatically:
+        // iron = near-black surfaces + slate borders, chalk = cool-white text,
+        // blood = the electric blue accent.
         iron: {
-          950: '#0D0D0D',
-          900: '#141414',
-          800: '#1C1C1C',
-          700: '#262626',
-          600: '#383838',
-          500: '#525252',
-          400: '#737373',
-          300: '#A3A3A3',
+          950: '#05070D', // page background (near-black, blue-tinted)
+          900: '#0C111C', // cards / panels
+          800: '#141A28', // elevated surface / hover
+          700: '#1E2636', // hairline borders
+          600: '#2C3548', // stronger / hover borders
+          500: '#3D4862', // dividers / disabled fills
+          400: '#6B7587', // placeholder text
+          300: '#8A93A6',
         },
         chalk: {
-          DEFAULT: '#F0EDE8',
-          dim: '#C9C5BD',
-          mute: '#8A867F',
+          DEFAULT: '#F4F7FB', // cool white — primary text
+          dim: '#AEB9CC', // secondary text
+          mute: '#737E92', // tertiary / muted
         },
         blood: {
-          DEFAULT: '#E8440A',
-          dim: '#B83607',
-          glow: '#FF5A1F',
+          DEFAULT: '#3B82F6', // electric blue accent
+          dim: '#2563EB', // pressed / deep fill
+          glow: '#60A5FA', // hover / bright accent
         },
+        blue: {
+          DEFAULT: '#3B82F6',
+          deep: '#2563EB',
+          bright: '#60A5FA',
+          cyan: '#22D3EE',
+          indigo: '#6366F1',
+        },
+        // light = text/contrast surfaces, ink = darkest (scrims/fills)
+        cream: { DEFAULT: '#F4F7FB', deep: '#E2E8F2' },
+        ink: { DEFAULT: '#05070D', dim: '#0C111C', mute: '#141A28' },
         rpe: {
           easy: '#4ADE80',
           mod: '#FACC15',
-          hard: '#F97316',
-          max: '#EF4444',
+          hard: '#FB923C',
+          max: '#F87171',
         },
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Impact', 'sans-serif'],
-        body: ['var(--font-body)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Space Grotesk', 'system-ui', 'sans-serif'],
+        body: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
+      },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(59,130,246,0.35), 0 10px 30px -10px rgba(59,130,246,0.45)',
+        'glow-sm': '0 0 0 1px rgba(59,130,246,0.30), 0 6px 18px -8px rgba(59,130,246,0.40)',
+        card: '0 1px 0 0 rgba(255,255,255,0.03) inset, 0 18px 40px -24px rgba(0,0,0,0.8)',
       },
       backgroundImage: {
         'chalk-grain':

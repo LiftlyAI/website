@@ -12,7 +12,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   ({ label, hint, error, className, ...rest }, ref) => (
     <label className="block">
       {label && (
-        <span className="block stencil-heading text-xs text-chalk-dim mb-1.5">{label}</span>
+        <span className="block font-body font-medium text-xs uppercase tracking-wide text-chalk-dim mb-1.5">{label}</span>
       )}
       <input
         ref={ref}
@@ -31,7 +31,7 @@ export const Select = forwardRef<
   SelectHTMLAttributes<HTMLSelectElement> & FieldProps & { options: { value: string; label: string }[] }
 >(({ label, hint, error, options, className, ...rest }, ref) => (
   <label className="block">
-    {label && <span className="block stencil-heading text-xs text-chalk-dim mb-1.5">{label}</span>}
+    {label && <span className="block font-body font-medium text-xs uppercase tracking-wide text-chalk-dim mb-1.5">{label}</span>}
     <select
       ref={ref}
       className={cn('input-iron appearance-none cursor-pointer', error && 'border-rpe-max', className)}
@@ -54,7 +54,7 @@ export const Textarea = forwardRef<
   TextareaHTMLAttributes<HTMLTextAreaElement> & FieldProps
 >(({ label, hint, error, className, ...rest }, ref) => (
   <label className="block">
-    {label && <span className="block stencil-heading text-xs text-chalk-dim mb-1.5">{label}</span>}
+    {label && <span className="block font-body font-medium text-xs uppercase tracking-wide text-chalk-dim mb-1.5">{label}</span>}
     <textarea
       ref={ref}
       rows={3}

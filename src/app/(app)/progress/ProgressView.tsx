@@ -49,10 +49,10 @@ export function ProgressView({
   volume: VolumePoint[];
 }) {
   return (
-    <div className="px-8 py-10 max-w-6xl">
+    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-6xl">
       <div className="mb-8">
         <div className="font-mono text-xs text-chalk-mute tracking-widest mb-1">THE LEDGER</div>
-        <h1 className="stencil-heading text-5xl text-chalk leading-none">PROGRESS</h1>
+        <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">PROGRESS</h1>
         <div className="accent-divider mt-3 max-w-[120px]" />
       </div>
 
