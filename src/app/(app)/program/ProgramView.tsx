@@ -110,9 +110,8 @@ export function ProgramView({
         <div className="mb-5 bg-rpe-mod/10 border border-rpe-mod/40 p-3 text-sm text-rpe-mod flex gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>
-            Your e1RM has dropped over the last couple of sessions on at least one
-            compound. Suggested weights are <strong>auto-deloaded -10%</strong> this
-            week — push the next block once you feel fresh again.
+            Your e1RM is down on at least one compound. Suggested weights are{' '}
+            <strong>-10%</strong> this week. Push the next block when you feel fresh.
           </span>
         </div>
       )}

@@ -62,8 +62,12 @@ export function tdee(profile: AthleteProfile): number {
 }
 
 export function phaseAdjustment(profile: AthleteProfile): number {
-  if (profile.phaseGoal === 'gaining') return 300; // +300 kcal lean gain
-  if (profile.phaseGoal === 'cutting') return -400; // -400 kcal moderate cut
+  if (profile.phaseGoal === 'gaining') {
+    // Novice builds muscle faster → tolerate larger surplus; intermediate/advanced use smaller one
+    // to avoid excess fat accumulation (Iraki/Helms off-season review, Slater et al.)
+    return profile.experience === 'novice' ? 400 : 250;
+  }
+  if (profile.phaseGoal === 'cutting') return -400; // -300 to -500 kcal mid-range
   return 0;
 }
 
@@ -76,23 +80,29 @@ export function macroTargets(profile: AthleteProfile): MacroTargets {
   const adj = phaseAdjustment(profile);
   const calories = _tdee + adj;
 
-  // Protein: 2.0g/kg cut, 1.8g/kg gain, 1.6g/kg maintain (advanced bumps to 2.2)
+  // Protein ranges from Morton 2018 meta-analysis + Helms/Aragon/Fitschen 2014:
+  //   Gaining:    2.0 g/kg (practical default; Morton CI reaches 2.2)
+  //   Maintaining: 1.8 g/kg (mid of ISSN 1.4–2.0)
+  //   Cutting:    2.3 g/kg (elevated needs during deficit for muscle preservation)
   let proteinPerKg = 1.8;
-  if (profile.phaseGoal === 'cutting') proteinPerKg = 2.2;
-  else if (profile.phaseGoal === 'maintaining') proteinPerKg = 1.6;
-  if (profile.experience === 'advanced' && profile.phaseGoal !== 'maintaining') {
-    proteinPerKg = Math.max(proteinPerKg, 2.0);
-  }
+  if (profile.phaseGoal === 'cutting') proteinPerKg = 2.3;
+  else if (profile.phaseGoal === 'gaining') proteinPerKg = 2.0;
 
   const protein_g = Math.round(kg * proteinPerKg);
-  // Fat: 0.8g/kg baseline, min 20% of cals
-  const fatPerKg = 0.9;
-  let fat_g = Math.round(kg * fatPerKg);
-  const minFatCals = calories * 0.2;
+
+  // Fat: 25% of calories (mid of ISSN 20–35%), floor at 15% to protect hormonal status
+  let fat_g = Math.round((calories * 0.25) / 9);
+  const minFatCals = calories * 0.15;
   if (fat_g * 9 < minFatCals) fat_g = Math.round(minFatCals / 9);
+  const fatPerKg = fat_g / kg;
 
   const remainingCals = calories - protein_g * 4 - fat_g * 9;
   const carbs_g = Math.max(0, Math.round(remainingCals / 4));
+  const carbsPerKg = carbs_g / kg;
+
+  // Per-meal protein: distribute total across meals; ~0.4 g/kg per meal is the MPS threshold
+  const meals = Math.max(3, Math.min(6, profile.mealsPerDay ?? 4));
+  const perMealProteinG = Math.round(protein_g / meals);
 
   return {
     calories,
@@ -101,6 +111,8 @@ export function macroTargets(profile: AthleteProfile): MacroTargets {
     fat_g,
     proteinPerKg,
     fatPerKg,
+    carbsPerKg,
+    perMealProteinG,
     bmr: _bmr,
     tdee: _tdee,
     phaseAdjustment: adj,

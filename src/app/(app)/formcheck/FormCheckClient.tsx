@@ -31,10 +31,10 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
           <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">FORM CHECK</h1>
           <div className="accent-divider mt-3 max-w-[120px]" />
           <p className="text-sm text-chalk-mute mt-3 max-w-xl">
-            Bench, squat, deadlift. The lifter is found in the clip (a standing
-            spotter is ignored on bench; bystanders ignored on squat/DL), the bar
-            path is tracked, every rep's concentric time measured, and effort read
-            from how much the last reps slow vs the first.
+            Bench, squat, deadlift. The system finds the lifter in the clip (standing
+            spotters ignored on bench, bystanders on squat/DL), tracks the bar path,
+            times every rep's concentric, and reads effort from how much the last reps
+            slow vs the first.
           </p>
         </div>
         <Button onClick={() => setOpen(true)}>+ Submit a clip</Button>
@@ -43,10 +43,10 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
       {checks.length === 0 ? (
         <Card>
           <div className="text-chalk-mute text-sm">
-            No clips yet. Pick the lift and film with a <strong>fixed</strong> camera —
-            side view for squat and deadlift, foot-of-bench for bench — with the lifter's
-            whole body and the loaded plate in frame and well lit. Spotters / bystanders
-            are ignored.
+            No clips yet. Pick the lift and film with a <strong>fixed</strong> camera:
+            side view for squat and deadlift, foot-of-bench for bench. Keep the lifter's
+            whole body and loaded plate in frame, well lit. Film around spotters and
+            bystanders; the system ignores them.
           </div>
         </Card>
       ) : (
@@ -330,10 +330,10 @@ function LogAsSessionControl({ check }: { check: FormCheckResult }) {
 
   return (
     <div className="bg-iron-900/50 border border-iron-800 p-3">
-      <SectionTitle>Log this set as a session — feeds your program</SectionTitle>
+      <SectionTitle>Log this set as a session. Feeds your program.</SectionTitle>
       {!ready ? (
         <div className="text-xs text-chalk-mute">
-          Add the load on this clip (and make sure reps + RPE were measured) to log it.
+          Add the load on this clip. Reps and RPE need to be measured before logging.
         </div>
       ) : state === 'done' ? (
         <div className="text-sm text-rpe-easy flex items-center gap-2">
@@ -438,7 +438,7 @@ function CalibrateControl({
 
   return (
     <div className="bg-iron-900/50 border border-iron-800 p-3">
-      <SectionTitle>Confirm actual RPE — teaches your slowdown profile</SectionTitle>
+      <SectionTitle>Confirm actual RPE. Teaches your slowdown profile.</SectionTitle>
       {state === 'done' ? (
         <div className="text-sm text-rpe-easy flex items-center gap-2">
           <Check className="w-4 h-4" /> {msg}
@@ -446,7 +446,7 @@ function CalibrateControl({
       ) : (
         <div className="flex items-end gap-3 flex-wrap">
           <Select
-            label="What did this set actually feel like?"
+            label="How did this set feel?"
             value={rpe}
             onChange={(e) => setRpe(e.target.value)}
             options={[
@@ -508,7 +508,7 @@ type SubmitLift = 'bench' | 'squat' | 'deadlift';
 
 const FILMING_BY_LIFT: Record<SubmitLift, string> = {
   bench:
-    'Camera at the FOOT OF THE BENCH or a clean side angle, fixed. Lifter\'s whole body in frame. A spotter is fine — the person lying on the bench is analysed.',
+    'Camera at the FOOT OF THE BENCH or a clean side angle, fixed. Lifter\'s whole body in frame. A spotter is fine. The system analyses the person lying on the bench.',
   squat:
     'Pure SIDE view (or slight 45°), camera FIXED at hip height. The whole body must be in frame from top to bottom of the squat. The loaded plate fully visible.',
   deadlift:

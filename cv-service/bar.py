@@ -90,12 +90,17 @@ def _track_bar(video_path: str, pose: P.PoseTrack) -> BarTrack:
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise RuntimeError("reopen failed")
+    # Mirror the pose stride so bar[f] lines up with the pose's frame f.
+    stride = getattr(pose, "stride", 1)
     frames: list[np.ndarray] = []
+    idx = 0
     while len(frames) < pose.total_frames:
         ok, fr = cap.read()
         if not ok:
             break
-        frames.append(fr)
+        if idx % stride == 0:
+            frames.append(fr)
+        idx += 1
     cap.release()
     n = min(len(frames), pose.total_frames)
     if n < 6:

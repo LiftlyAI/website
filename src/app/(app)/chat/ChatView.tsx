@@ -93,8 +93,8 @@ export function ChatView({
         {messages.length === 0 && (
           <div className="max-w-md mx-auto text-center mt-12">
             <p className="text-sm text-chalk-mute mb-6">
-              Hey {athleteName?.split(' ')[0] ?? 'lifter'}. Tell me how you're feeling, ask about
-              the program, or send a question.
+              Hey {athleteName?.split(' ')[0] ?? 'lifter'}. Tell me how you're feeling or ask about
+              the program.
             </p>
             <div className="flex flex-col gap-2">
               {QUICK.map((q) => (

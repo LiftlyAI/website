@@ -219,6 +219,8 @@ export interface MacroTargets {
   fat_g: number;
   proteinPerKg: number;
   fatPerKg: number;
+  carbsPerKg: number;
+  perMealProteinG: number;
   bmr: number;
   tdee: number;
   phaseAdjustment: number;

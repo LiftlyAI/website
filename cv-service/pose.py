@@ -6,6 +6,25 @@ hands — the wrist line *is* the bar. Tracking the body is far more robust and
 it also yields the joint angles needed for real form coaching (elbow flare,
 wrist-over-elbow stack, torso/arch, leg drive).
 
+Three things make this hold up on real phone footage:
+
+  1. ORIENTATION. BlazePose is trained on upright people and badly under-
+     detects a lifter lying flat (a bench clip is exactly that). We probe
+     {0, 90cw, 90ccw} on a handful of frames and run the whole clip at the
+     rotation that makes the *lying* lifter most detectable, then map the
+     landmarks back to original image coords.
+
+  2. IMAGE mode, not VIDEO mode. VIDEO mode locks onto the most prominent
+     person (often a standing spotter) and never re-surfaces the lifter.
+     Fresh per-frame detection surfaces the lifter whenever it's visible;
+     our own track-linking handles the temporal association.
+
+  3. The lifter is the most HORIZONTAL substantial person — never a standing
+     spotter. For bench we reject clearly-vertical tracks outright instead of
+     falling back to one, so a spotter can't be analysed as the lifter. If no
+     lying lifter is present often enough, we refuse with an actionable
+     "reframe" message rather than returning garbage.
+
 Output is body-relative and scale-free: positions are normalised image
 coords, distances are later expressed in torso lengths / % of ROM, so we
 never depend on plate-diameter calibration or a fixed camera distance.
@@ -37,6 +56,13 @@ L_KN, R_KN = 25, 26
 L_AN, R_AN = 27, 28
 KEYPOINTS = [L_SH, R_SH, L_EL, R_EL, L_WR, R_WR, L_HIP, R_HIP, L_KN, R_KN, L_AN, R_AN]
 
+# Rotations we try so a lying lifter looks upright to BlazePose.
+_ROTATIONS = {
+    0: None,
+    90: cv2.ROTATE_90_CLOCKWISE,
+    270: cv2.ROTATE_90_COUNTERCLOCKWISE,
+}
+
 
 class PoseTrack:
     def __init__(
@@ -47,13 +73,15 @@ class PoseTrack:
         frame_size: tuple[int, int],
         sample_frame: np.ndarray,
         detected_frames: int,
+        stride: int = 1,
     ):
         self.xy = xy
         self.vis = vis
-        self.fps = fps
+        self.fps = fps          # EFFECTIVE fps after striding (matches xy rows)
         self.frame_size = frame_size
         self.sample_frame = sample_frame
         self.detected_frames = detected_frames
+        self.stride = stride    # raw-frame stride, so bar.py can mirror it
         self.total_frames = xy.shape[0]
 
     @property
@@ -78,14 +106,34 @@ def _make_landmarker():
     from mediapipe.tasks import python as mtp
     from mediapipe.tasks.python import vision
 
+    # IMAGE mode (fresh per frame) + a low detection floor so the lifter, who
+    # is often a lower-confidence detection than a standing bystander, still
+    # surfaces. num_poses=5 because gyms have spotters / passers-by; the
+    # selector below commits to the lifter.
     opts = vision.PoseLandmarkerOptions(
         base_options=mtp.BaseOptions(model_asset_path=MODEL_PATH),
-        running_mode=vision.RunningMode.VIDEO,
-        num_poses=5,  # gyms have spotters / bystanders — pick the bencher below
-        min_pose_detection_confidence=0.5,
-        min_tracking_confidence=0.5,
+        running_mode=vision.RunningMode.IMAGE,
+        num_poses=5,
+        min_pose_detection_confidence=0.3,
+        min_pose_presence_confidence=0.3,
+        min_tracking_confidence=0.3,
     )
     return vision.PoseLandmarker.create_from_options(opts)
+
+
+def _unrotate_xy(xy: np.ndarray, code) -> np.ndarray:
+    """Map normalised landmark coords from a rotated frame back to the
+    original orientation. xy is (...,2)."""
+    if code is None:
+        return xy
+    x, y = xy[..., 0], xy[..., 1]
+    if code == cv2.ROTATE_90_CLOCKWISE:            # original (xo,yo)->(1-yo, xo)
+        ox, oy = y, 1.0 - x
+    elif code == cv2.ROTATE_90_COUNTERCLOCKWISE:   # original ->(yo, 1-xo)
+        ox, oy = 1.0 - y, x
+    else:
+        ox, oy = x, y
+    return np.stack([ox, oy], axis=-1)
 
 
 # Torso orientation cleanly separates the lifter from bystanders:
@@ -93,8 +141,13 @@ def _make_landmarker():
 #  - squat / deadlift: the LIFTER is upright; we don't gate as hard there
 #    (mid-rep the torso can lean), but we still prefer an upright torso to
 #    exclude anyone sitting/lying nearby.
-HORIZ_LYING = 0.40       # bench: med_horiz must be ABOVE this
+HORIZ_LYING = 0.30       # bench: a track this horizontal (or more) is a lifter
 HORIZ_UPRIGHT = 0.35     # squat/DL: med_horiz must be BELOW this
+# A foreshortened (foot-of-bench) lifter looks vertical but their hands press
+# AND they fill a real chunk of the frame. A standing spotter may wave their
+# arms (wrist travel) but is small/off to the side, so we require BOTH.
+WRIST_PRESS_MIN = 0.06   # min vertical wrist travel, fraction of frame height
+LIFTER_AREA_MIN = 0.12   # min keypoint bbox area for the wrist-press path
 
 
 def _candidate(xy: np.ndarray, vis: np.ndarray, aspect: float) -> dict:
@@ -119,6 +172,10 @@ def _candidate(xy: np.ndarray, vis: np.ndarray, aspect: float) -> dict:
         )
     )
     mean_vis = float(np.mean(vis[KEYPOINTS]))
+    # core (shoulder+hip) visibility — these define the torso angle, so a
+    # candidate with a confident core is a far more reliable lifter signal
+    # than one carried by stray limb points.
+    core_vis = float(np.mean(vis[[L_SH, R_SH, L_HIP, R_HIP]]))
     score = 1.2 * min(area, 0.5) + 0.8 * in_frame + 0.5 * mean_vis
     return {
         "xy": xy,
@@ -126,8 +183,115 @@ def _candidate(xy: np.ndarray, vis: np.ndarray, aspect: float) -> dict:
         "centroid": centroid,
         "area": max(area, 1e-4),
         "horiz": horiz,
+        "mean_vis": mean_vis,
+        "core_vis": core_vis,
         "score": score,
     }
+
+
+def _cand_wrist_y(c: dict) -> float:
+    """Normalised y of the more-visible wrist — used to measure how much a
+    track's hands travel vertically (the press), which tells a foreshortened
+    lifter apart from a standing spotter."""
+    vis = c["vis"]
+    wr = L_WR if vis[L_WR] >= vis[R_WR] else R_WR
+    return float(c["xy"][wr, 1])
+
+
+def _detect_in_region(landmarker, frame_bgr, code, aspect, mp, crop=None) -> list[dict]:
+    """Detect poses, optionally inside a crop box (x0,y0,w,h) in original
+    pixels that is upscaled first — a small/distant lifter gets far more
+    pixels, which is the single biggest lever for coverage. Landmarks are
+    always mapped back to ORIGINAL-frame normalised coords, so candidates are
+    comparable across passes."""
+    H, W = frame_bgr.shape[:2]
+    if crop is None:
+        sub = frame_bgr
+        x0 = y0 = 0
+        cw, ch = W, H
+    else:
+        x0, y0, cw, ch = crop
+        sub = frame_bgr[y0:y0 + ch, x0:x0 + cw]
+        if sub.size == 0:
+            return []
+        scale = 720.0 / max(1, max(cw, ch))   # upscale small crops, don't shrink big ones
+        if scale > 1.05:
+            sub = cv2.resize(sub, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
+    img = sub if code is None else cv2.rotate(sub, code)
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    res = landmarker.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))
+    cands: list[dict] = []
+    if res.pose_landmarks:
+        for lms in res.pose_landmarks:
+            cxy = np.array([[lm.x, lm.y] for lm in lms], dtype=np.float64)
+            cxy = _unrotate_xy(cxy, code)                     # -> [0,1] in crop space
+            if crop is not None:                              # crop space -> original frame
+                cxy[:, 0] = (x0 + cxy[:, 0] * cw) / W
+                cxy[:, 1] = (y0 + cxy[:, 1] * ch) / H
+            cvi = np.array([lm.visibility for lm in lms], dtype=np.float64)
+            cands.append(_candidate(cxy, cvi, aspect))
+    return cands
+
+
+def _detect_candidates(landmarker, frame_bgr, code, aspect, mp) -> list[dict]:
+    return _detect_in_region(landmarker, frame_bgr, code, aspect, mp, crop=None)
+
+
+def _lifter_crop(xy: np.ndarray, vis: np.ndarray, w: int, h: int):
+    """A stable pixel crop box (x0,y0,cw,ch) around the lifter, from the frames
+    where they were really detected. The lifter is near-stationary on a bench,
+    so one robust box covers the whole set; generous margins keep the pressed-
+    out arms in frame."""
+    real = np.where(vis[:, KEYPOINTS].sum(axis=1) > 0)[0]
+    if len(real) < 4:
+        return None
+    pts = xy[np.ix_(real, KEYPOINTS)]            # (m, K, 2) normalised
+    xs, ys = pts[..., 0], pts[..., 1]
+    x0n, x1n = np.percentile(xs, 2), np.percentile(xs, 98)
+    y0n, y1n = np.percentile(ys, 2), np.percentile(ys, 98)
+    mx, my = 0.25 * (x1n - x0n) + 0.04, 0.25 * (y1n - y0n) + 0.04
+    x0 = int(max(0.0, x0n - mx) * w)
+    y0 = int(max(0.0, y0n - my) * h)
+    x1 = int(min(1.0, x1n + mx) * w)
+    y1 = int(min(1.0, y1n + my) * h)
+    cw, ch = x1 - x0, y1 - y0
+    if cw < 24 or ch < 24:
+        return None
+    # No point cropping if it barely shrinks the frame.
+    if cw * ch > 0.82 * w * h:
+        return None
+    return (x0, y0, cw, ch)
+
+
+def _lifter_likeness(c: dict, lift: str) -> float:
+    """How much a single detection looks like the working lifter for `lift`.
+    Used only to pick the camera orientation, so it just has to rank
+    orientations, not be calibrated."""
+    if lift == "bench":
+        orient = max(0.0, c["horiz"] - 0.15)        # reward horizontal
+    else:
+        orient = max(0.0, 0.85 - c["horiz"])        # reward upright
+    return orient * (0.4 + c["core_vis"]) * (0.3 + min(c["area"], 0.4))
+
+
+def _best_rotation(frames, landmarker, aspect, lift, mp) -> int:
+    """Probe a sample of frames at each rotation; keep the one where the
+    lifter (lying for bench, upright otherwise) is most detectable. Only
+    meaningful for bench — squat/DL are filmed upright, so we leave them at 0."""
+    if lift != "bench" or len(frames) < 8:
+        return 0
+    n = len(frames)
+    idxs = np.linspace(0, n - 1, min(18, n)).astype(int)
+    best_code, best_score = 0, -1.0
+    for deg, code in _ROTATIONS.items():
+        s = 0.0
+        for i in idxs:
+            cands = _detect_candidates(landmarker, frames[i], code, aspect, mp)
+            if cands:
+                s += max(_lifter_likeness(c, lift) for c in cands)
+        if s > best_score:
+            best_score, best_code = s, deg
+    return best_code
 
 
 def select_lifter_track(
@@ -135,8 +299,11 @@ def select_lifter_track(
 ) -> tuple[np.ndarray, np.ndarray, int]:
     """Link detections into per-person tracks, then commit to the lifter:
     LYING DOWN for bench (rejects upright spotters), UPRIGHT for squat /
-    deadlift (rejects anyone sitting / lying nearby). Pure / no MediaPipe so
-    it is unit-testable."""
+    deadlift. Pure / no MediaPipe so it is unit-testable.
+
+    For bench we never fall back to a vertical track — a standing spotter must
+    never be analysed as the lifter. If no sufficiently-present lying lifter
+    exists we raise an actionable error."""
     n = len(per_frame)
     if n < 6:
         raise RuntimeError("clip too short or unreadable (need >= 6 frames)")
@@ -167,7 +334,9 @@ def select_lifter_track(
             tr["area"] = c["area"]
             tr["last_idx"] = f
             tr["score_sum"] += c["score"]
+            tr["vis_sum"] += c["mean_vis"]
             tr["horiz"].append(c["horiz"])
+            tr["wrist_y"].append(_cand_wrist_y(c))
             tr["count"] += 1
             tr["frames"][f] = c
             used_t.add(ti)
@@ -181,39 +350,80 @@ def select_lifter_track(
                     "centroid": c["centroid"],
                     "area": c["area"],
                     "score_sum": c["score"],
+                    "vis_sum": c["mean_vis"],
                     "horiz": [c["horiz"]],
+                    "wrist_y": [_cand_wrist_y(c)],
                     "count": 1,
                     "frames": {f: c},
                 }
             )
 
     no_lifter = (
-        "no lifter detected on a bench — make sure the person LYING on the "
-        "bench is fully in frame and well lit (a standing spotter is ignored)"
+        "couldn't find the lifter on the bench — make sure the person LYING "
+        "on the bench is fully in frame and well lit, filmed from the side or "
+        "foot of the bench (a standing spotter is ignored on purpose)"
     )
     if not tracks:
         raise RuntimeError(no_lifter)
 
-    min_count = max(6, int(0.10 * n))
     for tr in tracks:
         tr["med_horiz"] = float(np.median(tr["horiz"]))
         tr["presence"] = tr["count"] / n
         tr["mean_score"] = tr["score_sum"] / tr["count"]
+        tr["mean_vis"] = tr["vis_sum"] / tr["count"]
+        wy = np.array(tr["wrist_y"])
+        tr["wrist_range"] = (
+            float(np.percentile(wy, 90) - np.percentile(wy, 10)) if len(wy) >= 4 else 0.0
+        )
+
+    if os.environ.get("POSE_DEBUG"):
+        for ti, tr in enumerate(sorted(tracks, key=lambda t: -t["presence"])[:6]):
+            print(
+                f"  track{ti}: n={tr['count']:4d} pres={tr['presence']:.2f} "
+                f"horiz={tr['med_horiz']:.2f} vis={tr['mean_vis']:.2f} "
+                f"area={tr['area']:.3f} wristRange={tr['wrist_range']:.3f}"
+            )
 
     if lift == "bench":
-        keep = lambda tr: tr["med_horiz"] >= HORIZ_LYING            # noqa: E731
-    else:                                                            # squat / DL
-        keep = lambda tr: tr["med_horiz"] <= HORIZ_UPRIGHT           # noqa: E731
-    gated = [tr for tr in tracks if keep(tr) and tr["count"] >= min_count]
-    if gated:
-        lifter = max(gated, key=lambda tr: (tr["presence"], tr["mean_score"]))
-    else:
-        # Bad angle / occlusion — fall back so we still return something.
-        lifter = max(
-            tracks, key=lambda tr: tr["mean_score"] * (0.3 + tr["presence"])
-        )
-        if lifter["count"] < min_count:
+        # The lifter is either clearly LYING (side view -> high horiz) or a
+        # foreshortened lifter whose HANDS PRESS (large vertical wrist travel).
+        # A standing spotter is neither (vertical AND still), so this rejects
+        # them without a vertical fallback. If nobody qualifies, refuse.
+        min_count = max(8, int(0.12 * n))
+        gated = [
+            tr for tr in tracks
+            if tr["count"] >= min_count
+            and (
+                tr["med_horiz"] >= HORIZ_LYING
+                or (tr["wrist_range"] >= WRIST_PRESS_MIN and tr["area"] >= LIFTER_AREA_MIN)
+            )
+        ]
+        if not gated:
             raise RuntimeError(no_lifter)
+        # Among lifters, prefer the one that is present, visible, big and the
+        # one actually pressing (wrist travel).
+        lifter = max(
+            gated,
+            key=lambda tr: tr["presence"] * (0.5 + tr["mean_vis"])
+            * (0.5 + min(tr["area"], 0.4)) * (0.4 + 3.0 * tr["wrist_range"]),
+        )
+    else:  # squat / deadlift — upright lifter, softer gate + safe fallback
+        min_count = max(6, int(0.10 * n))
+        gated = [
+            tr for tr in tracks
+            if tr["med_horiz"] <= HORIZ_UPRIGHT and tr["count"] >= min_count
+        ]
+        if gated:
+            lifter = max(gated, key=lambda tr: (tr["presence"], tr["mean_score"]))
+        else:
+            lifter = max(
+                tracks, key=lambda tr: tr["mean_score"] * (0.3 + tr["presence"])
+            )
+            if lifter["count"] < min_count:
+                raise RuntimeError(
+                    "no lifter detected — make sure the person performing the "
+                    "lift is fully in frame and well lit"
+                )
 
     xy = np.full((n, 33, 2), np.nan)
     vis = np.zeros((n, 33))
@@ -236,37 +446,57 @@ def track_pose(
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise RuntimeError("could not open video")
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    raw_fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     aspect = w / h
 
-    landmarker = _make_landmarker()
+    # Cap the detection rate at ~24 fps: full resolution for normal 24/30 fps
+    # clips (rep timing / velocity loss need it), but high-fps phone footage
+    # (60/120 fps) is strided down so it isn't 2-4x slower for no gain. bar.py
+    # mirrors the stride so the two signals stay frame-aligned.
+    stride = max(1, round(raw_fps / 24.0))
+    fps = raw_fps / stride
     frames: list[np.ndarray] = []
-    per_frame: list[list[dict]] = []
-    try:
-        idx = 0
-        while idx < max_frames:
-            ok, frame = cap.read()
-            if not ok:
-                break
+    idx = 0
+    while len(frames) < max_frames:
+        ok, frame = cap.read()
+        if not ok:
+            break
+        if idx % stride == 0:
             frames.append(frame)
-            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mpimg = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
-            res = landmarker.detect_for_video(mpimg, int(idx * 1000.0 / fps))
-            cands: list[dict] = []
-            if res.pose_landmarks:
-                for lms in res.pose_landmarks:
-                    cxy = np.array([[lm.x, lm.y] for lm in lms], dtype=np.float64)
-                    cvi = np.array([lm.visibility for lm in lms], dtype=np.float64)
-                    cands.append(_candidate(cxy, cvi, aspect))
-            per_frame.append(cands)
-            idx += 1
+        idx += 1
+    cap.release()
+    if len(frames) < 6:
+        raise RuntimeError("clip too short or unreadable (need >= 6 frames)")
+
+    landmarker = _make_landmarker()
+    try:
+        code = _ROTATIONS[_best_rotation(frames, landmarker, aspect, lift, mp)]
+        per_frame = [_detect_candidates(landmarker, fr, code, aspect, mp) for fr in frames]
+        xy, vis, count = select_lifter_track(per_frame, fps, lift=lift)
+
+        # Second pass: if the lifter is small/distant (low coverage), crop to
+        # them and re-detect upscaled. A small lifter in a big frame is the
+        # main cause of missed frames; cropping recovers most of them and also
+        # excludes bystanders outside the box.
+        coverage = count / max(1, len(frames))
+        if coverage < 0.75:
+            crop = _lifter_crop(xy, vis, w, h)
+            if crop is not None:
+                per_frame2 = [
+                    _detect_in_region(landmarker, fr, code, aspect, mp, crop=crop)
+                    for fr in frames
+                ]
+                try:
+                    xy2, vis2, count2 = select_lifter_track(per_frame2, fps, lift=lift)
+                    if count2 > count:
+                        xy, vis, count = xy2, vis2, count2
+                except RuntimeError:
+                    pass  # crop pass found nothing usable — keep the full-frame result
     finally:
         landmarker.close()
-        cap.release()
 
-    xy, vis, count = select_lifter_track(per_frame, fps, lift=lift)
     return PoseTrack(
         xy=xy,
         vis=vis,
@@ -274,4 +504,5 @@ def track_pose(
         frame_size=(w, h),
         sample_frame=frames[len(frames) // 2],
         detected_frames=count,
+        stride=stride,
     )

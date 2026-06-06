@@ -45,7 +45,7 @@ export default function LoginPage() {
         <h1 className="stencil-heading text-3xl text-chalk mb-2">Sign in</h1>
         <div className="accent-divider mb-6 max-w-[80px]" />
         <p className="text-sm text-chalk-mute mb-6 font-body">
-          Enter your email to start. No password — your email is your handle. New here? You'll go
+          Enter your email to start. No password. Your email is your handle. First visit goes
           straight to onboarding.
         </p>
 

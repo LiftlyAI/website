@@ -21,8 +21,8 @@ export default async function Landing() {
             <LiftlyLogo size={112} />
           </h1>
           <p className="text-chalk-dim max-w-xl text-lg mb-10 font-body">
-            Block periodization. Real form check from your phone. Macros that respect your sport.
-            Built for lifters who measure their work in plates, not steps.
+            Block periodization. Form check from your phone. Macros built for powerlifting.
+            Built for lifters counting plates, not steps.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -37,7 +37,7 @@ export default async function Landing() {
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { num: '01', title: 'Periodized Program', body: 'Hypertrophy → Strength → Peak. Adapted to your maxes, your schedule, your weak points.' },
-              { num: '02', title: 'Form Check', body: 'Upload a clip. Get coach-quality cues — bar path, brace, knee tracking, lockout.' },
+              { num: '02', title: 'Form Check', body: 'Upload a clip. Get cues on bar path, brace, knee tracking, and lockout.' },
               { num: '03', title: 'Calibrated Nutrition', body: 'BMR, training-day cycling, protein per kg lean mass. No fluff.' },
             ].map((c) => (
               <div key={c.num} className="chalk-card p-5">

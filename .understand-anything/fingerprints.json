@@ -1,0 +1,4097 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "e721733ea1bfb451d971daf4b38b1b1c25601b08",
+  "generatedAt": "2026-06-06T19:59:27.209Z",
+  "files": {
+    "src/app/(app)/chat/ChatView.tsx": {
+      "filePath": "src/app/(app)/chat/ChatView.tsx",
+      "contentHash": "c93c30a44405141efb79a94883af034fee9854f392cb8b1707ddc8325af03abb",
+      "functions": [
+        {
+          "name": "ChatView",
+          "params": [
+            "{\n  initialMessages,\n  athleteName,\n}"
+          ],
+          "exported": true,
+          "lineCount": 151
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Send"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "ChatMessage"
+          ]
+        }
+      ],
+      "exports": [
+        "ChatView"
+      ],
+      "totalLines": 164,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/chat/page.tsx": {
+      "filePath": "src/app/(app)/chat/page.tsx",
+      "contentHash": "00f27c5253ce90e2b17e750300ddad7191d4e0c3420cc825251b85e33f295d4c",
+      "functions": [
+        {
+          "name": "ChatPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "ChatMessage"
+          ]
+        },
+        {
+          "source": "./ChatView",
+          "specifiers": [
+            "ChatView"
+          ]
+        }
+      ],
+      "exports": [
+        "ChatPage"
+      ],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/chat/route.ts": {
+      "filePath": "src/app/api/chat/route.ts",
+      "contentHash": "36837e5eebb82ff36a363b3d8132a203569453a1676c1aa49797e06b99fddec4",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 137
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        },
+        {
+          "source": "@/lib/ai",
+          "specifiers": [
+            "aiStream",
+            "isAiKeyError"
+          ]
+        },
+        {
+          "source": "@/lib/prompts/chat",
+          "specifiers": [
+            "buildChatSystemPrompt"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "FormCheckResult",
+            "Program"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 150,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/formcheck/route.ts": {
+      "filePath": "src/app/api/formcheck/route.ts",
+      "contentHash": "bf7624a59edb6a89b0774c6274e616834cd3ef23ecbe3dd635bbbcde9c2eeda3",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 170
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        },
+        {
+          "source": "@/lib/ai",
+          "specifiers": [
+            "aiGenerate",
+            "isAiKeyError",
+            "safeParseJson"
+          ]
+        },
+        {
+          "source": "@/lib/prompts/formcheck",
+          "specifiers": [
+            "buildFormCheckPrompt",
+            "systemPromptFor"
+          ]
+        },
+        {
+          "source": "@/lib/cvService",
+          "specifiers": [
+            "analyzeVideo",
+            "CvServiceError"
+          ]
+        },
+        {
+          "source": "@/lib/velocity",
+          "specifiers": [
+            "estimateRpe",
+            "CalibrationPoint"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "toKg"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "CvAnalysis",
+            "FormCheckResult",
+            "LiftType"
+          ]
+        }
+      ],
+      "exports": [
+        "maxDuration",
+        "POST"
+      ],
+      "totalLines": 186,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/nutrition/generate/route.ts": {
+      "filePath": "src/app/api/nutrition/generate/route.ts",
+      "contentHash": "6eab1c14362ba22978b5e4af778e2fac27841ec5c6e6be0ed6ab7ab13fb15d77",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [],
+          "exported": true,
+          "lineCount": 36
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/ai",
+          "specifiers": [
+            "aiGenerate",
+            "isAiKeyError",
+            "safeParseJson"
+          ]
+        },
+        {
+          "source": "@/lib/prompts/nutrition",
+          "specifiers": [
+            "NUTRITION_SYSTEM_PROMPT",
+            "buildNutritionUserPrompt"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "macroTargets"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "MealPlan"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/onboarding/route.ts": {
+      "filePath": "src/app/api/onboarding/route.ts",
+      "contentHash": "9a709c4b0e49948f9a2902e9f9de985cc45c723bd54e04110eaa9e3f98d2a594",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 61
+        },
+        {
+          "name": "generateProgram",
+          "params": [
+            "profile"
+          ],
+          "returnType": "Promise<Program>",
+          "exported": false,
+          "lineCount": 44
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        },
+        {
+          "source": "@/lib/ai",
+          "specifiers": [
+            "aiGenerate",
+            "safeParseJson"
+          ]
+        },
+        {
+          "source": "@/lib/prompts/program",
+          "specifiers": [
+            "PROGRAM_SYSTEM_PROMPT",
+            "buildProgramUserPrompt"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "noviceMaxEstimate"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "Program"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 121,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/program/adjust/route.ts": {
+      "filePath": "src/app/api/program/adjust/route.ts",
+      "contentHash": "4444ac330cad37b209537292eef0b2b46c41588844b0ebef7560792561c38ac0",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 93
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/programming",
+          "specifiers": [
+            "adjustExercise",
+            "extractLifterSets",
+            "liftOf",
+            "AdjustResult"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "LiftType",
+            "Program",
+            "SessionLog",
+            "SessionLogEntry"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 116,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/program/regenerate/route.ts": {
+      "filePath": "src/app/api/program/regenerate/route.ts",
+      "contentHash": "ef5e6319bb36771a88b95251a55745a7790f8140a7eaca4ccc5fc0e214077e54",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [],
+          "exported": true,
+          "lineCount": 58
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        },
+        {
+          "source": "@/lib/ai",
+          "specifiers": [
+            "aiGenerate",
+            "isAiKeyError",
+            "safeParseJson"
+          ]
+        },
+        {
+          "source": "@/lib/prompts/program",
+          "specifiers": [
+            "PROGRAM_SYSTEM_PROMPT",
+            "buildProgramUserPrompt"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "Program"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 66,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/ai.ts": {
+      "filePath": "src/lib/ai.ts",
+      "contentHash": "50af3a3c354e6b1f265442048d2bc0242a4dad576d3735dc6a99d6ccd87447df",
+      "functions": [
+        {
+          "name": "activeProvider",
+          "params": [],
+          "returnType": "Provider",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "coachModel",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "anthropicClient",
+          "params": [],
+          "returnType": "Anthropic",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "geminiClient",
+          "params": [],
+          "returnType": "GoogleGenAI",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "aiGenerate",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<string>",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "isAiKeyError",
+          "params": [
+            "err"
+          ],
+          "returnType": "boolean",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "anthropicGenerate",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<string>",
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "anthropicMessages",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Anthropic.MessageParam[]",
+          "exported": false,
+          "lineCount": 22
+        },
+        {
+          "name": "geminiGenerate",
+          "params": [
+            "opts"
+          ],
+          "returnType": "Promise<string>",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "geminiConfig",
+          "params": [
+            "opts",
+            "streaming"
+          ],
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "geminiContents",
+          "params": [
+            "opts"
+          ],
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "unwrapJson",
+          "params": [
+            "text"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "safeParseJson",
+          "params": [
+            "text"
+          ],
+          "returnType": "T | null",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@anthropic-ai/sdk",
+          "specifiers": [
+            "Anthropic"
+          ]
+        },
+        {
+          "source": "@google/genai",
+          "specifiers": [
+            "GoogleGenAI"
+          ]
+        }
+      ],
+      "exports": [
+        "activeProvider",
+        "coachModel",
+        "COACH_MODEL",
+        "aiGenerate",
+        "isAiKeyError",
+        "unwrapJson",
+        "safeParseJson"
+      ],
+      "totalLines": 218,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/cvService.ts": {
+      "filePath": "src/lib/cvService.ts",
+      "contentHash": "99d6a571977915d1574dfea1058ae5f3200a8271b6f4c71fc0f5101620519ed6",
+      "functions": [
+        {
+          "name": "cvServiceUrl",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "analyzeVideo",
+          "params": [
+            "args"
+          ],
+          "returnType": "Promise<CvAnalysis>",
+          "exported": true,
+          "lineCount": 43
+        },
+        {
+          "name": "cvServiceHealthy",
+          "params": [],
+          "returnType": "Promise<boolean>",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [
+        {
+          "name": "CvServiceError",
+          "methods": [
+            "constructor"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "imports": [
+        {
+          "source": "./types",
+          "specifiers": [
+            "CvAnalysis"
+          ]
+        }
+      ],
+      "exports": [
+        "cvServiceUrl",
+        "CvServiceError",
+        "analyzeVideo",
+        "cvServiceHealthy"
+      ],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/programming.ts": {
+      "filePath": "src/lib/programming.ts",
+      "contentHash": "2e2d76d2993f1468c75d2fa534ad00938588e3aad21518e2eaa8eefac7536c55",
+      "functions": [
+        {
+          "name": "liftOf",
+          "params": [
+            "name"
+          ],
+          "returnType": "LiftType",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "e1rmFromSet",
+          "params": [
+            "weight",
+            "reps",
+            "actualRPE"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "plateStep",
+          "params": [
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "roundToStep",
+          "params": [
+            "weight",
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "suggestedWeight",
+          "params": [
+            "e1rm",
+            "reps",
+            "targetRPE",
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "extractLifterSets",
+          "params": [
+            "logs",
+            "lift"
+          ],
+          "returnType": "LoggedSet[]",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "adjustExercise",
+          "params": [
+            "input"
+          ],
+          "returnType": "AdjustResult",
+          "exported": true,
+          "lineCount": 80
+        },
+        {
+          "name": "sessionBestE1rms",
+          "params": [
+            "sets"
+          ],
+          "returnType": "number[]",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "stagePlan",
+          "params": [
+            "experience"
+          ],
+          "returnType": "StagePlan",
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./calculations",
+          "specifiers": [
+            "rpePercent"
+          ]
+        },
+        {
+          "source": "./types",
+          "specifiers": [
+            "LiftType",
+            "SessionLog",
+            "Unit"
+          ]
+        }
+      ],
+      "exports": [
+        "liftOf",
+        "e1rmFromSet",
+        "plateStep",
+        "roundToStep",
+        "suggestedWeight",
+        "extractLifterSets",
+        "adjustExercise",
+        "stagePlan"
+      ],
+      "totalLines": 258,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/prompts/chat.ts": {
+      "filePath": "src/lib/prompts/chat.ts",
+      "contentHash": "e8b28dacd2efdc81a7a943061e57b2092ccf008dfaa5e575ebd0a71f2de2555c",
+      "functions": [
+        {
+          "name": "buildChatSystemPrompt",
+          "params": [
+            "args"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 44
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../types",
+          "specifiers": [
+            "AthleteProfile",
+            "FormCheckResult",
+            "Program"
+          ]
+        }
+      ],
+      "exports": [
+        "buildChatSystemPrompt"
+      ],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/prompts/formcheck.ts": {
+      "filePath": "src/lib/prompts/formcheck.ts",
+      "contentHash": "db457c94fd487753069e2400c0fb0a7600142d1a35abdf365fb335797c14ae36",
+      "functions": [
+        {
+          "name": "benchTable",
+          "params": [
+            "cv"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "squatTable",
+          "params": [
+            "cv"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "deadliftTable",
+          "params": [
+            "cv"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "buildFormCheckPrompt",
+          "params": [
+            "args"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 55
+        },
+        {
+          "name": "buildBenchFormCheckPrompt",
+          "params": [
+            "args"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "systemPromptFor",
+          "params": [
+            "lift"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../types",
+          "specifiers": [
+            "AthleteProfile",
+            "CvAnalysis",
+            "LiftType",
+            "RpeEstimate"
+          ]
+        }
+      ],
+      "exports": [
+        "FORMCHECK_SYSTEM_PROMPTS",
+        "FORMCHECK_SYSTEM_PROMPT",
+        "buildFormCheckPrompt",
+        "buildBenchFormCheckPrompt",
+        "systemPromptFor"
+      ],
+      "totalLines": 200,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/prompts/nutrition.ts": {
+      "filePath": "src/lib/prompts/nutrition.ts",
+      "contentHash": "5648d654edbdbca4e8c5c84b21aa88fab5e6de07af900381c45eab984a113327",
+      "functions": [
+        {
+          "name": "buildNutritionUserPrompt",
+          "params": [
+            "profile",
+            "targets"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../types",
+          "specifiers": [
+            "AthleteProfile",
+            "MacroTargets"
+          ]
+        }
+      ],
+      "exports": [
+        "NUTRITION_SYSTEM_PROMPT",
+        "buildNutritionUserPrompt"
+      ],
+      "totalLines": 54,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/prompts/program.ts": {
+      "filePath": "src/lib/prompts/program.ts",
+      "contentHash": "9bbd8f871cac2929a16cda950f1412560d5fdcdabe3354be17dc5d09a384020d",
+      "functions": [
+        {
+          "name": "buildProgramUserPrompt",
+          "params": [
+            "profile"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 63
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        },
+        {
+          "source": "../programming",
+          "specifiers": [
+            "stagePlan"
+          ]
+        }
+      ],
+      "exports": [
+        "PROGRAM_SYSTEM_PROMPT",
+        "buildProgramUserPrompt"
+      ],
+      "totalLines": 109,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/types.ts": {
+      "filePath": "src/lib/types.ts",
+      "contentHash": "814dbefa8513d59cec121df067128149ddbc8f26ed0fc4aa5fb3fb9cf934fe4f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 244,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/velocity.ts": {
+      "filePath": "src/lib/velocity.ts",
+      "contentHash": "6835541fdeafd5c73a556c8e6619cf8446f48f163e826f98354e78866562a056",
+      "functions": [
+        {
+          "name": "curveFor",
+          "params": [
+            "lift"
+          ],
+          "returnType": "[number, number][]",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "clampRpe",
+          "params": [
+            "v"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "rirFromLoss",
+          "params": [
+            "lossPct",
+            "lift"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "genericRpeFromLoss",
+          "params": [
+            "lossPct",
+            "lift"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "linFit",
+          "params": [
+            "pts"
+          ],
+          "returnType": "{ a: number; b: number; resStd: number } | null",
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "estimateRpe",
+          "params": [
+            "lossPct",
+            "history",
+            "lift"
+          ],
+          "returnType": "RpeEstimate",
+          "exported": true,
+          "lineCount": 42
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./types",
+          "specifiers": [
+            "LiftType",
+            "RpeConfidence",
+            "RpeEstimate"
+          ]
+        }
+      ],
+      "exports": [
+        "rirFromLoss",
+        "genericRpeFromLoss",
+        "estimateRpe"
+      ],
+      "totalLines": 127,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/layout.tsx": {
+      "filePath": "src/app/(app)/layout.tsx",
+      "contentHash": "0d8f1c91457b30b346c317a953eb6efdd0bd01e261e7650b9b00d17de2d66e77",
+      "functions": [
+        {
+          "name": "AppLayout",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "redirect"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "getSession"
+          ]
+        },
+        {
+          "source": "@/components/layout/AppShell",
+          "specifiers": [
+            "AppShell"
+          ]
+        }
+      ],
+      "exports": [
+        "AppLayout"
+      ],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/program/LogSessionModal.tsx": {
+      "filePath": "src/app/(app)/program/LogSessionModal.tsx",
+      "contentHash": "aa01ba910c227d1ffe1df330feb658687690b266ffbaa8146bc0f713c6425f52",
+      "functions": [
+        {
+          "name": "LogSessionModal",
+          "params": [
+            "{\n  day,\n  weekNumber,\n  unit,\n  onClose,\n}"
+          ],
+          "exported": true,
+          "lineCount": 162
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "useRouter"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "X"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "ProgramDay"
+          ]
+        }
+      ],
+      "exports": [
+        "LogSessionModal"
+      ],
+      "totalLines": 180,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/program/ProgramView.tsx": {
+      "filePath": "src/app/(app)/program/ProgramView.tsx",
+      "contentHash": "b7d93bcd677affa3878c7c9aa28f19385ec701853932ccc38c0c4639b53529ac",
+      "functions": [
+        {
+          "name": "ProgramView",
+          "params": [
+            "{\n  profile,\n  program,\n  currentWeek,\n  programId,\n}"
+          ],
+          "exported": true,
+          "lineCount": 120
+        },
+        {
+          "name": "DayCard",
+          "params": [
+            "{\n  day,\n  weekNumber,\n  unit,\n  onLog,\n  adjustments,\n}"
+          ],
+          "exported": false,
+          "lineCount": 58
+        },
+        {
+          "name": "ExerciseRow",
+          "params": [
+            "{\n  exercise,\n  unit,\n  adjustment,\n}"
+          ],
+          "exported": false,
+          "lineCount": 93
+        },
+        {
+          "name": "guessLiftType",
+          "params": [
+            "day"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useState"
+          ]
+        },
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "ChevronDown",
+            "Video",
+            "Zap",
+            "AlertTriangle"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/RPEBadge",
+          "specifiers": [
+            "RPEBadge"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "Program",
+            "ProgramDay",
+            "Exercise"
+          ]
+        },
+        {
+          "source": "./LogSessionModal",
+          "specifiers": [
+            "LogSessionModal"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgramView"
+      ],
+      "totalLines": 313,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/program/page.tsx": {
+      "filePath": "src/app/(app)/program/page.tsx",
+      "contentHash": "c11a910fb5898d3efbf776260d39efc8ce8a63ade414a7d4c260edb142a209b7",
+      "functions": [
+        {
+          "name": "ProgramPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 39
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "Program"
+          ]
+        },
+        {
+          "source": "./ProgramView",
+          "specifiers": [
+            "ProgramView"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgramPage"
+      ],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/login/page.tsx": {
+      "filePath": "src/app/login/page.tsx",
+      "contentHash": "de95c502623154de539103c87bebdce6b12aba0b9251589d64f2599b302ebcd4",
+      "functions": [
+        {
+          "name": "LoginPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "useRouter"
+          ]
+        },
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/Input",
+          "specifiers": [
+            "Input"
+          ]
+        },
+        {
+          "source": "@/components/ui/LiftlyLogo",
+          "specifiers": [
+            "LiftlyLogo"
+          ]
+        }
+      ],
+      "exports": [
+        "LoginPage"
+      ],
+      "totalLines": 77,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/onboarding/OnboardingWizard.tsx": {
+      "filePath": "src/app/onboarding/OnboardingWizard.tsx",
+      "contentHash": "ed6fe7e5185abe9a072616b87b7a1a6fb6f92fbbeb1c5280bf113037822f6d5b",
+      "functions": [
+        {
+          "name": "OnboardingWizard",
+          "params": [
+            "{ email, initialName }"
+          ],
+          "exported": true,
+          "lineCount": 96
+        },
+        {
+          "name": "StepHeader",
+          "params": [
+            "{ num, title, subtitle }"
+          ],
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "Step1",
+          "params": [
+            "{ profile, update }"
+          ],
+          "exported": false,
+          "lineCount": 84
+        },
+        {
+          "name": "Step2",
+          "params": [
+            "{ profile, update }"
+          ],
+          "exported": false,
+          "lineCount": 108
+        },
+        {
+          "name": "Step3",
+          "params": [
+            "{ profile, update }"
+          ],
+          "exported": false,
+          "lineCount": 48
+        },
+        {
+          "name": "Step4",
+          "params": [
+            "{ profile, update }"
+          ],
+          "exported": false,
+          "lineCount": 64
+        },
+        {
+          "name": "Step5",
+          "params": [
+            "{ profile }"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "Row",
+          "params": [
+            "{ k, v }"
+          ],
+          "exported": false,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "useRouter"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/Input",
+          "specifiers": [
+            "Input",
+            "Select",
+            "Textarea"
+          ]
+        },
+        {
+          "source": "@/components/ui/PlateSpinner",
+          "specifiers": [
+            "PlateSpinner"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        }
+      ],
+      "exports": [
+        "OnboardingWizard"
+      ],
+      "totalLines": 497,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/onboarding/page.tsx": {
+      "filePath": "src/app/onboarding/page.tsx",
+      "contentHash": "9a6e199c43f5647bf7f1989705349a502f6be77d94df1e1e3258f7a52191c3c5",
+      "functions": [
+        {
+          "name": "OnboardingPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "redirect"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "getSession"
+          ]
+        },
+        {
+          "source": "./OnboardingWizard",
+          "specifiers": [
+            "OnboardingWizard"
+          ]
+        }
+      ],
+      "exports": [
+        "OnboardingPage"
+      ],
+      "totalLines": 10,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/page.tsx": {
+      "filePath": "src/app/page.tsx",
+      "contentHash": "2e87c829824aed6c53a922d8b6892140d9228c0fbe0fec488621b0f85682697c",
+      "functions": [
+        {
+          "name": "Landing",
+          "params": [],
+          "exported": true,
+          "lineCount": 55
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "redirect"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "getSession"
+          ]
+        },
+        {
+          "source": "@/components/ui/LiftlyLogo",
+          "specifiers": [
+            "LiftlyLogo"
+          ]
+        }
+      ],
+      "exports": [
+        "Landing"
+      ],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/layout/AppShell.tsx": {
+      "filePath": "src/components/layout/AppShell.tsx",
+      "contentHash": "d017587ff9cc6e7a791d47513fdec3dcf13a2416158d5ebc9597658a38377488",
+      "functions": [
+        {
+          "name": "AppShell",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode"
+          ]
+        },
+        {
+          "source": "@/components/nav/SideNav",
+          "specifiers": [
+            "SideNav"
+          ]
+        },
+        {
+          "source": "@/components/nav/MobileNav",
+          "specifiers": [
+            "MobileNav"
+          ]
+        }
+      ],
+      "exports": [
+        "AppShell"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/nav/MobileNav.tsx": {
+      "filePath": "src/components/nav/MobileNav.tsx",
+      "contentHash": "538439e8a7c73d9c44cd263c3f1430b4c2d2a1d6d2b11d0028c854c4c6ed40a1",
+      "functions": [
+        {
+          "name": "MobileNav",
+          "params": [],
+          "exported": true,
+          "lineCount": 101
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "usePathname"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "LayoutDashboard",
+            "Dumbbell",
+            "Video",
+            "MessageSquare",
+            "MoreHorizontal",
+            "Apple",
+            "TrendingUp",
+            "User",
+            "LogOut",
+            "X"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "MobileNav"
+      ],
+      "totalLines": 135,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/nav/SideNav.tsx": {
+      "filePath": "src/components/nav/SideNav.tsx",
+      "contentHash": "8edffe7f4b7ede5012f5da125bd20de6d29cd08445d22c05d25db0c45927bcd0",
+      "functions": [
+        {
+          "name": "SideNav",
+          "params": [],
+          "exported": true,
+          "lineCount": 48
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "usePathname"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "LayoutDashboard",
+            "Dumbbell",
+            "Video",
+            "Apple",
+            "TrendingUp",
+            "MessageSquare",
+            "User",
+            "LogOut"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/components/ui/LiftlyLogo",
+          "specifiers": [
+            "LiftlyLogo"
+          ]
+        }
+      ],
+      "exports": [
+        "SideNav"
+      ],
+      "totalLines": 75,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/Button.tsx": {
+      "filePath": "src/components/ui/Button.tsx",
+      "contentHash": "bef1842d459232ece042e4e48d10ae05e108759b732f5c86a51d4b4380c9be59",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "ButtonHTMLAttributes",
+            "forwardRef"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Button"
+      ],
+      "totalLines": 55,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/Input.tsx": {
+      "filePath": "src/components/ui/Input.tsx",
+      "contentHash": "2efe563e8fa5546a19090eecd3d1f1df2b6fd00990f35efb41c4086e8e6926bb",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "InputHTMLAttributes",
+            "SelectHTMLAttributes",
+            "TextareaHTMLAttributes",
+            "forwardRef"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Input",
+        "Select",
+        "Textarea"
+      ],
+      "totalLines": 69,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/LiftlyLogo.tsx": {
+      "filePath": "src/components/ui/LiftlyLogo.tsx",
+      "contentHash": "6f909a39a1319be7eba51024f0d91d4f37a933ec003482bd49125a36d69f4f24",
+      "functions": [
+        {
+          "name": "LiftlyLogo",
+          "params": [
+            "{ size = 32, showWordmark = true, className }"
+          ],
+          "exported": true,
+          "lineCount": 42
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "LiftlyLogo"
+      ],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/utils.ts": {
+      "filePath": "src/lib/utils.ts",
+      "contentHash": "1c1847dd04aa90f25fcc5f7b4803b27b541513d04e99f52ea2941ddd588e64e7",
+      "functions": [
+        {
+          "name": "cn",
+          "params": [
+            "...inputs"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "formatWeight",
+          "params": [
+            "weight",
+            "unit"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "fmtDate",
+          "params": [
+            "d"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "clsx",
+          "specifiers": [
+            "clsx",
+            "ClassValue"
+          ]
+        },
+        {
+          "source": "tailwind-merge",
+          "specifiers": [
+            "twMerge"
+          ]
+        }
+      ],
+      "exports": [
+        "cn",
+        "formatWeight",
+        "fmtDate"
+      ],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/dashboard/page.tsx": {
+      "filePath": "src/app/(app)/dashboard/page.tsx",
+      "contentHash": "59a34069149ee9524890a6590ce09532cef32235d57cc23f7e3df62e7d08e151",
+      "functions": [
+        {
+          "name": "Dashboard",
+          "params": [],
+          "exported": true,
+          "lineCount": 192
+        },
+        {
+          "name": "StatBlock",
+          "params": [
+            "{\n  label,\n  value,\n  unit,\n  sublabel,\n}"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "QuickAction",
+          "params": [
+            "{\n  href,\n  icon,\n  label,\n}"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "Row",
+          "params": [
+            "{ k, v }"
+          ],
+          "exported": false,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/link",
+          "specifiers": [
+            "Link"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card",
+            "CardHeader"
+          ]
+        },
+        {
+          "source": "@/components/ui/RPEBadge",
+          "specifiers": [
+            "RPEBadge"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Dumbbell",
+            "Video",
+            "MessageSquare",
+            "Apple",
+            "ArrowRight"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "Program"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "estimatedOneRM"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "fmtDate"
+          ]
+        }
+      ],
+      "exports": [
+        "Dashboard"
+      ],
+      "totalLines": 262,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/formcheck/FormCheckClient.tsx": {
+      "filePath": "src/app/(app)/formcheck/FormCheckClient.tsx",
+      "contentHash": "b0fbb2812b6698fff0ffc1de175cc39938aa6cc83b6e063cdbe5488caa861f32",
+      "functions": [
+        {
+          "name": "FormCheckClient",
+          "params": [
+            "{ initialChecks }"
+          ],
+          "exported": true,
+          "lineCount": 54
+        },
+        {
+          "name": "FormCheckCard",
+          "params": [
+            "{\n  check,\n  onCalibrated,\n}"
+          ],
+          "exported": false,
+          "lineCount": 216
+        },
+        {
+          "name": "LogAsSessionControl",
+          "params": [
+            "{ check }"
+          ],
+          "exported": false,
+          "lineCount": 53
+        },
+        {
+          "name": "RepTable",
+          "params": [
+            "{ cv }"
+          ],
+          "exported": false,
+          "lineCount": 46
+        },
+        {
+          "name": "CalibrateControl",
+          "params": [
+            "{\n  formCheckId,\n  current,\n  onDone,\n}"
+          ],
+          "exported": false,
+          "lineCount": 70
+        },
+        {
+          "name": "SectionTitle",
+          "params": [
+            "{ children }"
+          ],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "Block",
+          "params": [
+            "{\n  title,\n  children,\n  accent,\n}"
+          ],
+          "exported": false,
+          "lineCount": 22
+        },
+        {
+          "name": "UploadModal",
+          "params": [
+            "{\n  onClose,\n  onSuccess,\n}"
+          ],
+          "exported": false,
+          "lineCount": 176
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState",
+            "useRef"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "useRouter"
+          ]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": [
+            "Upload",
+            "X",
+            "AlertTriangle",
+            "Check",
+            "ChevronRight",
+            "ChevronDown"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/Input",
+          "specifiers": [
+            "Select",
+            "Textarea",
+            "Input"
+          ]
+        },
+        {
+          "source": "@/components/ui/RPEBadge",
+          "specifiers": [
+            "RPEBadge"
+          ]
+        },
+        {
+          "source": "@/components/ui/PlateSpinner",
+          "specifiers": [
+            "PlateSpinner"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "FormCheckResult",
+            "CvAnalysis",
+            "RpeConfidence"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "fmtDate"
+          ]
+        }
+      ],
+      "exports": [
+        "FormCheckClient"
+      ],
+      "totalLines": 694,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/formcheck/page.tsx": {
+      "filePath": "src/app/(app)/formcheck/page.tsx",
+      "contentHash": "b35acbaa1c58a99dad93354cedc399effd909864e9608245fce6086f0e25d13a",
+      "functions": [
+        {
+          "name": "FormCheckPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "Suspense"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "./FormCheckClient",
+          "specifiers": [
+            "FormCheckClient"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "FormCheckResult"
+          ]
+        }
+      ],
+      "exports": [
+        "FormCheckPage"
+      ],
+      "totalLines": 52,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/nutrition/NutritionView.tsx": {
+      "filePath": "src/app/(app)/nutrition/NutritionView.tsx",
+      "contentHash": "1b295fd00d922053e17f3eaa3b4ce97471c7d890c8914643958c4f627b4b284a",
+      "functions": [
+        {
+          "name": "NutritionView",
+          "params": [
+            "{\n  profile,\n  targets,\n}"
+          ],
+          "exported": true,
+          "lineCount": 187
+        },
+        {
+          "name": "Row",
+          "params": [
+            "{ label, g, pct, dot }"
+          ],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "Mini",
+          "params": [
+            "{ title, body }"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "Supp",
+          "params": [
+            "{\n  name,\n  dose,\n  evidence,\n  note,\n}"
+          ],
+          "exported": false,
+          "lineCount": 24
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card",
+            "CardHeader"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/PlateSpinner",
+          "specifiers": [
+            "PlateSpinner"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "MacroTargets",
+            "MealPlan"
+          ]
+        }
+      ],
+      "exports": [
+        "NutritionView"
+      ],
+      "totalLines": 243,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/nutrition/page.tsx": {
+      "filePath": "src/app/(app)/nutrition/page.tsx",
+      "contentHash": "fc07d413b913aef43f4b39138c5c7df8000ae7f184b11d6e8d47be45cb855a33",
+      "functions": [
+        {
+          "name": "NutritionPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "macroTargets"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        },
+        {
+          "source": "./NutritionView",
+          "specifiers": [
+            "NutritionView"
+          ]
+        }
+      ],
+      "exports": [
+        "NutritionPage"
+      ],
+      "totalLines": 17,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/progress/ProgressView.tsx": {
+      "filePath": "src/app/(app)/progress/ProgressView.tsx",
+      "contentHash": "6a14cbb57f41db2a2fb6c4028f0f41098d7082057653a695d11db17c921444af",
+      "functions": [
+        {
+          "name": "ProgressView",
+          "params": [
+            "{\n  profile,\n  e1rms,\n  bw,\n  volume,\n}"
+          ],
+          "exported": true,
+          "lineCount": 174
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "recharts",
+          "specifiers": [
+            "Line",
+            "LineChart",
+            "CartesianGrid",
+            "XAxis",
+            "YAxis",
+            "Tooltip",
+            "ResponsiveContainer",
+            "BarChart",
+            "Bar",
+            "Legend"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card",
+            "CardHeader"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressView"
+      ],
+      "totalLines": 214,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/progress/page.tsx": {
+      "filePath": "src/app/(app)/progress/page.tsx",
+      "contentHash": "f53dcd6fd53019dad5fe13ec830c253fb6e787d4654fe8f23b7323c81a814f7a",
+      "functions": [
+        {
+          "name": "ProgressPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "estimatedOneRM"
+          ]
+        },
+        {
+          "source": "./ProgressView",
+          "specifiers": [
+            "ProgressView"
+          ]
+        }
+      ],
+      "exports": [
+        "ProgressPage"
+      ],
+      "totalLines": 111,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/session/log-from-formcheck/route.ts": {
+      "filePath": "src/app/api/session/log-from-formcheck/route.ts",
+      "contentHash": "19b745455d936dcaa62ef8a3423d53c2d8b5dd9b47af9610945a390e972d244a",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "toLbs"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile",
+            "CvAnalysis"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 110,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/Card.tsx": {
+      "filePath": "src/components/ui/Card.tsx",
+      "contentHash": "9823e7d0624cd46fa8a4735411e00d07bc879d564d3bda5fb4ecd8f972b449d4",
+      "functions": [
+        {
+          "name": "Card",
+          "params": [
+            "{ className, children, ...rest }"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "CardHeader",
+          "params": [
+            "{\n  title,\n  subtitle,\n  accent = false,\n}"
+          ],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "HTMLAttributes"
+          ]
+        },
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Card",
+        "CardHeader"
+      ],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/PlateSpinner.tsx": {
+      "filePath": "src/components/ui/PlateSpinner.tsx",
+      "contentHash": "dff1de9800ae63e495253b8a74d580c9b4da8d4c1a87b3030e81d2665e428aa8",
+      "functions": [
+        {
+          "name": "PlateSpinner",
+          "params": [
+            "{ label }"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "PlateSpinner"
+      ],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "src/components/ui/RPEBadge.tsx": {
+      "filePath": "src/components/ui/RPEBadge.tsx",
+      "contentHash": "5d6c6fafe6bdf1efb6a2f4dde516133e19697295f13431226a1ec3040bd8fc7e",
+      "functions": [
+        {
+          "name": "RPEBadge",
+          "params": [
+            "{ rpe, className }"
+          ],
+          "exported": true,
+          "lineCount": 21
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/utils",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@/lib/calculations",
+          "specifiers": [
+            "rpeColor"
+          ]
+        }
+      ],
+      "exports": [
+        "RPEBadge"
+      ],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/calculations.ts": {
+      "filePath": "src/lib/calculations.ts",
+      "contentHash": "3843e57013f9989f8e6f03f33d589213f77ba4552ecadda8b49f7ed705ecd063",
+      "functions": [
+        {
+          "name": "toKg",
+          "params": [
+            "weight",
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "toLbs",
+          "params": [
+            "weight",
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "parseHeightCm",
+          "params": [
+            "h"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "mifflin",
+          "params": [
+            "profile"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "katch",
+          "params": [
+            "profile",
+            "bodyFatPct"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "bmr",
+          "params": [
+            "profile"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "activityMultiplier",
+          "params": [
+            "daysPerWeek"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "tdee",
+          "params": [
+            "profile"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "phaseAdjustment",
+          "params": [
+            "profile"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "macroTargets",
+          "params": [
+            "profile"
+          ],
+          "returnType": "MacroTargets",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "epley",
+          "params": [
+            "weight",
+            "reps"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "brzycki",
+          "params": [
+            "weight",
+            "reps"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "estimatedOneRM",
+          "params": [
+            "weight",
+            "reps"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "rpePercent",
+          "params": [
+            "reps",
+            "rpe"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "suggestWeight",
+          "params": [
+            "oneRM",
+            "reps",
+            "targetRPE",
+            "unit"
+          ],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "noviceMaxEstimate",
+          "params": [
+            "profile"
+          ],
+          "returnType": "{\n  squat: number;\n  bench: number;\n  deadlift: number;\n}",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "rpeColor",
+          "params": [
+            "rpe"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./types",
+          "specifiers": [
+            "AthleteProfile",
+            "MacroTargets",
+            "Unit"
+          ]
+        }
+      ],
+      "exports": [
+        "LB_PER_KG",
+        "toKg",
+        "toLbs",
+        "parseHeightCm",
+        "mifflin",
+        "katch",
+        "bmr",
+        "activityMultiplier",
+        "tdee",
+        "phaseAdjustment",
+        "macroTargets",
+        "epley",
+        "brzycki",
+        "estimatedOneRM",
+        "rpePercent",
+        "suggestWeight",
+        "noviceMaxEstimate",
+        "rpeColor"
+      ],
+      "totalLines": 194,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/init-db.ts": {
+      "filePath": "scripts/init-db.ts",
+      "contentHash": "1ab683f4a4a7c36c1e587e354ce77dd47a679d36ae7b8534fcb54e52ca5a7d12",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../src/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/profile/ProfileView.tsx": {
+      "filePath": "src/app/(app)/profile/ProfileView.tsx",
+      "contentHash": "fe2144b0e4062deb6aef7b7d2c080d4ddb9a79a6902943815cb3d7594f85729c",
+      "functions": [
+        {
+          "name": "ProfileView",
+          "params": [
+            "{ profile, email }"
+          ],
+          "exported": true,
+          "lineCount": 182
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "next/navigation",
+          "specifiers": [
+            "useRouter"
+          ]
+        },
+        {
+          "source": "@/components/ui/Card",
+          "specifiers": [
+            "Card",
+            "CardHeader"
+          ]
+        },
+        {
+          "source": "@/components/ui/Button",
+          "specifiers": [
+            "Button"
+          ]
+        },
+        {
+          "source": "@/components/ui/Input",
+          "specifiers": [
+            "Input",
+            "Select",
+            "Textarea"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        }
+      ],
+      "exports": [
+        "ProfileView"
+      ],
+      "totalLines": 191,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/(app)/profile/page.tsx": {
+      "filePath": "src/app/(app)/profile/page.tsx",
+      "contentHash": "ea7e4419f45fe3fab83d2b52fad1be25bd8e274cc7dc264e5115f9f1e4df29a8",
+      "functions": [
+        {
+          "name": "ProfilePage",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        },
+        {
+          "source": "@/lib/types",
+          "specifiers": [
+            "AthleteProfile"
+          ]
+        },
+        {
+          "source": "./ProfileView",
+          "specifiers": [
+            "ProfileView"
+          ]
+        }
+      ],
+      "exports": [
+        "ProfilePage"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/auth/login/route.ts": {
+      "filePath": "src/app/api/auth/login/route.ts",
+      "contentHash": "eef6eac45501ff2970d8dda741a5b09d451aac858c06d9f6acad1a955d114fdf",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "getOrCreateAthlete",
+            "setSession"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/auth/logout/route.ts": {
+      "filePath": "src/app/api/auth/logout/route.ts",
+      "contentHash": "bf41588cbada034f6a5621c52bdefd54b83f579d10b9205aeef3425d1ea3ee0d",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "clearSession"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/formcheck/calibrate/route.ts": {
+      "filePath": "src/app/api/formcheck/calibrate/route.ts",
+      "contentHash": "3a41ed9604af95b022ee64c0918dc5663139c74d79ccedfda02da74ccdfae8cc",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 58,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/api/session/log/route.ts": {
+      "filePath": "src/app/api/session/log/route.ts",
+      "contentHash": "3754c8cc19a5e7396497675e2c832a43954df3b9d1faee4370f20cbcff63712c",
+      "functions": [
+        {
+          "name": "POST",
+          "params": [
+            "req"
+          ],
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/server",
+          "specifiers": [
+            "NextRequest",
+            "NextResponse"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "@/lib/auth",
+          "specifiers": [
+            "requireSession"
+          ]
+        },
+        {
+          "source": "@/lib/db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        }
+      ],
+      "exports": [
+        "POST"
+      ],
+      "totalLines": 64,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/auth.ts": {
+      "filePath": "src/lib/auth.ts",
+      "contentHash": "4a646b13cb2aeced92922b63dbebd646062398858db457657924b2d0e6d3be2b",
+      "functions": [
+        {
+          "name": "getOrCreateAthlete",
+          "params": [
+            "email",
+            "name"
+          ],
+          "returnType": "SessionAthlete",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "setSession",
+          "params": [
+            "athleteId"
+          ],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "clearSession",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "getSession",
+          "params": [],
+          "returnType": "Promise<SessionAthlete | null>",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "requireSession",
+          "params": [],
+          "returnType": "Promise<SessionAthlete>",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next/headers",
+          "specifiers": [
+            "cookies"
+          ]
+        },
+        {
+          "source": "./db",
+          "specifiers": [
+            "getDb",
+            "uuid"
+          ]
+        }
+      ],
+      "exports": [
+        "getOrCreateAthlete",
+        "setSession",
+        "clearSession",
+        "getSession",
+        "requireSession"
+      ],
+      "totalLines": 82,
+      "hasStructuralAnalysis": true
+    },
+    "src/lib/db.ts": {
+      "filePath": "src/lib/db.ts",
+      "contentHash": "491ee9e0f51e564c7c61af4623814010542de5e4bb8b87e6fd186c19f639ea2a",
+      "functions": [
+        {
+          "name": "getDb",
+          "params": [],
+          "returnType": "Database.Database",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "ensureSchema",
+          "params": [
+            "db"
+          ],
+          "exported": false,
+          "lineCount": 93
+        },
+        {
+          "name": "relaxVelocityLogMcv",
+          "params": [
+            "db"
+          ],
+          "exported": false,
+          "lineCount": 39
+        },
+        {
+          "name": "addColumnIfMissing",
+          "params": [
+            "db",
+            "table",
+            "column",
+            "type"
+          ],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "uuid",
+          "params": [],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-sqlite3",
+          "specifiers": [
+            "Database"
+          ]
+        },
+        {
+          "source": "node:path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "node:fs",
+          "specifiers": [
+            "fs"
+          ]
+        }
+      ],
+      "exports": [
+        "getDb",
+        "uuid"
+      ],
+      "totalLines": 175,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/analysis.py": {
+      "filePath": "cv-service/analysis.py",
+      "contentHash": "869b90bed2cb8edcbc6d571e9d3b17f912c2cdf71a9e3479d4c461f0d8d0745d",
+      "functions": [
+        {
+          "name": "_rir_from_loss",
+          "params": [
+            "loss_pct",
+            "lift"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "_hampel",
+          "params": [
+            "x",
+            "win",
+            "nsig"
+          ],
+          "returnType": "np.ndarray",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "_finite_fill",
+          "params": [
+            "arr"
+          ],
+          "returnType": "np.ndarray",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "_smooth",
+          "params": [
+            "sig",
+            "fps"
+          ],
+          "returnType": "np.ndarray",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_clean_signal",
+          "params": [
+            "raw",
+            "fps"
+          ],
+          "returnType": "np.ndarray",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "_angle",
+          "params": [
+            "a",
+            "b",
+            "c"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "analyze_lift",
+          "params": [
+            "track",
+            "lift",
+            "bar_px",
+            "plate_r"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 246
+        },
+        {
+          "name": "_bench_notes",
+          "params": [
+            "reps",
+            "hip_stab",
+            "shoulder_stab",
+            "foot_mv"
+          ],
+          "returnType": "tuple[list[str], str]",
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "_squat_notes",
+          "params": [
+            "reps",
+            "hip_stab",
+            "foot_mv"
+          ],
+          "returnType": "tuple[list[str], str]",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "_deadlift_notes",
+          "params": [
+            "reps",
+            "hip_stab",
+            "foot_mv"
+          ],
+          "returnType": "tuple[list[str], str]",
+          "exported": true,
+          "lineCount": 43
+        },
+        {
+          "name": "_effort_and_form",
+          "params": [
+            "reps",
+            "B",
+            "torso",
+            "up",
+            "barX",
+            "fps",
+            "lift"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "_render_overlay",
+          "params": [
+            "track",
+            "path_px",
+            "plate_r"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "classes": [
+        {
+          "name": "_Body",
+          "methods": [
+            "__init__",
+            "j",
+            "mid",
+            "best"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 26
+        }
+      ],
+      "imports": [
+        {
+          "source": "base64",
+          "specifiers": [
+            "base64"
+          ]
+        },
+        {
+          "source": "cv2",
+          "specifiers": [
+            "cv2"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "scipy.signal",
+          "specifiers": [
+            "find_peaks",
+            "savgol_filter"
+          ]
+        },
+        {
+          "source": "pose",
+          "specifiers": [
+            "P"
+          ]
+        }
+      ],
+      "exports": [
+        "_rir_from_loss",
+        "_hampel",
+        "_finite_fill",
+        "_smooth",
+        "_clean_signal",
+        "_angle",
+        "_Body",
+        "analyze_lift",
+        "_bench_notes",
+        "_squat_notes",
+        "_deadlift_notes",
+        "_effort_and_form",
+        "_render_overlay"
+      ],
+      "totalLines": 633,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/app.py": {
+      "filePath": "cv-service/app.py",
+      "contentHash": "ef663543eccc0cdd534188f46c3851016c571194e967d284b95c643799cd5c41",
+      "functions": [
+        {
+          "name": "health",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "analyze",
+          "params": [
+            "video",
+            "lift"
+          ],
+          "returnType": "JSONResponse",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "_json_safe",
+          "params": [
+            "o"
+          ],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "tempfile",
+          "specifiers": [
+            "tempfile"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "fastapi",
+          "specifiers": [
+            "FastAPI",
+            "Form",
+            "HTTPException",
+            "UploadFile"
+          ]
+        },
+        {
+          "source": "fastapi.responses",
+          "specifiers": [
+            "JSONResponse"
+          ]
+        },
+        {
+          "source": "analysis",
+          "specifiers": [
+            "analyze_lift"
+          ]
+        },
+        {
+          "source": "bar",
+          "specifiers": [
+            "track_bar"
+          ]
+        },
+        {
+          "source": "pose",
+          "specifiers": [
+            "track_pose"
+          ]
+        }
+      ],
+      "exports": [
+        "health",
+        "analyze",
+        "_json_safe"
+      ],
+      "totalLines": 95,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/bar.py": {
+      "filePath": "cv-service/bar.py",
+      "contentHash": "43fee316c076011c9a4ef7591868fe15b3b4bb3233e42a2597685b1c45b5f528",
+      "functions": [
+        {
+          "name": "_csrt",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "_wrist_and_scale",
+          "params": [
+            "pose"
+          ],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "_hough_near",
+          "params": [
+            "gray",
+            "cx",
+            "cy",
+            "half",
+            "rmin",
+            "rmax"
+          ],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "track_bar",
+          "params": [
+            "video_path",
+            "pose"
+          ],
+          "returnType": "BarTrack",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "_track_bar",
+          "params": [
+            "video_path",
+            "pose"
+          ],
+          "returnType": "BarTrack",
+          "exported": true,
+          "lineCount": 139
+        },
+        {
+          "name": "_smooth_enough",
+          "params": [
+            "bar",
+            "R"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 12
+        }
+      ],
+      "classes": [
+        {
+          "name": "BarTrack",
+          "methods": [
+            "__init__"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "imports": [
+        {
+          "source": "cv2",
+          "specifiers": [
+            "cv2"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "pose",
+          "specifiers": [
+            "P"
+          ]
+        }
+      ],
+      "exports": [
+        "BarTrack",
+        "_csrt",
+        "_wrist_and_scale",
+        "_hough_near",
+        "track_bar",
+        "_track_bar",
+        "_smooth_enough"
+      ],
+      "totalLines": 242,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/diag_pose.py": {
+      "filePath": "cv-service/diag_pose.py",
+      "contentHash": "c91a488021953c6bea994c9008936f1b4406555732fdea402362d404e583efb2",
+      "functions": [
+        {
+          "name": "unrotate",
+          "params": [
+            "xr",
+            "yr",
+            "code"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "make_image_landmarker",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "diag",
+          "params": [
+            "path",
+            "step"
+          ],
+          "exported": true,
+          "lineCount": 54
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "cv2",
+          "specifiers": [
+            "cv2"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "pose",
+          "specifiers": [
+            "P"
+          ]
+        }
+      ],
+      "exports": [
+        "unrotate",
+        "make_image_landmarker",
+        "diag"
+      ],
+      "totalLines": 116,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/download_model.py": {
+      "filePath": "cv-service/download_model.py",
+      "contentHash": "fbb090064ca0667e58764a91d4b63e04c055800c1f2f523de864d7b16dffb49d",
+      "functions": [
+        {
+          "name": "main",
+          "params": [],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "urllib.request",
+          "specifiers": [
+            "urllib.request"
+          ]
+        },
+        {
+          "source": "pose",
+          "specifiers": [
+            "MODEL_PATH",
+            "MODEL_URL"
+          ]
+        }
+      ],
+      "exports": [
+        "main"
+      ],
+      "totalLines": 27,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/pose.py": {
+      "filePath": "cv-service/pose.py",
+      "contentHash": "184831379165b5235a6873ef3e3e495122d327ae7473eeef4f268c1e5324f6d8",
+      "functions": [
+        {
+          "name": "_make_landmarker",
+          "params": [],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "_unrotate_xy",
+          "params": [
+            "xy",
+            "code"
+          ],
+          "returnType": "np.ndarray",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "_candidate",
+          "params": [
+            "xy",
+            "vis",
+            "aspect"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "_cand_wrist_y",
+          "params": [
+            "c"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_detect_in_region",
+          "params": [
+            "landmarker",
+            "frame_bgr",
+            "code",
+            "aspect",
+            "mp",
+            "crop"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 33
+        },
+        {
+          "name": "_detect_candidates",
+          "params": [
+            "landmarker",
+            "frame_bgr",
+            "code",
+            "aspect",
+            "mp"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_lifter_crop",
+          "params": [
+            "xy",
+            "vis",
+            "w",
+            "h"
+          ],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "_lifter_likeness",
+          "params": [
+            "c",
+            "lift"
+          ],
+          "returnType": "float",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_best_rotation",
+          "params": [
+            "frames",
+            "landmarker",
+            "aspect",
+            "lift",
+            "mp"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "select_lifter_track",
+          "params": [
+            "per_frame",
+            "fps",
+            "lift"
+          ],
+          "returnType": "tuple[np.ndarray, np.ndarray, int]",
+          "exported": true,
+          "lineCount": 142
+        },
+        {
+          "name": "track_pose",
+          "params": [
+            "video_path",
+            "lift",
+            "max_frames"
+          ],
+          "returnType": "PoseTrack",
+          "exported": true,
+          "lineCount": 60
+        }
+      ],
+      "classes": [
+        {
+          "name": "PoseTrack",
+          "methods": [
+            "__init__",
+            "coverage",
+            "quality"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 29
+        }
+      ],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "cv2",
+          "specifiers": [
+            "cv2"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        }
+      ],
+      "exports": [
+        "PoseTrack",
+        "_make_landmarker",
+        "_unrotate_xy",
+        "_candidate",
+        "_cand_wrist_y",
+        "_detect_in_region",
+        "_detect_candidates",
+        "_lifter_crop",
+        "_lifter_likeness",
+        "_best_rotation",
+        "select_lifter_track",
+        "track_pose"
+      ],
+      "totalLines": 499,
+      "hasStructuralAnalysis": true
+    },
+    "cv-service/eval_samples.py": {
+      "filePath": "cv-service/eval_samples.py",
+      "contentHash": "6f9899bd85fe18e2405c5b80cc5997dd98e63ac48e2247add1d4e4826a465f7e",
+      "functions": [
+        {
+          "name": "ground_truth_rpe",
+          "params": [
+            "name"
+          ],
+          "returnType": "float | None",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "main",
+          "params": [],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 93
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "argparse",
+          "specifiers": [
+            "argparse"
+          ]
+        },
+        {
+          "source": "base64",
+          "specifiers": [
+            "base64"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "re",
+          "specifiers": [
+            "re"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "traceback",
+          "specifiers": [
+            "traceback"
+          ]
+        }
+      ],
+      "exports": [
+        "ground_truth_rpe",
+        "main"
+      ],
+      "totalLines": 131,
+      "hasStructuralAnalysis": true
+    },
+    "next-env.d.ts": {
+      "filePath": "next-env.d.ts",
+      "contentHash": "9dd9d642cdb87d4d5b3173217e0c45429b3e47a6f5cf5fb0ead6c644ec5fed01",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "next.config.mjs": {
+      "filePath": "next.config.mjs",
+      "contentHash": "b561a9e91f1ec13e230790d2ee6dfdc8904b14d1e1c469bc09a4caba1e1ad5c0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 14,
+      "hasStructuralAnalysis": true
+    },
+    "postcss.config.mjs": {
+      "filePath": "postcss.config.mjs",
+      "contentHash": "e32657baf631d7c5f4dc67b4b2ee0ec8e7d5b3c41860e09cddce7c0377cd80bc",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    "src/app/globals.css": {
+      "filePath": "src/app/globals.css",
+      "contentHash": "55ad6b0cac788aab20ef60c372dcb31f56b71c6dd33209af9013b67dd00fcad4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 149,
+      "hasStructuralAnalysis": false
+    },
+    "src/app/layout.tsx": {
+      "filePath": "src/app/layout.tsx",
+      "contentHash": "3ec84cbec2d10bada972112d6ffb4447ebfdbdbe5493997b62c5ff975889d431",
+      "functions": [
+        {
+          "name": "RootLayout",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "next",
+          "specifiers": [
+            "Metadata"
+          ]
+        },
+        {
+          "source": "next/font/google",
+          "specifiers": [
+            "Space_Grotesk",
+            "Inter",
+            "JetBrains_Mono"
+          ]
+        },
+        {
+          "source": "./globals.css",
+          "specifiers": []
+        }
+      ],
+      "exports": [
+        "metadata",
+        "RootLayout"
+      ],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "tailwind.config.ts": {
+      "filePath": "tailwind.config.ts",
+      "contentHash": "453a78c4931b0a0bc3b1124bd98a92852d6bea704c4570a4d37d33badc975799",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "tailwindcss",
+          "specifiers": [
+            "Config"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 89,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

@@ -41,7 +41,7 @@ _LOSS_RIR_DEADLIFT = _LOSS_RIR_SQUAT  # very similar grind profile
 # Per-lift rep segmentation: thresholds that match each lift's actual tempo,
 # so e.g. a 0.33s "concentric" can't survive as a squat rep.
 _SEG_PARAMS = {
-    "bench":    {"conc_min": 0.15, "conc_max": 6.0,  "desc_min": 0.10, "desc_max": 9.0,  "prom_frac": 0.35, "min_gap_s": 0.40},
+    "bench":    {"conc_min": 0.25, "conc_max": 6.0,  "desc_min": 0.12, "desc_max": 9.0,  "prom_frac": 0.35, "min_gap_s": 0.40},
     "squat":    {"conc_min": 0.50, "conc_max": 8.0,  "desc_min": 0.40, "desc_max": 8.0,  "prom_frac": 0.50, "min_gap_s": 1.50},
     "deadlift": {"conc_min": 0.50, "conc_max": 10.0, "desc_min": 0.30, "desc_max": 10.0, "prom_frac": 0.50, "min_gap_s": 1.50},
 }
@@ -234,23 +234,33 @@ def analyze_lift(
         peak_speed = float(np.max(np.abs(vy[start : end + 1]))) or 1e-6
         thr = 0.10 * peak_speed  # "the bar is clearly moving" threshold
 
-        # Descent timer STARTS when the bar actually starts moving down
-        # (not while it's still parked at lockout / being unracked).
-        descent_start = start
-        while descent_start < b and vy[descent_start] > -thr:
-            descent_start += 1
         # Pause = near-stationary window bracketing the chest touch.
         ps = b
-        while ps > descent_start and abs(vy[ps - 1]) < thr:
+        while ps > start and abs(vy[ps - 1]) < thr:
             ps -= 1
         pe = b
         while pe < end and abs(vy[pe + 1]) < thr:
             pe += 1
-        # Concentric ENDS at full extension = highest bar point after it
-        # leaves the chest (arms locked out).
-        ls = pe + int(np.argmax(up[pe : end + 1]))
-        if ls <= pe:
-            ls = end
+        # Descent = the controlled lowering INTO the chest. Walk back from the
+        # pause while the bar is genuinely moving down, so the unrack and the
+        # lockout hold before it aren't counted (that's the rep-1 "7s descent"
+        # bug — the unrack lowering was being swallowed in).
+        descent_start = ps
+        while descent_start > start and vy[descent_start - 1] <= -thr:
+            descent_start -= 1
+        # Concentric ENDS at lockout = the end of the FIRST upward drive: the
+        # bar has risen most of the way AND its velocity has dropped back to
+        # ~0. Whatever happens after that — a hold, then the re-rack UP to the
+        # hooks (which sit ABOVE lockout) — is not part of the rep. Taking the
+        # global highest point instead is what let the re-rack inflate the
+        # last rep's concentric time (and wreck the RPE).
+        press_top = pe + int(np.argmax(up[pe : end + 1]))
+        press_rise = float(up[press_top] - up[pe]) or 1e-6
+        ls = press_top
+        for f in range(pe + 1, press_top + 1):
+            if up[f] - up[pe] >= 0.6 * press_rise and vy[f] <= thr:
+                ls = f
+                break
 
         concentric_s = (ls - pe) / fps                 # chest -> arms locked
         descent_s = (ps - descent_start) / fps          # starts moving down -> chest
@@ -324,6 +334,7 @@ def analyze_lift(
                 "pauseS": round(pause_s, 3),
                 "concentricS": round(concentric_s, 3),
                 "romTorso": round(rep_rom / torso, 3),
+                "concRiseTorso": round(rise / torso, 3),
                 "barDriftTorso": round(drift / torso, 3),
                 "towardShoulderTorso": round(toward_shoulder / torso, 3),
                 "curveRatio": round(curve_ratio, 3),
@@ -346,30 +357,33 @@ def analyze_lift(
             }
         )
 
-    summary = _effort_and_form(reps, B, torso, up, barX, fps, lift)
+    reps = _drop_bogus_reps(reps, lift)
+    for i, r in enumerate(reps, 1):
+        r["index"] = i
+    summary = _effort_and_form(reps, B, torso, up, barX, fps, lift, coverage=track.coverage)
 
     # Draw the SAME smoothed path the analysis used (back to pixels), so the
     # overlay matches the numbers instead of looking like a scribble.
     path_px = np.column_stack([(barX / aspect) * w, (-up) * h])
     overlay = _render_overlay(track, path_px, plate_r if bar_source == "plate" else 0.0)
 
-    if bar_source == "wrist":
+    if bar_source == "wrist" and lift != "bench":
         warnings.append(
             "Couldn't lock the plate near the hands — fell back to wrist "
             "tracking, which is less accurate. Keep the bar/plate clearly lit "
             "and in frame."
         )
     if not reps:
-        if bar_source == "wrist":
+        if track.coverage < 0.5:
             warnings.append(
-                "Couldn't read clean reps — the plate couldn't be locked and "
-                "the wrist signal was too noisy. Best results: side / foot-of-"
-                "bench angle, the loaded plate fully in frame and well lit, "
-                "camera steady."
+                "Couldn't read clean reps — the lifter was only tracked in "
+                f"{round(track.coverage * 100)}% of frames. Best results: film "
+                "from the side or foot of the bench with the whole body and the "
+                "full lift (unrack -> re-rack) in frame, well lit and steady."
             )
         else:
             warnings.append(
-                "Tracked the bar but couldn't isolate distinct reps — make "
+                "Tracked the lifter but couldn't isolate distinct reps — make "
                 "sure the whole lift (unrack -> re-rack) is in frame."
             )
 
@@ -527,7 +541,37 @@ def _deadlift_notes(reps, hip_stab, foot_mv) -> tuple[list[str], str]:
     return notes, bar_note
 
 
-def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift) -> dict:
+def _drop_bogus_reps(reps: list[dict], lift: str) -> list[dict]:
+    """Remove segments that can't be real reps before they poison the effort
+    read: a collapsed/partial ROM, or an impossibly fast concentric (a pose
+    teleport, e.g. a 1.9-torso press in 0.37 s). Keep the original list if
+    filtering would leave fewer than two reps — better a rough read than none."""
+    if len(reps) <= 2:
+        return reps
+    rom = np.array([r["romTorso"] for r in reps], dtype=float)
+    conc = np.array([max(1e-3, r["concentricS"]) for r in reps], dtype=float)
+    vel = rom / conc
+    med_rom = float(np.median(rom)) or 1e-6
+    med_vel = float(np.median(vel)) or 1e-6
+    kept = [
+        r for r, rr, vv in zip(reps, rom, vel)
+        if rr >= 0.5 * med_rom and vv <= 2.2 * med_vel
+    ]
+    if len(kept) < 2:
+        kept = list(reps)
+    # Trim leading unrack/settle "reps" (BENCH only — a deadlift legitimately
+    # starts from the floor with no eccentric). On bench the unrack produces a
+    # leading segment with a near-zero descent (and an oversized rise as the
+    # bar drops from the rack); it reads as a fast, fresh rep and fakes a big
+    # velocity loss, so drop those off the front.
+    if lift == "bench":
+        med_desc = float(np.median([r["descentS"] for r in kept])) or 1e-6
+        while len(kept) > 2 and kept[0]["descentS"] < 0.4 * med_desc:
+            kept.pop(0)
+    return kept
+
+
+def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift, coverage=1.0) -> dict:
     if not reps:
         return {
             "repCount": 0,
@@ -539,27 +583,50 @@ def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift) -> dict:
             "formNotes": [],
         }
 
+    # Effort = velocity loss across the set. Per-rep MEAN CONCENTRIC VELOCITY
+    # uses the press rise (chest -> lockout), NOT the full-span ROM: the span
+    # of the first reps absorbs the unrack travel, which made them look huge
+    # and fast and faked a big velocity loss. Compare the grindiest rep to a
+    # robust "fresh" speed (75th pct, so one teleport-fast frame can't define
+    # the baseline). Bogus reps were already dropped upstream.
     times = [r["concentricS"] for r in reps]
+    vels = [max(1e-4, r.get("concRiseTorso", r["romTorso"])) / max(1e-3, r["concentricS"])
+            for r in reps]
     t_fast = min(times)
-    t_last = times[-1]
-    loss = (1.0 - t_fast / t_last) * 100.0 if len(times) >= 2 else 0.0
-    loss = max(0.0, loss)
+    # Median = the lifter's typical fresh rep speed; robust to one teleport-fast
+    # frame or a surviving unrack rep defining the baseline.
+    v_fresh = float(np.median(vels)) or 1e-6
+    v_grind = float(min(vels))
+    v_last = vels[-1]
+    # Blend the slowest rep and the last rep: a set that ENDS grinding and one
+    # whose hardest rep was mid-set both signal fatigue, but the last rep is
+    # the truest proximity-to-failure cue.
+    v_end = min(v_last, 0.5 * (v_grind + v_last))
 
-    # The wall: first rep that abruptly jumps vs the previous one.
-    wall = None
-    for i in range(1, len(times)):
-        if times[i] > 1.4 * times[i - 1] and times[i] > 1.3 * t_fast:
-            wall = reps[i]["index"]
-            break
-
-    if len(times) >= 2:
+    # Velocity loss needs at least 3 reps to read a real slowdown TREND. With
+    # 1-2 reps a near-zero loss is ambiguous — it's either a genuinely fresh
+    # light set OR a heavy near-max single/double where every rep is maximal
+    # (no loss but high RPE), and bar speed alone can't tell them apart without
+    # the load. Report no loss so the caller falls back to a wide, honest band
+    # instead of confidently calling a grind "fresh".
+    if len(reps) >= 3:
+        loss = max(0.0, (1.0 - v_end / v_fresh) * 100.0)
         rir = _rir_from_loss(loss, lift)
         rpe = max(4.0, min(10.0, round((10.0 - rir) * 2) / 2))
-        conf = "estimated" if len(times) >= 3 else "rough"
+        # A clean, well-covered set earns "estimated"; sparse pose stays "rough".
+        conf = "estimated" if coverage >= 0.7 else "rough"
     else:
+        loss = None
         rir = None
         rpe = None
         conf = "rough"
+
+    # The wall: first rep that abruptly slows vs the fresh speed.
+    wall = None
+    for i in range(1, len(reps)):
+        if vels[i] < 0.7 * v_fresh and vels[i] < 0.75 * vels[i - 1]:
+            wall = reps[i]["index"]
+            break
 
     for r in reps:
         r["slowdownVsFastestPct"] = round((1.0 - t_fast / r["concentricS"]) * 100.0, 1)
@@ -583,8 +650,8 @@ def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift) -> dict:
         "repCount": len(reps),
         "firstRepConcentricS": round(times[0], 3),
         "fastestRepConcentricS": round(t_fast, 3),
-        "lastRepConcentricS": round(t_last, 3),
-        "velocityLossPct": round(loss, 1),
+        "lastRepConcentricS": round(times[-1], 3),
+        "velocityLossPct": None if loss is None else round(loss, 1),
         "wallRepIndex": wall,
         "rir": rir,
         "rpe": rpe,

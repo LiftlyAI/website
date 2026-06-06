@@ -132,7 +132,7 @@ export default async function Dashboard() {
           <CardHeader title="Today's Session" subtitle={program ? `${program.currentBlock} · Week ${currentWeekNum}` : ''} accent />
           {!program ? (
             <div className="text-sm text-chalk-mute">
-              No program yet. Generation may have failed — try regenerating from{' '}
+              No program yet. Generation may have failed. Try regenerating from{' '}
               <Link href="/profile" className="text-blood underline">
                 Profile
               </Link>
