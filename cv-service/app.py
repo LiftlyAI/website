@@ -16,14 +16,29 @@ import numpy as np
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
+import pose_yolo
 from analysis import analyze_lift
 from bar import track_bar
-from pose import track_pose
 
-app = FastAPI(title="IRON LEDGER CV", version="0.3.0")
+app = FastAPI(title="IRON LEDGER CV", version="0.4.0")
 
 MAX_BYTES = 80 * 1024 * 1024
 SUPPORTED_LIFTS = {"bench", "squat", "deadlift"}
+
+# YOLOv8-pose replaces MediaPipe BlazePose: BlazePose under-detects a lifter who
+# is lying (bench) or bent over (deadlift) in a busy gym and renders a scribble;
+# YOLO detects them reliably (see memory: formcheck-cv-pipeline). The ~133 MB
+# model is loaded once on the first request and reused across requests.
+_pose_model = None
+
+
+def _get_pose_model():
+    global _pose_model
+    if _pose_model is None:
+        from ultralytics import YOLO
+
+        _pose_model = YOLO(pose_yolo.DEFAULT_MODEL)
+    return _pose_model
 
 
 @app.get("/health")
@@ -51,14 +66,18 @@ async def analyze(video: UploadFile, lift: str = Form("bench")) -> JSONResponse:
     try:
         tmp.write(data)
         tmp.close()
-        track = track_pose(tmp.name, lift=lift)
-        bar = track_bar(tmp.name, track)  # direct plate tracking (pose-constrained)
-        result = analyze_lift(
-            track,
-            lift=lift,
-            bar_px=bar.bar_px if bar.found else None,
-            plate_r=bar.radius_px if bar.found else 0.0,
-        )
+        track = pose_yolo.track_pose(tmp.name, lift=lift, model=_get_pose_model())
+        # Bench & deadlift: the hands grip the bar, so the wrist line IS the bar
+        # (unoccluded from the side) — no plate tracker, which only ever rendered
+        # a scribble. Squat: the bar rides on the back, off the hands, so track
+        # the plate directly (pose-constrained).
+        if lift == "squat":
+            bar = track_bar(tmp.name, track)
+            bar_px = bar.bar_px if bar.found else None
+            plate_r = bar.radius_px if bar.found else 0.0
+        else:
+            bar_px, plate_r = None, 0.0
+        result = analyze_lift(track, lift=lift, bar_px=bar_px, plate_r=plate_r)
     except RuntimeError as e:
         # Expected, actionable failures (bad angle, no lifter, missing model).
         raise HTTPException(status_code=422, detail=str(e))

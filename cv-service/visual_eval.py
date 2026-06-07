@@ -183,24 +183,31 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", default=os.path.join(os.path.dirname(__file__), "..", "sample_videos"))
     ap.add_argument("--backend", choices=("yolo", "mediapipe"), default="yolo")
+    ap.add_argument("--lift", choices=("bench", "squat", "deadlift"), default="bench")
     ap.add_argument("--model", default="yolov8x-pose.pt", help="YOLO pose weights (yolo backend)")
-    ap.add_argument("--out", default=None, help="output dir (default eval_<backend>)")
+    ap.add_argument("--out", default=None, help="output dir (default eval_<backend>[_<lift>])")
     ap.add_argument("--only", default=None, help="substring filter on filename")
     args = ap.parse_args()
 
-    out_dir = args.out or os.path.join(
-        os.path.dirname(__file__), "eval_yolo" if args.backend == "yolo" else "eval_visual")
+    base = "eval_yolo" if args.backend == "yolo" else "eval_visual"
+    if args.lift != "bench":
+        base = f"{base}_{args.lift}"
+    out_dir = args.out or os.path.join(os.path.dirname(__file__), base)
 
     from analysis import analyze_lift
+    # Bench & deadlift: the hands grip the bar, so the wrist IS the bar — no
+    # plate tracker. Only squat needs it (bar on the back, off the hands).
     if args.backend == "yolo":
         from pose_yolo import track_pose
         from ultralytics import YOLO
         ymodel = YOLO(args.model)
-        track_bar = None  # bench: wrist IS the bar, no plate tracker
+        track_bar = None
     else:
         from pose import track_pose
-        from bar import track_bar
+        track_bar = None
         ymodel = None
+    if args.lift == "squat":
+        from bar import track_bar  # noqa: F811
 
     os.makedirs(out_dir, exist_ok=True)
     vids = sorted(
@@ -218,8 +225,8 @@ def main() -> int:
         gt = ground_truth_rpe(name)
         try:
             t0 = time.time()
-            track = (track_pose(path, lift="bench", model=ymodel) if args.backend == "yolo"
-                     else track_pose(path, lift="bench"))
+            track = (track_pose(path, lift=args.lift, model=ymodel) if args.backend == "yolo"
+                     else track_pose(path, lift=args.lift))
             t_pose = time.time() - t0
 
             if track_bar is not None:
@@ -231,7 +238,7 @@ def main() -> int:
 
             t0 = time.time()
             result = analyze_lift(
-                track, lift="bench",
+                track, lift=args.lift,
                 bar_px=bar.bar_px if (bar and bar.found) else None,
                 plate_r=bar.radius_px if (bar and bar.found) else 0.0,
             )
@@ -248,7 +255,7 @@ def main() -> int:
                 "frames": track.total_frames, "fps": round(track.fps, 1),
             }
             header = [
-                f"{name}   [{args.backend}]",
+                f"{name}   [{args.backend}/{args.lift}]",
                 f"GT RPE={gt}   computed RPE={row['rpe']}   reps={row['reps']}   "
                 f"cov={row['coverage']:.0%} ({row['quality']})",
                 f"bar={row['barSource']} (plate_found={row['found']})   "

@@ -377,13 +377,13 @@ def analyze_lift(
         r["index"] = i
     summary = _effort_and_form(reps, B, torso, up, barX, fps, lift, coverage=track.coverage)
 
-    # Overlay path. For BENCH the hands grip the bar rigidly, so the wrist
-    # midpoint is a clean, deterministic bar path — render that. The plate
-    # tracker's horizontal position jitters between plate/collar/sleeve and
+    # Overlay path. For BENCH and DEADLIFT the hands grip the bar rigidly, so
+    # the wrist midpoint is a clean, deterministic bar path — render that. The
+    # plate tracker's horizontal position jitters between plate/collar/sleeve and
     # renders as a scribble even when its vertical signal is good enough for the
-    # rep analysis above. For squat/deadlift (side-view, occluded wrists) keep
-    # the analysed plate path.
-    if lift == "bench":
+    # rep analysis above. Only SQUAT keeps the analysed plate path (the bar rides
+    # on the back, off the hands, so the wrist isn't the bar there).
+    if lift in ("bench", "deadlift"):
         lw, rw = B.j(P.L_WR), B.j(P.R_WR)
         vl, vr = B.vis[:, P.L_WR : P.L_WR + 1], B.vis[:, P.R_WR : P.R_WR + 1]
         s = vl + vr
@@ -410,7 +410,7 @@ def analyze_lift(
         path_px = np.column_stack([(barX / aspect) * w, (-up) * h])
         overlay = _render_overlay(track, path_px, plate_r if bar_source == "plate" else 0.0)
 
-    if bar_source == "wrist" and lift != "bench":
+    if bar_source == "wrist" and lift == "squat":
         warnings.append(
             "Couldn't lock the plate near the hands — fell back to wrist "
             "tracking, which is less accurate. Keep the bar/plate clearly lit "
