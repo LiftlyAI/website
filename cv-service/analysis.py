@@ -113,6 +113,18 @@ def _clean_signal(raw: np.ndarray, fps: float) -> np.ndarray:
     return _smooth(_hampel(raw, win=max(5, int(fps * 0.2) | 1)), fps)
 
 
+def _heavy_smooth(sig: np.ndarray, fps: float, secs: float = 0.6) -> np.ndarray:
+    """Strong low-pass for the RENDERED horizontal bar path only. The bar's
+    true sideways motion is small and slow (the J-curve), so aggressive
+    smoothing turns landmark/tracker jitter — the 'scribble' — into a gentle
+    curve without affecting the vertical rep analysis."""
+    s = _hampel(sig.astype(np.float64), win=max(5, int(fps * 0.3) | 1))
+    win = max(5, int(round(fps * secs)) | 1)
+    if win >= len(s):
+        return s
+    return savgol_filter(s, win, 2)
+
+
 def _angle(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:
     """Angle ABC in degrees, at vertex b."""
     v1, v2 = a - b, c - b
@@ -164,13 +176,16 @@ def analyze_lift(
     aspect = w / h
     B = _Body(track)
 
+    # Vertical analysis (reps, RPE, timing) uses the plate when the tracker
+    # validated it (moves with the wrist, near the hands, smooth); else the
+    # wrist line. The plate's VERTICAL signal is the cleanest rep cue. Its
+    # horizontal position jitters between plate/collar/sleeve, so the OVERLAY
+    # and J-curve are drawn from the wrist instead (see _bench_render_path).
     if bar_px is not None and np.isfinite(bar_px).all():
-        # The real plate path (px) — cleaned/despiked in bar.py. Convert to
-        # the same isotropic convention _Body uses (x scaled by aspect).
         bar = np.column_stack([(bar_px[:n, 0] / w) * aspect, bar_px[:n, 1] / h])
         bar_source = "plate"
     else:
-        bar = B.best(P.L_WR, P.R_WR)        # fallback: wrist line (less reliable)
+        bar = B.best(P.L_WR, P.R_WR)
         bar_source = "wrist"
     # A single NaN propagates through hampel/savgol and corrupts the whole
     # signal (and the JSON response). Interpolate any non-finite samples.
@@ -317,9 +332,9 @@ def analyze_lift(
         # the chest gets dumped forward (the classic "hips shoot up" fault on
         # squat / deadlift). +ve = hip leads; ~0 = simultaneous; -ve = shoulders
         # leading the hips.
-        w = max(2, int(fps * 0.3))
+        win = max(2, int(fps * 0.3))
         i0 = pe
-        i1 = min(ls, pe + w)
+        i1 = min(ls, pe + win)
         if i1 > i0:
             d_hip = float((-hip[i1, 1]) - (-hip[i0, 1]))
             d_sh = float((-shoulder[i1, 1]) - (-shoulder[i0, 1]))
@@ -362,10 +377,38 @@ def analyze_lift(
         r["index"] = i
     summary = _effort_and_form(reps, B, torso, up, barX, fps, lift, coverage=track.coverage)
 
-    # Draw the SAME smoothed path the analysis used (back to pixels), so the
-    # overlay matches the numbers instead of looking like a scribble.
-    path_px = np.column_stack([(barX / aspect) * w, (-up) * h])
-    overlay = _render_overlay(track, path_px, plate_r if bar_source == "plate" else 0.0)
+    # Overlay path. For BENCH the hands grip the bar rigidly, so the wrist
+    # midpoint is a clean, deterministic bar path — render that. The plate
+    # tracker's horizontal position jitters between plate/collar/sleeve and
+    # renders as a scribble even when its vertical signal is good enough for the
+    # rep analysis above. For squat/deadlift (side-view, occluded wrists) keep
+    # the analysed plate path.
+    if lift == "bench":
+        lw, rw = B.j(P.L_WR), B.j(P.R_WR)
+        vl, vr = B.vis[:, P.L_WR : P.L_WR + 1], B.vis[:, P.R_WR : P.R_WR + 1]
+        s = vl + vr
+        bz = s < 0.05
+        wr_iso = np.where(
+            bz, B.best(P.L_WR, P.R_WR), (lw * vl + rw * vr) / np.where(bz, 1.0, s)
+        )
+        wr_iso = _finite_fill(wr_iso)
+        rx = _heavy_smooth(wr_iso[:, 0], fps)   # kill horizontal jitter (scribble)
+        ry = _clean_signal(wr_iso[:, 1], fps)   # keep the vertical rep motion
+        path_px = np.column_stack([(rx / aspect) * w, ry * h])
+        # Draw ONE representative rep (top → chest → lockout), not the whole
+        # set: a side-view bar path is genuinely diagonal (bar tracks back over
+        # the face), so overlaying every rep + the unrack/re-rack sweeps stacks
+        # into a tangle. A single rep is one clean arc — what lifters expect.
+        if reps:
+            rep = reps[len(reps) // 2]
+            f0 = max(0, int(rep["phases"]["descent"][0] * fps))
+            f1 = min(n - 1, int(round(rep["phases"]["press"][1] * fps)))
+            if f1 - f0 >= 3:
+                path_px = path_px[f0 : f1 + 1]
+        overlay = _render_overlay(track, path_px, 0.0)
+    else:
+        path_px = np.column_stack([(barX / aspect) * w, (-up) * h])
+        overlay = _render_overlay(track, path_px, plate_r if bar_source == "plate" else 0.0)
 
     if bar_source == "wrist" and lift != "bench":
         warnings.append(
@@ -678,12 +721,17 @@ def _render_overlay(track: P.PoseTrack, path_px: np.ndarray, plate_r: float) -> 
     w, h = track.frame_size
     mid = track.total_frames // 2
 
-    # skeleton of the selected lifter on the representative frame
+    # skeleton — skip joints interpolated over detection gaps (vis < 0.2);
+    # drawing them produces physically impossible splayed-limb artefacts.
     for a, b in _SKELETON:
+        if track.vis[mid, a] < 0.2 or track.vis[mid, b] < 0.2:
+            continue
         pa = (int(track.xy[mid, a, 0] * w), int(track.xy[mid, a, 1] * h))
         pb = (int(track.xy[mid, b, 0] * w), int(track.xy[mid, b, 1] * h))
         cv2.line(img, pa, pb, (0, 220, 120), 2)
     for i in P.KEYPOINTS:
+        if track.vis[mid, i] < 0.2:
+            continue
         c = (int(track.xy[mid, i, 0] * w), int(track.xy[mid, i, 1] * h))
         cv2.circle(img, c, 4, (0, 255, 180), -1)
 

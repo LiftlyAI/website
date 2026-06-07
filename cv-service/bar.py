@@ -223,10 +223,17 @@ def _track_bar(video_path: str, pose: P.PoseTrack) -> BarTrack:
             else 0.0
         )
         moves_with_lift = sb >= 0.35 * sw
+        # Plate must be laterally close to the wrist. A pillarbox / rack edge
+        # at x≈0 while the wrist is at x≈1000 fails this: ~5 torso offset.
+        x_offset = abs(
+            float(np.median(bar[m, 0])) - float(np.median(wrist_px[m, 0]))
+        )
+        x_near_wrist = x_offset <= 1.5 * torso
         found = (
             frac >= 0.35
             and corr >= 0.5
             and moves_with_lift
+            and x_near_wrist
             and _smooth_enough(bar, R)
         )
     return BarTrack(bar, R, found, frac)

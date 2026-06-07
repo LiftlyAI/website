@@ -375,6 +375,15 @@ def select_lifter_track(
         tr["wrist_range"] = (
             float(np.percentile(wy, 90) - np.percentile(wy, 10)) if len(wy) >= 4 else 0.0
         )
+        # Bench presser's wrists ride ABOVE the shoulders (smaller image y) for
+        # much of the lift; a seated/standing spotter's never do. This is the
+        # signal that separates the lifter from bystanders in a crowded gym.
+        press = []
+        for c in tr["frames"].values():
+            wyf = (c["xy"][L_WR, 1] + c["xy"][R_WR, 1]) / 2.0
+            syf = (c["xy"][L_SH, 1] + c["xy"][R_SH, 1]) / 2.0
+            press.append(1.0 if wyf < syf else 0.0)
+        tr["press_frac"] = float(np.mean(press)) if press else 0.0
 
     if os.environ.get("POSE_DEBUG"):
         for ti, tr in enumerate(sorted(tracks, key=lambda t: -t["presence"])[:6]):
@@ -396,16 +405,20 @@ def select_lifter_track(
             and (
                 tr["med_horiz"] >= HORIZ_LYING
                 or (tr["wrist_range"] >= WRIST_PRESS_MIN and tr["area"] >= LIFTER_AREA_MIN)
+                or tr["press_frac"] >= 0.4   # foreshortened-but-pressing lifter
             )
         ]
         if not gated:
             raise RuntimeError(no_lifter)
-        # Among lifters, prefer the one that is present, visible, big and the
-        # one actually pressing (wrist travel).
+        # Among lifters, prefer the one that is present, visible, big, actually
+        # pressing (wrist travel) AND whose wrists ride above the shoulders
+        # (press_frac) — the last term rejects a seated/standing spotter that
+        # otherwise scores well in a crowded gym.
         lifter = max(
             gated,
             key=lambda tr: tr["presence"] * (0.5 + tr["mean_vis"])
-            * (0.5 + min(tr["area"], 0.4)) * (0.4 + 3.0 * tr["wrist_range"]),
+            * (0.5 + min(tr["area"], 0.4)) * (0.4 + 3.0 * tr["wrist_range"])
+            * (0.3 + 1.5 * tr["press_frac"]),
         )
     else:  # squat / deadlift — upright lifter, softer gate + safe fallback
         min_count = max(6, int(0.10 * n))
