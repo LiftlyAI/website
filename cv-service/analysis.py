@@ -14,6 +14,7 @@ camera distance and never depends on plate size.
 from __future__ import annotations
 
 import base64
+import os
 
 import cv2
 import numpy as np
@@ -43,7 +44,11 @@ _LOSS_RIR_DEADLIFT = _LOSS_RIR_SQUAT  # very similar grind profile
 _SEG_PARAMS = {
     "bench":    {"conc_min": 0.25, "conc_max": 6.0,  "desc_min": 0.12, "desc_max": 9.0,  "prom_frac": 0.35, "min_gap_s": 0.40},
     "squat":    {"conc_min": 0.50, "conc_max": 8.0,  "desc_min": 0.40, "desc_max": 8.0,  "prom_frac": 0.50, "min_gap_s": 1.50},
-    "deadlift": {"conc_min": 0.50, "conc_max": 10.0, "desc_min": 0.30, "desc_max": 10.0, "prom_frac": 0.50, "min_gap_s": 1.50},
+    # Deadlift has NO required eccentric: the bar is DROPPED from lockout (a
+    # 0.03-0.13s "descent") and the first rep starts dead from the floor with no
+    # lowering at all. Requiring a controlled descent (as bench/squat do) rejected
+    # every valid pull. The concentric/ROM/prominence gates still guard false reps.
+    "deadlift": {"conc_min": 0.50, "conc_max": 10.0, "desc_min": 0.0,  "desc_max": 10.0, "prom_frac": 0.50, "min_gap_s": 1.50},
 }
 
 
@@ -227,6 +232,11 @@ def analyze_lift(
         gap = max(1, int(fps * seg["min_gap_s"]))
         bottoms, _ = find_peaks(-up, prominence=prom, distance=gap)
         tops, _ = find_peaks(up, prominence=prom, distance=gap)
+        if os.environ.get("SEG_DEBUG"):
+            print(f"[seg] lift={lift} rom={rom:.3f} prom={prom:.3f} gap={gap} "
+                  f"bottoms={list(bottoms)} tops={list(tops)} fps={fps:.1f} n={n}")
+    if os.environ.get("SEG_DEBUG") and rom < ROM_MIN:
+        print(f"[seg] REJECT-ALL rom={rom:.3f} < ROM_MIN={ROM_MIN}")
 
     seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
     CONC_MIN, CONC_MAX = seg["conc_min"], seg["conc_max"]
@@ -283,6 +293,11 @@ def analyze_lift(
         rise = float(up[ls] - up[b])
 
         # Reject implausible segments instead of reporting garbage.
+        if os.environ.get("SEG_DEBUG"):
+            print(f"[seg] cand b={b} conc={concentric_s:.2f}s desc={descent_s:.2f}s "
+                  f"rise={rise:.3f} rom={rom:.3f} rise/rom={rise / max(rom, 1e-6):.2f} "
+                  f"(CONC[{CONC_MIN},{CONC_MAX}] DESC[{DESC_MIN},{DESC_MAX}] "
+                  f"riseMin={0.45 * rom:.3f})")
         if not (CONC_MIN <= concentric_s <= CONC_MAX):
             continue
         if not (DESC_MIN <= descent_s <= DESC_MAX):
