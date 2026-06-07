@@ -102,6 +102,20 @@ function ensureSchema(db: Database.Database) {
       created_at INTEGER NOT NULL,
       UNIQUE(athlete_id, date)
     );
+
+    -- One row per generated meal plan. plan_json is the MealPlan; targets_json
+    -- is the macro snapshot at generation time (used to flag staleness when the
+    -- athlete's computed targets later change). steer = the optional per-plan
+    -- free-text the lifter typed for this generation.
+    CREATE TABLE IF NOT EXISTS meal_plans (
+      id TEXT PRIMARY KEY,
+      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+      plan_json TEXT NOT NULL,
+      targets_json TEXT NOT NULL,
+      steer TEXT,
+      created_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_meal_plans_athlete ON meal_plans(athlete_id, created_at);
   `);
 
   // Additive migrations for form_checks (existing dbs predate bar-path CV).

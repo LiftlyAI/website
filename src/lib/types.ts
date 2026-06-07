@@ -51,6 +51,13 @@ export interface AthleteProfile {
   dietaryRestrictions: DietaryRestriction[];
   phaseGoal: PhaseGoal;
   mealsPerDay: number;
+
+  /** Hard safety constraints: free-text foods to NEVER include (allergies /
+   *  intolerances). Validated deterministically after every generation. */
+  allergies?: string;
+  /** Durable soft preferences: cuisines, liked/disliked foods, time or budget.
+   *  Honoured by the meal generator when compatible with the macro targets. */
+  foodPreferences?: string;
 }
 
 export interface Exercise {
@@ -242,4 +249,15 @@ export interface MealPlan {
   preWorkout: string;
   postWorkout: string;
   notes: string[];
+}
+
+// A generated meal plan as persisted (one row per generation). `targets` is the
+// macro snapshot at generation time — compared against the freshly computed
+// targets on load to flag a plan as stale when the athlete's numbers change.
+export interface SavedMealPlan {
+  id: string;
+  plan: MealPlan;
+  targets: MacroTargets;
+  steer: string | null;
+  createdAt: number;
 }

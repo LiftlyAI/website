@@ -1,4 +1,4 @@
-import type { AthleteProfile, MacroTargets } from '../types';
+import type { AthleteProfile, DietaryRestriction, MacroTargets } from '../types';
 
 export const NUTRITION_SYSTEM_PROMPT = `You are a sports nutritionist specializing in strength athletes, working from ISSN position stands, Morton et al. 2018 meta-analysis, and Helms/Aragon/Fitschen guidelines. You write meal plans that are:
 
@@ -21,7 +21,14 @@ FAT FLOOR:
 PRACTICAL FOOD SELECTION:
 - Use real, grocery-store foods with concrete quantities (grams or household measures)
 - No exotic supplements or ingredients not in a normal kitchen
-- Respect dietary restrictions absolutely
+
+HARD CONSTRAINTS (absolute — never violate):
+- Allergies and dietary restrictions are non-negotiable. Never include a forbidden food, or any dish or ingredient that contains it. Examples: no whey/casein/milk/cheese/butter/cream for a dairy-free or vegan athlete; no bread/pasta/wheat/regular flour for gluten-free; no meat or fish for vegetarian; additionally no dairy, egg, or honey for vegan. If you are unsure whether an ingredient is compatible, pick a different ingredient.
+
+PERSONALIZATION (honour when compatible with the macros AND the hard constraints):
+- Lean toward the athlete's stated tastes, cuisines, and preferred foods; avoid foods they say they dislike.
+- If the athlete lists ingredients they already have on hand, build the meals around those first.
+- Respect any stated prep-time, budget, or cooking-skill limits. Hard constraints and macro targets always take priority over preferences.
 
 You output a single JSON object with this exact structure:
 
@@ -47,15 +54,37 @@ You output a single JSON object with this exact structure:
 
 Output ONLY the JSON. No markdown. Meal macro totals must sum within ±5% of dailyTotals.`;
 
-export function buildNutritionUserPrompt(profile: AthleteProfile, targets: MacroTargets): string {
-  const isVeganOrVeg = profile.dietaryRestrictions.some(r => r === 'vegan' || r === 'vegetarian');
-  const isVegan = profile.dietaryRestrictions.includes('vegan');
+const RESTRICTION_TEXT: Record<Exclude<DietaryRestriction, 'none'>, string> = {
+  vegetarian: 'vegetarian (no meat or fish; dairy and eggs are fine)',
+  vegan: 'vegan (no meat, fish, dairy, egg, or honey)',
+  lactose_free: 'dairy/lactose-free (no milk, cheese, yogurt, butter, cream, whey, or casein)',
+  gluten_free: 'gluten-free (no wheat, bread, pasta, barley, rye, or regular flour)',
+};
 
-  const restrictionNote = isVegan
-    ? `Athlete is vegan. Use pea/rice protein blends, tofu, tempeh, seitan, legumes, soy milk. Bump per-meal protein 20% higher to compensate for lower leucine density. Suggest algae-based omega-3.`
-    : isVeganOrVeg
-    ? `Athlete is vegetarian. Dairy and eggs are fine; no meat or fish. Use whey/casein, eggs, Greek yogurt, cottage cheese, legumes, tofu.`
+export function buildNutritionUserPrompt(
+  profile: AthleteProfile,
+  targets: MacroTargets,
+  steer?: string,
+): string {
+  const isVegan = profile.dietaryRestrictions.includes('vegan');
+  const isVegetarian = profile.dietaryRestrictions.includes('vegetarian');
+
+  const restrictionList = profile.dietaryRestrictions.filter((r) => r !== 'none');
+  const restrictionLine = restrictionList.length
+    ? restrictionList
+        .map((r) => RESTRICTION_TEXT[r as Exclude<DietaryRestriction, 'none'>] ?? r)
+        .join('; ')
+    : 'none';
+
+  const sourceNote = isVegan
+    ? `Vegan sourcing: pea/rice protein blends, tofu, tempeh, seitan, legumes, soy/plant milk. Bump per-meal protein 20% higher to compensate for lower leucine density. Suggest algae-based omega-3.`
+    : isVegetarian
+    ? `Vegetarian sourcing: dairy and eggs are fine; no meat or fish. Use whey/casein, eggs, Greek yogurt, cottage cheese, legumes, tofu.`
     : '';
+
+  const allergies = (profile.allergies ?? '').trim();
+  const prefs = (profile.foodPreferences ?? '').trim();
+  const steerClean = (steer ?? '').trim();
 
   const phaseContext =
     profile.phaseGoal === 'cutting'
@@ -75,7 +104,6 @@ ATHLETE:
 - Phase: ${profile.phaseGoal}
 - Training days/week: ${profile.trainingDaysPerWeek}
 - Meals preferred: ${profile.mealsPerDay}
-- Dietary restrictions: ${profile.dietaryRestrictions.join(', ') || 'none'}
 
 DAILY TARGETS:
 - Calories: ${targets.calories} kcal (TDEE ${targets.tdee} + ${targets.phaseAdjustment >= 0 ? '+' : ''}${targets.phaseAdjustment})
@@ -85,6 +113,11 @@ DAILY TARGETS:
 
 PHASE CONTEXT:
 ${phaseContext}
-${restrictionNote ? `\nDIETARY NOTES:\n${restrictionNote}` : ''}
-Protein must be distributed across all ${profile.mealsPerDay} meals (~${targets.perMealProteinG}g each). Include a casein-rich pre-sleep option as the last meal. Place the majority of carbs in the pre- and post-training meals. The sum of meal macros must land within ±5% of the daily targets.`;
+
+DIETARY RESTRICTIONS (hard — never include): ${restrictionLine}${sourceNote ? `\n${sourceNote}` : ''}
+${allergies ? `ALLERGIES (hard — never include these, nor anything containing them): ${allergies}` : 'ALLERGIES: none declared'}
+${prefs ? `TASTE PREFERENCES (soft — honour when compatible with the macros): ${prefs}` : ''}
+${steerClean ? `FOR THIS PLAN SPECIFICALLY (soft — honour when compatible with the macros): ${steerClean}` : ''}
+
+Protein must be distributed across all ${profile.mealsPerDay} meals (~${targets.perMealProteinG}g each). Include a casein-rich pre-sleep option as the last meal (or a vegan equivalent if the athlete is vegan/dairy-free). Place the majority of carbs in the pre- and post-training meals. The sum of meal macros must land within ±5% of the daily targets. Hard constraints override every preference above.`;
 }
