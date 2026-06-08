@@ -4,7 +4,14 @@ import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Input';
-import type { AthleteProfile } from '@/lib/types';
+import type { AthleteProfile, DietaryRestriction } from '@/lib/types';
+
+function toggleRestriction(curr: DietaryRestriction[], r: DietaryRestriction): DietaryRestriction[] {
+  if (r === 'none') return ['none'];
+  const next = curr.filter((x) => x !== 'none' && x !== r);
+  const result = curr.includes(r) ? next : [...next, r];
+  return result.length ? result : ['none'];
+}
 
 export function ProfileView({ profile, email }: { profile: AthleteProfile; email: string }) {
   const router = useRouter();
@@ -172,6 +179,60 @@ export function ProfileView({ profile, email }: { profile: AthleteProfile; email
               label="Injuries / pain points"
               value={draft.injuries}
               onChange={(e) => update('injuries', e.target.value)}
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Nutrition" subtitle="drives your meal plans" />
+          <div className="space-y-4">
+            <div>
+              <span className="block font-body font-medium text-xs uppercase tracking-wide text-chalk-dim mb-1.5">
+                Dietary restrictions
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {(['none', 'vegetarian', 'vegan', 'lactose_free', 'gluten_free'] as const).map((r) => {
+                  const active = draft.dietaryRestrictions.includes(r);
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() =>
+                        update('dietaryRestrictions', toggleRestriction(draft.dietaryRestrictions, r))
+                      }
+                      className={
+                        active
+                          ? 'px-3 py-2 stencil-heading text-xs tracking-widest border border-blood bg-blood text-iron-950'
+                          : 'px-3 py-2 stencil-heading text-xs tracking-widest border border-iron-600 text-chalk-dim hover:border-blood hover:text-chalk'
+                      }
+                    >
+                      {r.replace('_', '-')}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <Input
+              label="Meals per day"
+              type="number"
+              min={3}
+              max={7}
+              value={draft.mealsPerDay}
+              onChange={(e) => update('mealsPerDay', parseInt(e.target.value, 10) || 4)}
+            />
+            <Textarea
+              label="Allergies — never included"
+              value={draft.allergies ?? ''}
+              onChange={(e) => update('allergies', e.target.value)}
+              placeholder="e.g. peanuts, shellfish"
+              hint="Hard constraint — enforced on every meal plan."
+            />
+            <Textarea
+              label="Food preferences"
+              value={draft.foodPreferences ?? ''}
+              onChange={(e) => update('foodPreferences', e.target.value)}
+              placeholder="Cuisines you like, foods you avoid, time or budget"
+              hint="Soft — honoured when it fits your macros."
             />
           </div>
         </Card>

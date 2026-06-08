@@ -34,6 +34,8 @@ const empty: AthleteProfile = {
   dietaryRestrictions: ['none'],
   phaseGoal: 'maintaining',
   mealsPerDay: 4,
+  allergies: '',
+  foodPreferences: '',
 };
 
 export function OnboardingWizard({ email, initialName }: { email: string; initialName: string }) {
@@ -454,6 +456,22 @@ function Step4({ profile, update }: StepProps) {
             })}
           </div>
         </div>
+        <Textarea
+          label="Allergies — never included"
+          value={profile.allergies ?? ''}
+          onChange={(e) => update('allergies', e.target.value)}
+          placeholder="e.g. peanuts, shellfish, eggs"
+          hint="Hard constraint. Enforced on every generated meal plan."
+          rows={2}
+        />
+        <Textarea
+          label="Food preferences (optional)"
+          value={profile.foodPreferences ?? ''}
+          onChange={(e) => update('foodPreferences', e.target.value)}
+          placeholder="Cuisines you like, foods you avoid, time or budget limits"
+          hint="Soft preferences — honoured when they fit your macros."
+          rows={2}
+        />
       </div>
     </div>
   );
@@ -479,6 +497,8 @@ function Step5({ profile }: StepProps) {
         {profile.injuries.trim() && <Row k="Injuries" v={profile.injuries} />}
         <Row k="Phase" v={`${profile.phaseGoal} · ${profile.mealsPerDay} meals/day`} />
         <Row k="Diet" v={profile.dietaryRestrictions.join(', ')} />
+        {profile.allergies?.trim() && <Row k="Allergies" v={profile.allergies} />}
+        {profile.foodPreferences?.trim() && <Row k="Food prefs" v={profile.foodPreferences} />}
       </div>
     </div>
   );

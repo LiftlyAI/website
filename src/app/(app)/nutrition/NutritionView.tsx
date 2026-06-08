@@ -3,16 +3,23 @@ import { useState } from 'react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PlateSpinner } from '@/components/ui/PlateSpinner';
-import type { AthleteProfile, MacroTargets, MealPlan } from '@/lib/types';
+import { Textarea } from '@/components/ui/Input';
+import type { AthleteProfile, MacroTargets, MealPlan, SavedMealPlan } from '@/lib/types';
 
 export function NutritionView({
   profile,
   targets,
+  initialPlan = null,
+  initialStale = false,
 }: {
   profile: AthleteProfile;
   targets: MacroTargets;
+  initialPlan?: SavedMealPlan | null;
+  initialStale?: boolean;
 }) {
-  const [plan, setPlan] = useState<MealPlan | null>(null);
+  const [plan, setPlan] = useState<MealPlan | null>(initialPlan?.plan ?? null);
+  const [steer, setSteer] = useState(initialPlan?.steer ?? '');
+  const [stale, setStale] = useState(initialStale);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,10 +27,15 @@ export function NutritionView({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/nutrition/generate', { method: 'POST' });
+      const res = await fetch('/api/nutrition/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ steer: steer.trim() || undefined }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'failed');
       setPlan(data.plan);
+      setStale(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'failed');
     } finally {
@@ -55,6 +67,8 @@ export function NutritionView({
 
   const isVegan = profile.dietaryRestrictions.includes('vegan');
   const isVegetarian = profile.dietaryRestrictions.includes('vegetarian');
+  const dietaryActive = profile.dietaryRestrictions.filter((r) => r !== 'none');
+  const hasAllergies = !!(profile.allergies && profile.allergies.trim());
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-6xl">
@@ -139,6 +153,39 @@ export function NutritionView({
         <Card className="md:col-span-2">
           <CardHeader title="Today&apos;s Meal Plan" accent />
 
+          {stale && (
+            <div className="text-xs font-mono text-rpe-mod mb-3 border border-rpe-mod/30 px-3 py-2">
+              Your macro targets changed since this plan was generated — regenerate to match your current numbers.
+            </div>
+          )}
+
+          {(dietaryActive.length > 0 || hasAllergies) && (
+            <div className="text-[11px] font-mono text-chalk-mute mb-3 space-y-0.5">
+              {dietaryActive.length > 0 && (
+                <div>
+                  <span className="text-chalk-dim">Diet:</span>{' '}
+                  {dietaryActive.map((r) => r.replace('_', '-')).join(', ')}
+                </div>
+              )}
+              {hasAllergies && (
+                <div>
+                  <span className="text-rpe-max">Avoiding:</span> {profile.allergies}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="mb-4">
+            <Textarea
+              label="Steer this plan (optional)"
+              value={steer}
+              onChange={(e) => setSteer(e.target.value)}
+              placeholder="e.g. I have chicken, rice & spinach; want Mexican flavours; 20-min meals; on a budget"
+              hint="Ingredients on hand, cuisines, time/budget. Allergies & restrictions above are always enforced."
+              rows={2}
+            />
+          </div>
+
           {!plan && !loading && (
             <div>
               <p className="text-sm text-chalk-mute mb-2">
@@ -157,9 +204,9 @@ export function NutritionView({
 
           {loading && <PlateSpinner label="Cooking…" />}
 
-          {error && <div className="text-sm text-rpe-max font-mono">{error}</div>}
+          {error && <div className="text-sm text-rpe-max font-mono mb-2">{error}</div>}
 
-          {plan && (
+          {plan && !loading && (
             <div className="space-y-5">
               <div className="space-y-4">
                 {plan.meals.map((m, i) => (
