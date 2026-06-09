@@ -142,7 +142,13 @@ def _unrotate_xy(xy: np.ndarray, code) -> np.ndarray:
 #    (mid-rep the torso can lean), but we still prefer an upright torso to
 #    exclude anyone sitting/lying nearby.
 HORIZ_LYING = 0.30       # bench: a track this horizontal (or more) is a lifter
-HORIZ_UPRIGHT = 0.35     # squat/DL: med_horiz must be BELOW this
+HORIZ_UPRIGHT = 0.35     # squat: med_horiz must be BELOW this
+# A conventional deadlift is HINGED — the torso is legitimately near-horizontal
+# at the floor and only stands fully upright at lockout, so the median horiz over
+# the pull sits much higher than a squat's. The squat gate (0.35) rejected the
+# real puller and dropped coverage; allow a far more horizontal median for DL
+# while still excluding a fully-lying (>0.62) bystander.
+HORIZ_UPRIGHT_DL = 0.62
 # A foreshortened (foot-of-bench) lifter looks vertical but their hands press
 # AND they fill a real chunk of the frame. A standing spotter may wave their
 # arms (wrist travel) but is small/off to the side, so we require BOTH.
@@ -420,11 +426,15 @@ def select_lifter_track(
             * (0.5 + min(tr["area"], 0.4)) * (0.4 + 3.0 * tr["wrist_range"])
             * (0.3 + 1.5 * tr["press_frac"]),
         )
-    else:  # squat / deadlift — upright lifter, softer gate + safe fallback
+    else:  # squat / deadlift — upright(ish) lifter, softer gate + safe fallback
         min_count = max(6, int(0.10 * n))
+        # Deadlift is hinged (torso near-horizontal at the floor), so it gets a
+        # much more permissive horizon gate than the squat — otherwise the real
+        # puller is rejected and coverage collapses even when fully in frame.
+        horiz_max = HORIZ_UPRIGHT_DL if lift == "deadlift" else HORIZ_UPRIGHT
         gated = [
             tr for tr in tracks
-            if tr["med_horiz"] <= HORIZ_UPRIGHT and tr["count"] >= min_count
+            if tr["med_horiz"] <= horiz_max and tr["count"] >= min_count
         ]
         if gated:
             lifter = max(gated, key=lambda tr: (tr["presence"], tr["mean_score"]))
