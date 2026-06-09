@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
+import { liftOf } from '@/lib/programming';
+import { computeHandoff } from '@/lib/handoff';
 
 const Body = z.object({
   date: z.string(),
@@ -59,5 +61,16 @@ export async function POST(req: NextRequest) {
        ON CONFLICT(athlete_id, date) DO UPDATE SET bodyweight = excluded.bodyweight`,
     ).run(uuid(), session.id, parsed.data.date, parsed.data.bodyweight, Date.now());
   }
-  return NextResponse.json({ ok: true, id });
+  // Close the loop: tell the caller what this log just changed for the next
+  // scheduled session of each compound, so the UI can hand off to the next step.
+  const loggedLifts = [...new Set(parsed.data.exercises.map((e) => liftOf(e.exercise)))];
+  const handoff = computeHandoff(
+    db,
+    session.id,
+    loggedLifts,
+    parsed.data.weekNumber ?? null,
+    parsed.data.dayNumber ?? null,
+  );
+
+  return NextResponse.json({ ok: true, id, handoff });
 }

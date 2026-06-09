@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { requireSession } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { Card, CardHeader } from '@/components/ui/Card';
-import { RPEBadge } from '@/components/ui/RPEBadge';
 import { Dumbbell, Video, MessageSquare, Apple, ArrowRight } from 'lucide-react';
-import type { AthleteProfile, Program } from '@/lib/types';
+import type { AthleteProfile, Program, ProgramDay } from '@/lib/types';
 import { estimatedOneRM } from '@/lib/calculations';
+import { computeHandoff } from '@/lib/handoff';
 import { fmtDate } from '@/lib/utils';
+import { TodayLoopCard, type LoopStep } from './TodayLoopCard';
 
 export default async function Dashboard() {
   const session = await requireSession();
@@ -82,16 +83,58 @@ export default async function Dashboard() {
     for (const ex of exs) for (const set of ex.sets) weeklyTonnage += set.weight * set.reps;
   }
 
+  // ---------- Loop state: where are we in Program → Execute → Review → Adapt? ----------
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const loggedToday =
+    (db
+      .prepare('SELECT COUNT(*) AS c FROM session_logs WHERE athlete_id = ? AND date = ?')
+      .get(session.id, todayStr) as { c: number }).c > 0;
+
+  const lastRow = db
+    .prepare(
+      'SELECT date FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 1',
+    )
+    .get(session.id) as { date: string } | undefined;
+  const daysSinceLast = lastRow
+    ? Math.floor((Date.now() - Date.parse(lastRow.date)) / 86_400_000)
+    : null;
+
+  const filmedToday =
+    (db
+      .prepare('SELECT COUNT(*) AS c FROM form_checks WHERE athlete_id = ? AND created_at >= ?')
+      .get(session.id, startOfToday.getTime()) as { c: number }).c > 0;
+
+  // Today's scheduled day (weekday → day index, cycling the available days).
+  const weekday = new Date().getDay(); // 0 = Sunday
+  const dayIdx = currentWeek ? ((weekday + 6) % 7) % (currentWeek.days.length || 1) : 0;
+  const todayDay: ProgramDay | null =
+    currentWeek?.days[dayIdx] ?? currentWeek?.days[0] ?? null;
+
+  // Upcoming auto-tuned targets for each compound's next scheduled instance.
+  const handoff = program
+    ? computeHandoff(db, session.id, ['squat', 'bench', 'deadlift'], null, null)
+    : { adaptations: [], filmLift: null };
+
+  let step: LoopStep;
+  if (!program) step = 'program';
+  else if (daysSinceLast != null && daysSinceLast >= 5) step = 'resume';
+  else if (!loggedToday) step = 'execute';
+  else if (!filmedToday) step = 'review';
+  else step = 'adapt';
+
+  const filmLift = guessFilmLift(todayDay) ?? handoff.filmLift;
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">
       {/* Hero strip */}
       <div className="mb-10">
         <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">
-          {new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-          }).toUpperCase()}
+          {new Date()
+            .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+            .toUpperCase()}
         </div>
         <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">
           GOOD TO SEE YOU,&nbsp;
@@ -125,62 +168,24 @@ export default async function Dashboard() {
         />
       </div>
 
-      {/* Main row */}
+      {/* Main row — the loop spine + the week at a glance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Today's session */}
-        <Card className="lg:col-span-2">
-          <CardHeader title="Today's Session" subtitle={program ? `${program.currentBlock} · Week ${currentWeekNum}` : ''} accent />
-          {!program ? (
-            <div className="text-sm text-chalk-mute">
-              No program yet. Generation may have failed. Try regenerating from{' '}
-              <Link href="/profile" className="text-blood underline">
-                Profile
-              </Link>
-              .
-            </div>
-          ) : (
-            (() => {
-              const today = new Date().getDay(); // 0 = Sunday
-              const dayIdx = ((today + 6) % 7) % (currentWeek?.days.length ?? 1);
-              const day = currentWeek?.days[dayIdx] ?? currentWeek?.days[0];
-              if (!day) return <div className="text-sm text-chalk-mute">Rest day. Eat. Walk.</div>;
-              return (
-                <div>
-                  <div className="font-mono text-xs text-chalk-mute mb-1">
-                    DAY {day.dayNumber} · {day.dayName}
-                  </div>
-                  <div className="space-y-3 mt-4">
-                    {day.exercises.slice(0, 4).map((ex, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between border-b border-iron-800 pb-2"
-                      >
-                        <div>
-                          <div className="text-chalk text-sm font-body">{ex.name}</div>
-                          <div className="font-mono text-xs text-chalk-mute mt-0.5">
-                            {ex.sets} × {ex.reps}
-                            {ex.estimatedWeight ? ` @ ${ex.estimatedWeight}${ex.unit ?? profile.unit}` : ''}
-                          </div>
-                        </div>
-                        <RPEBadge rpe={ex.targetRPE} />
-                      </div>
-                    ))}
-                    {day.exercises.length > 4 && (
-                      <div className="text-xs text-chalk-mute font-mono pt-1">
-                        + {day.exercises.length - 4} more
-                      </div>
-                    )}
-                  </div>
-                  <Link href="/program" className="btn-primary mt-6 inline-flex items-center gap-2">
-                    Open full session <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              );
-            })()
-          )}
-        </Card>
+        <div className="lg:col-span-2">
+          <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">
+            TODAY{program ? ` · ${programRow?.current_block ?? program.currentBlock} · WEEK ${currentWeekNum}` : ''}
+          </div>
+          <TodayLoopCard
+            step={step}
+            day={todayDay}
+            weekNumber={currentWeekNum}
+            unit={profile.unit}
+            daysSinceLast={daysSinceLast}
+            adaptations={handoff.adaptations}
+            filmLift={filmLift}
+          />
+        </div>
 
-        {/* Quick actions */}
+        {/* This week + jump-to */}
         <div className="space-y-4">
           <Card>
             <CardHeader title="This Week" />
@@ -201,6 +206,24 @@ export default async function Dashboard() {
   );
 }
 
+function guessFilmLift(day: ProgramDay | null): 'squat' | 'bench' | 'deadlift' | null {
+  if (!day) return null;
+  for (const ex of day.exercises) {
+    if (!ex.isCompetitionLift) continue;
+    const n = ex.name.toLowerCase();
+    if (n.includes('squat')) return 'squat';
+    if (n.includes('bench')) return 'bench';
+    if (n.includes('deadlift')) return 'deadlift';
+  }
+  for (const ex of day.exercises) {
+    const n = ex.name.toLowerCase();
+    if (n.includes('squat')) return 'squat';
+    if (n.includes('bench')) return 'bench';
+    if (n.includes('deadlift')) return 'deadlift';
+  }
+  return null;
+}
+
 function StatBlock({
   label,
   value,
@@ -217,9 +240,7 @@ function StatBlock({
       <div className="stencil-heading text-xs text-chalk-mute tracking-widest mb-1">{label}</div>
       <div className="data-num text-3xl text-chalk leading-none">
         {value}
-        {value !== '—' && unit && (
-          <span className="text-base text-chalk-mute ml-1">{unit}</span>
-        )}
+        {value !== '—' && unit && <span className="text-base text-chalk-mute ml-1">{unit}</span>}
       </div>
       {sublabel && <div className="text-[10px] font-mono text-chalk-mute mt-1">{sublabel}</div>}
     </div>
@@ -236,10 +257,7 @@ function QuickAction({
   label: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="block chalk-card card-interactive px-4 py-3 group"
-    >
+    <Link href={href} className="block chalk-card card-interactive px-4 py-3 group">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-3 text-sm text-chalk">
           <span className="text-blood">{icon}</span>

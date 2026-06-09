@@ -251,6 +251,26 @@ export interface MealPlan {
   notes: string[];
 }
 
+// ---------- Loop handoff (what the next stage should do after a log) ----------
+// Produced server-side right after a set is logged, so the UI can show "here's
+// what just changed and what to do next" instead of dead-ending on a refresh.
+export interface LoopAdaptation {
+  lift: LiftType;
+  exerciseName: string;
+  whenLabel: string; // e.g. "Wed · Week 2"
+  plannedWeight: number;
+  suggestedWeight: number;
+  reason: string;
+  deload: boolean;
+  changed: boolean; // suggestedWeight differs from the program's planned weight
+  unit: Unit;
+}
+
+export interface LoopHandoff {
+  adaptations: LoopAdaptation[];
+  filmLift: 'squat' | 'bench' | 'deadlift' | null;
+}
+
 // A generated meal plan as persisted (one row per generation). `targets` is the
 // macro snapshot at generation time — compared against the freshly computed
 // targets on load to flag a plan as stale when the athlete's numbers change.

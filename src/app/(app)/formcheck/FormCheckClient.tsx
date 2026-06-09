@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Upload, X, AlertTriangle, Check, ChevronRight, ChevronDown } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -172,6 +173,12 @@ function FormCheckCard({
         </p>
       )}
 
+      {/* The loop action — log this clip as a session — lives up here in the
+          quick read, not buried in the deep analysis. */}
+      <div className="mt-4">
+        <LogAsSessionControl check={check} />
+      </div>
+
       <button
         onClick={() => setDeep((d) => !d)}
         className="mt-4 flex items-center gap-1.5 text-xs font-mono text-chalk-mute hover:text-chalk transition-colors"
@@ -286,8 +293,6 @@ function FormCheckCard({
             </pre>
           )}
 
-          <LogAsSessionControl check={check} />
-
           <CalibrateControl
             formCheckId={check.id}
             current={check.estimatedRPE}
@@ -336,8 +341,16 @@ function LogAsSessionControl({ check }: { check: FormCheckResult }) {
           Add the load on this clip. Reps and RPE need to be measured before logging.
         </div>
       ) : state === 'done' ? (
-        <div className="text-sm text-rpe-easy flex items-center gap-2">
-          <Check className="w-4 h-4" /> {msg}
+        <div className="space-y-2">
+          <div className="text-sm text-rpe-easy flex items-center gap-2">
+            <Check className="w-4 h-4" /> {msg}
+          </div>
+          <Link
+            href="/program"
+            className="btn-ghost text-xs px-3 py-2 inline-flex items-center gap-2"
+          >
+            See it on your program <ChevronRight className="w-4 h-4" />
+          </Link>
         </div>
       ) : (
         <div className="flex items-end gap-3 flex-wrap">
