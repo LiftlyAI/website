@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
+import { Analytics } from "@vercel/analytics/next";
 
 export default async function Landing() {
   const session = await getSession();
