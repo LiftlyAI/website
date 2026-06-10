@@ -3,8 +3,14 @@ import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
 import { aiStream, isAiKeyError } from '@/lib/ai';
-import { buildChatSystemPrompt } from '@/lib/prompts/chat';
-import type { AthleteProfile, FormCheckResult, Program } from '@/lib/types';
+import { buildChatSystemPrompt, type ChatSessionSummary } from '@/lib/prompts/chat';
+import { assessReadinessLog } from '@/lib/readiness';
+import type {
+  AthleteProfile,
+  FormCheckResult,
+  Program,
+  SessionLogEntry,
+} from '@/lib/types';
 
 const Body = z.object({
   message: z.string().min(1),
@@ -77,6 +83,76 @@ export async function POST(req: NextRequest) {
     createdAt: r.created_at,
   }));
 
+  // Recent sessions (last 5) — top set per lift + how it felt, so the coach can
+  // talk about what the lifter actually did, not just the prescription.
+  const sessRows = db
+    .prepare(
+      'SELECT date, exercises_json, bodyweight, notes FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 5',
+    )
+    .all(session.id) as {
+    date: string;
+    exercises_json: string;
+    bodyweight: number | null;
+    notes: string | null;
+  }[];
+  const readinessByDate = new Map<string, string>();
+  if (sessRows.length > 0) {
+    const rRows = db
+      .prepare(
+        'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 10',
+      )
+      .all(session.id) as {
+      id: string;
+      athlete_id: string;
+      date: string;
+      sleep: number;
+      energy: number;
+      soreness: number;
+      stress: number;
+      pain: number | null;
+      pain_note: string | null;
+      note: string | null;
+      created_at: number;
+    }[];
+    for (const r of rRows) {
+      const a = assessReadinessLog({
+        id: r.id,
+        athleteId: r.athlete_id,
+        date: r.date,
+        sleep: r.sleep,
+        energy: r.energy,
+        soreness: r.soreness,
+        stress: r.stress,
+        pain: r.pain,
+        painNote: r.pain_note,
+        note: r.note,
+        createdAt: r.created_at,
+      });
+      readinessByDate.set(r.date, a.rpeCap != null ? `${a.flag}, soft RPE cap ${a.rpeCap}` : a.flag);
+    }
+  }
+  const recentSessions: ChatSessionSummary[] = sessRows.map((s) => {
+    const exs = JSON.parse(s.exercises_json) as SessionLogEntry[];
+    const topSets = exs
+      .map((ex) => {
+        const top = [...ex.sets]
+          .filter((st) => st.weight && st.reps)
+          .sort((a, b) => b.weight - a.weight)[0];
+        return top
+          ? { exercise: ex.exercise, weight: top.weight, reps: top.reps, rpe: top.actualRPE }
+          : null;
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null)
+      .slice(0, 5);
+    return {
+      date: s.date,
+      topSets,
+      bodyweight: s.bodyweight,
+      notes: s.notes,
+      readiness: readinessByDate.get(s.date) ?? null,
+    };
+  });
+
   // History (last 20)
   const histRows = db
     .prepare(
@@ -97,6 +173,7 @@ export async function POST(req: NextRequest) {
     program,
     currentWeek,
     recentFormChecks,
+    recentSessions,
   });
 
   let stream: AsyncIterable<string>;

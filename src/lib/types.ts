@@ -251,6 +251,26 @@ export interface MealPlan {
   notes: string[];
 }
 
+// ---------- Loop handoff (what the next stage should do after a log) ----------
+// Produced server-side right after a set is logged, so the UI can show "here's
+// what just changed and what to do next" instead of dead-ending on a refresh.
+export interface LoopAdaptation {
+  lift: LiftType;
+  exerciseName: string;
+  whenLabel: string; // e.g. "Wed · Week 2"
+  plannedWeight: number;
+  suggestedWeight: number;
+  reason: string;
+  deload: boolean;
+  changed: boolean; // suggestedWeight differs from the program's planned weight
+  unit: Unit;
+}
+
+export interface LoopHandoff {
+  adaptations: LoopAdaptation[];
+  filmLift: 'squat' | 'bench' | 'deadlift' | null;
+}
+
 // A generated meal plan as persisted (one row per generation). `targets` is the
 // macro snapshot at generation time — compared against the freshly computed
 // targets on load to flag a plan as stale when the athlete's numbers change.
@@ -260,4 +280,67 @@ export interface SavedMealPlan {
   targets: MacroTargets;
   steer: string | null;
   createdAt: number;
+}
+
+// ---------- Readiness (optional human override) ----------
+// A daily self-report. The engine NEVER requires it and NEVER turns it into a
+// deterministic deload — at most it surfaces a SOFT RPE ceiling the lifter can
+// ignore. sleep/energy: 10 = best. soreness/stress/pain: 10 = worst. pain is the
+// acute/joint-pain flag (distinct from training soreness) and is optional.
+export interface ReadinessLog {
+  id: string;
+  athleteId: string;
+  date: string; // ISO yyyy-mm-dd
+  sleep: number; // 1-10, 10 = best
+  energy: number; // 1-10, 10 = best
+  soreness: number; // 1-10, 10 = worst
+  stress: number; // 1-10, 10 = worst
+  pain: number | null; // 1-10, 10 = worst; null = not reported
+  painNote: string | null;
+  note: string | null;
+  createdAt: number;
+}
+
+export type ReadinessFlag = 'green' | 'amber' | 'red';
+
+// The read-out the lifter sees. rpeCap is a SUGGESTED ceiling, never enforced;
+// the headline is plain and honest, never a fake-precise number.
+export interface ReadinessAssessment {
+  flag: ReadinessFlag;
+  score: number; // 0-100 composite, display only
+  rpeCap: number | null; // soft suggested top-set RPE ceiling, or null
+  headline: string;
+  suggestions: string[];
+  seePtAdvice: boolean; // acute pain → nudge toward a PT, not a deload
+}
+
+// ---------- Decision rules (Phase 4) ----------
+// Pure, composable findings surfaced in the weekly review. These ADVISE; they do
+// not mutate the autoregulation engine (adjustExercise) or the program.
+export type DecisionSeverity = 'info' | 'suggest' | 'caution';
+
+export interface DecisionFinding {
+  rule: string; // stable id, e.g. 'soreness-streak'
+  lift: LiftType | null;
+  severity: DecisionSeverity;
+  title: string;
+  detail: string; // honest explanation of the signal
+  action: string; // concrete, optional next step
+}
+
+// ---------- Weekly review (planned vs actual + the Sunday tweak) ----------
+export interface PlannedActual {
+  label: string;
+  planned: string;
+  actual: string;
+  onTrack: boolean;
+}
+
+export interface WeeklyReview {
+  weekStart: string; // ISO yyyy-mm-dd (Sunday)
+  blockName: string | null;
+  sessions: PlannedActual;
+  rows: PlannedActual[]; // per-metric planned vs actual
+  findings: DecisionFinding[];
+  sundayTweak: string; // the one change to make next week (or "hold the line")
 }

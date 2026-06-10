@@ -116,6 +116,25 @@ function ensureSchema(db: Database.Database) {
       created_at INTEGER NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_meal_plans_athlete ON meal_plans(athlete_id, created_at);
+
+    -- One row per day per athlete: an OPTIONAL readiness self-report. sleep/energy
+    -- 1-10 (10 = best); soreness/stress/pain 1-10 (10 = worst). pain is the acute/
+    -- joint-pain flag, nullable. Never required; drives a soft RPE cap, not a deload.
+    CREATE TABLE IF NOT EXISTS readiness_logs (
+      id TEXT PRIMARY KEY,
+      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+      date TEXT NOT NULL,
+      sleep INTEGER NOT NULL,
+      energy INTEGER NOT NULL,
+      soreness INTEGER NOT NULL,
+      stress INTEGER NOT NULL,
+      pain INTEGER,
+      pain_note TEXT,
+      note TEXT,
+      created_at INTEGER NOT NULL,
+      UNIQUE(athlete_id, date)
+    );
+    CREATE INDEX IF NOT EXISTS idx_readiness_logs_athlete ON readiness_logs(athlete_id, date);
   `);
 
   // Additive migrations for form_checks (existing dbs predate bar-path CV).

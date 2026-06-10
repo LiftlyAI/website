@@ -1,0 +1,377 @@
+{
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\analysis.py": {
+    "mtime": 1780962487.540153,
+    "ast_hash": "e8c5726b40fc27234dee49abb75bee13",
+    "semantic_hash": "e8c5726b40fc27234dee49abb75bee13"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\app.py": {
+    "mtime": 1780861319.7789793,
+    "ast_hash": "61c0773644eb82d251e0a903c3bc4ad9",
+    "semantic_hash": "61c0773644eb82d251e0a903c3bc4ad9"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\bar.py": {
+    "mtime": 1780789593.7278981,
+    "ast_hash": "969e0e6f7645012fe41697504e7fbc0a",
+    "semantic_hash": "969e0e6f7645012fe41697504e7fbc0a"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\debug_dl_seg.py": {
+    "mtime": 1780863865.3832734,
+    "ast_hash": "fbfbc07164f04e3bdc2a843aa93b4d58",
+    "semantic_hash": "fbfbc07164f04e3bdc2a843aa93b4d58"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\download_model.py": {
+    "mtime": 1779052697.4078703,
+    "ast_hash": "deb37c9eb2de78c407fe4c483901fe2b",
+    "semantic_hash": "deb37c9eb2de78c407fe4c483901fe2b"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\eval_samples.py": {
+    "mtime": 1780717237.5739331,
+    "ast_hash": "3b62ffc2f6d145dee203cc920ed3fe40",
+    "semantic_hash": "3b62ffc2f6d145dee203cc920ed3fe40"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\pose.py": {
+    "mtime": 1780962373.2415607,
+    "ast_hash": "66f4d73cf9fe52e92a53f22923f4711c",
+    "semantic_hash": "66f4d73cf9fe52e92a53f22923f4711c"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\pose_yolo.py": {
+    "mtime": 1780962433.8519065,
+    "ast_hash": "f4fdb46f5b3ee12c670849fc25f20fd4",
+    "semantic_hash": "f4fdb46f5b3ee12c670849fc25f20fd4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\visual_eval.py": {
+    "mtime": 1780861435.13027,
+    "ast_hash": "58c615e27052cd52805498e56386c4e2",
+    "semantic_hash": "58c615e27052cd52805498e56386c4e2"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\yolo_probe.py": {
+    "mtime": 1780807542.0937748,
+    "ast_hash": "4864eb104910616008b85f015dfa8188",
+    "semantic_hash": "4864eb104910616008b85f015dfa8188"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\next-env.d.ts": {
+    "mtime": 1777244093.4144719,
+    "ast_hash": "b5ed9dd8b4c5ba8e5ab8e6a379c15838",
+    "semantic_hash": "b5ed9dd8b4c5ba8e5ab8e6a379c15838"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\next.config.mjs": {
+    "mtime": 1780104461.286877,
+    "ast_hash": "b542a96c2f4925f8b309978f1ee0fba4",
+    "semantic_hash": "b542a96c2f4925f8b309978f1ee0fba4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\package.json": {
+    "mtime": 1780105047.7972481,
+    "ast_hash": "acbec9bbbe05de9fedbddf515a586425",
+    "semantic_hash": "acbec9bbbe05de9fedbddf515a586425"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\postcss.config.mjs": {
+    "mtime": 1777242479.331172,
+    "ast_hash": "c735540bb63936a123bc867d950c9f69",
+    "semantic_hash": "c735540bb63936a123bc867d950c9f69"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\scripts\\init-db.ts": {
+    "mtime": 1777243303.4083362,
+    "ast_hash": "7e1c00c1ef9596a0903aaee4666d8ca7",
+    "semantic_hash": "7e1c00c1ef9596a0903aaee4666d8ca7"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\chat\\ChatView.tsx": {
+    "mtime": 1780775513.0213017,
+    "ast_hash": "d13dbe66b4abf7f8d88f9d620ff7bafb",
+    "semantic_hash": "d13dbe66b4abf7f8d88f9d620ff7bafb"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\chat\\page.tsx": {
+    "mtime": 1777243124.555432,
+    "ast_hash": "a240a01fbb14439affb02adc254e3426",
+    "semantic_hash": "a240a01fbb14439affb02adc254e3426"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\dashboard\\page.tsx": {
+    "mtime": 1780775425.7708972,
+    "ast_hash": "cca10519d2677839c81817c7fc1ee99f",
+    "semantic_hash": "cca10519d2677839c81817c7fc1ee99f"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\formcheck\\FormCheckClient.tsx": {
+    "mtime": 1780775482.7343209,
+    "ast_hash": "f234a0b77defc8c02cd8f3c178471b5f",
+    "semantic_hash": "f234a0b77defc8c02cd8f3c178471b5f"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\formcheck\\page.tsx": {
+    "mtime": 1780377459.0706594,
+    "ast_hash": "2076af1f0d6a7059e9cdd44f48976a01",
+    "semantic_hash": "2076af1f0d6a7059e9cdd44f48976a01"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\layout.tsx": {
+    "mtime": 1777242885.7652805,
+    "ast_hash": "b980bf6ab78a9d6d0fd02d286499899c",
+    "semantic_hash": "b980bf6ab78a9d6d0fd02d286499899c"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\nutrition\\NutritionView.tsx": {
+    "mtime": 1780880926.956609,
+    "ast_hash": "a0d62a4a0e87d71ddbf97bc7e5c13a1b",
+    "semantic_hash": "a0d62a4a0e87d71ddbf97bc7e5c13a1b"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\nutrition\\page.tsx": {
+    "mtime": 1780880875.6538334,
+    "ast_hash": "42b365b74acc932805b70ad0e8294782",
+    "semantic_hash": "42b365b74acc932805b70ad0e8294782"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\profile\\ProfileView.tsx": {
+    "mtime": 1780881015.8873029,
+    "ast_hash": "515bcd56bf60e04587d970e787fb211e",
+    "semantic_hash": "515bcd56bf60e04587d970e787fb211e"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\profile\\page.tsx": {
+    "mtime": 1777243149.6169026,
+    "ast_hash": "052318f071a3c7d7e4123f8fd09a547d",
+    "semantic_hash": "052318f071a3c7d7e4123f8fd09a547d"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\program\\LogSessionModal.tsx": {
+    "mtime": 1780381948.6678605,
+    "ast_hash": "16caf13721c9ceecdd70c01dcdba3a52",
+    "semantic_hash": "16caf13721c9ceecdd70c01dcdba3a52"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\program\\ProgramView.tsx": {
+    "mtime": 1780775527.2916956,
+    "ast_hash": "99d9f4bdd3d45bfc3cc0af7bb77dc6cd",
+    "semantic_hash": "99d9f4bdd3d45bfc3cc0af7bb77dc6cd"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\program\\page.tsx": {
+    "mtime": 1780377457.5414073,
+    "ast_hash": "403cc4d3aa760ce7ba47d18aad648aa5",
+    "semantic_hash": "403cc4d3aa760ce7ba47d18aad648aa5"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\progress\\ProgressView.tsx": {
+    "mtime": 1780377451.9354956,
+    "ast_hash": "93e9a3cc6174c7c7199dc57f0a480da5",
+    "semantic_hash": "93e9a3cc6174c7c7199dc57f0a480da5"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\(app)\\progress\\page.tsx": {
+    "mtime": 1777243094.562601,
+    "ast_hash": "24be5119bc61302704e716ab1694faa8",
+    "semantic_hash": "24be5119bc61302704e716ab1694faa8"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\auth\\login\\route.ts": {
+    "mtime": 1777243182.7520337,
+    "ast_hash": "ebbf90fad944bda3cc295cb23f0293d6",
+    "semantic_hash": "ebbf90fad944bda3cc295cb23f0293d6"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\auth\\logout\\route.ts": {
+    "mtime": 1777243389.2346823,
+    "ast_hash": "8c24fa4f14064bf92d80c9216a749f31",
+    "semantic_hash": "8c24fa4f14064bf92d80c9216a749f31"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\chat\\route.ts": {
+    "mtime": 1780105222.6756003,
+    "ast_hash": "c8d1b514ad8d98a747fe18b25b5db3bd",
+    "semantic_hash": "c8d1b514ad8d98a747fe18b25b5db3bd"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\formcheck\\calibrate\\route.ts": {
+    "mtime": 1779326539.2818038,
+    "ast_hash": "45fe1b17f64ca514c5b3c572362326a4",
+    "semantic_hash": "45fe1b17f64ca514c5b3c572362326a4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\formcheck\\route.ts": {
+    "mtime": 1780105975.3574424,
+    "ast_hash": "5f6c138dca966bb053e19a250663d02d",
+    "semantic_hash": "5f6c138dca966bb053e19a250663d02d"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\nutrition\\generate\\route.ts": {
+    "mtime": 1780864761.037321,
+    "ast_hash": "0c86978e11f10f5aa38a054a091a25cb",
+    "semantic_hash": "0c86978e11f10f5aa38a054a091a25cb"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\onboarding\\route.ts": {
+    "mtime": 1780105962.1598039,
+    "ast_hash": "47f1d831ae054e6e0da4480142ceb105",
+    "semantic_hash": "47f1d831ae054e6e0da4480142ceb105"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\program\\adjust\\route.ts": {
+    "mtime": 1780103407.0410707,
+    "ast_hash": "f037774d5b58493188faaa0269deaa14",
+    "semantic_hash": "f037774d5b58493188faaa0269deaa14"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\program\\regenerate\\route.ts": {
+    "mtime": 1780105936.7183623,
+    "ast_hash": "35c5cf1b7d94ec6410182561eeea7be9",
+    "semantic_hash": "35c5cf1b7d94ec6410182561eeea7be9"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\session\\log-from-formcheck\\route.ts": {
+    "mtime": 1780103447.2808409,
+    "ast_hash": "db6904cf011d89372f479a1becb77b70",
+    "semantic_hash": "db6904cf011d89372f479a1becb77b70"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\api\\session\\log\\route.ts": {
+    "mtime": 1777243229.4619322,
+    "ast_hash": "88e73a3c8795f46a7c2d64ce7776c542",
+    "semantic_hash": "88e73a3c8795f46a7c2d64ce7776c542"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\layout.tsx": {
+    "mtime": 1780380213.7636988,
+    "ast_hash": "7d947a391602222c98d2c436867a8fc0",
+    "semantic_hash": "7d947a391602222c98d2c436867a8fc0"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\login\\page.tsx": {
+    "mtime": 1780775389.1316855,
+    "ast_hash": "9d4563d807cc6592ddf996e2c896d267",
+    "semantic_hash": "9d4563d807cc6592ddf996e2c896d267"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\onboarding\\OnboardingWizard.tsx": {
+    "mtime": 1780880977.4193563,
+    "ast_hash": "ec4e81f4041573a7b73c524c9ad2c88c",
+    "semantic_hash": "ec4e81f4041573a7b73c524c9ad2c88c"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\onboarding\\page.tsx": {
+    "mtime": 1777242816.8082373,
+    "ast_hash": "489d34cee2caa01f1f84bc5fa92b5fc4",
+    "semantic_hash": "489d34cee2caa01f1f84bc5fa92b5fc4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\app\\page.tsx": {
+    "mtime": 1780775379.4950879,
+    "ast_hash": "f1b42257839f369621daa8a3d07fffa4",
+    "semantic_hash": "f1b42257839f369621daa8a3d07fffa4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\layout\\AppShell.tsx": {
+    "mtime": 1780377140.6785355,
+    "ast_hash": "eda0659f365638c33f97e17784f61c29",
+    "semantic_hash": "eda0659f365638c33f97e17784f61c29"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\nav\\MobileNav.tsx": {
+    "mtime": 1780381960.789193,
+    "ast_hash": "2d0166c3155127392fe484d9ec8d6e96",
+    "semantic_hash": "2d0166c3155127392fe484d9ec8d6e96"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\nav\\SideNav.tsx": {
+    "mtime": 1780380265.5444179,
+    "ast_hash": "16ae39af5abd7b34d6a3738150bf09d5",
+    "semantic_hash": "16ae39af5abd7b34d6a3738150bf09d5"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\Button.tsx": {
+    "mtime": 1780380248.9371989,
+    "ast_hash": "a401019d2feed54781bf03987e9b8738",
+    "semantic_hash": "a401019d2feed54781bf03987e9b8738"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\Card.tsx": {
+    "mtime": 1777242744.9340513,
+    "ast_hash": "69a9919e548fca06b33edd79a1b22796",
+    "semantic_hash": "69a9919e548fca06b33edd79a1b22796"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\Input.tsx": {
+    "mtime": 1780378828.741678,
+    "ast_hash": "2dd76ae20d6ac7b3bad6b14b0ec6f3db",
+    "semantic_hash": "2dd76ae20d6ac7b3bad6b14b0ec6f3db"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\LiftlyLogo.tsx": {
+    "mtime": 1780120940.710019,
+    "ast_hash": "2d3382e962746dd9f8cf6b841f299073",
+    "semantic_hash": "2d3382e962746dd9f8cf6b841f299073"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\PlateSpinner.tsx": {
+    "mtime": 1777242765.339149,
+    "ast_hash": "624f96b41d808d58f2ad1261346647a1",
+    "semantic_hash": "624f96b41d808d58f2ad1261346647a1"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\components\\ui\\RPEBadge.tsx": {
+    "mtime": 1777242761.5643618,
+    "ast_hash": "5a258e353e8b4ff3a9d05891e3b8b10f",
+    "semantic_hash": "5a258e353e8b4ff3a9d05891e3b8b10f"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\ai.ts": {
+    "mtime": 1780105921.4837906,
+    "ast_hash": "bd5a302e06e78e8bd449d182a33aec65",
+    "semantic_hash": "bd5a302e06e78e8bd449d182a33aec65"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\auth.ts": {
+    "mtime": 1777242565.0520008,
+    "ast_hash": "4f9ec4090d2d35e3fd90b212837d55d5",
+    "semantic_hash": "4f9ec4090d2d35e3fd90b212837d55d5"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\calculations.ts": {
+    "mtime": 1780776527.373636,
+    "ast_hash": "0483c60339e2f4e0c46d87f1a16e5c11",
+    "semantic_hash": "0483c60339e2f4e0c46d87f1a16e5c11"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\cvService.ts": {
+    "mtime": 1779326113.9277422,
+    "ast_hash": "6890ef1a2b573b910b416276d7f5743c",
+    "semantic_hash": "6890ef1a2b573b910b416276d7f5743c"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\db.ts": {
+    "mtime": 1780864872.2582648,
+    "ast_hash": "10c1058a24cfca2246d5efb5ca2f8ee3",
+    "semantic_hash": "10c1058a24cfca2246d5efb5ca2f8ee3"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\nutrition-safety.ts": {
+    "mtime": 1780864624.2845547,
+    "ast_hash": "118c769fe28361de55f1255f255431cd",
+    "semantic_hash": "118c769fe28361de55f1255f255431cd"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\programming.ts": {
+    "mtime": 1780103378.3170452,
+    "ast_hash": "05678bcee0e77a5c8bdba893ee88c5d4",
+    "semantic_hash": "05678bcee0e77a5c8bdba893ee88c5d4"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\prompts\\chat.ts": {
+    "mtime": 1777242705.193937,
+    "ast_hash": "43886beb8472a18c4cb35bb406c14805",
+    "semantic_hash": "43886beb8472a18c4cb35bb406c14805"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\prompts\\formcheck.ts": {
+    "mtime": 1779330578.0783906,
+    "ast_hash": "b1dc6852882a476248933c2b6d54e298",
+    "semantic_hash": "b1dc6852882a476248933c2b6d54e298"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\prompts\\nutrition.ts": {
+    "mtime": 1780864695.984831,
+    "ast_hash": "47e34d95094f1f11b58be4a86f26a99a",
+    "semantic_hash": "47e34d95094f1f11b58be4a86f26a99a"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\prompts\\program.ts": {
+    "mtime": 1780103492.3385189,
+    "ast_hash": "91068431686e404a94cdbbcf8eeb667e",
+    "semantic_hash": "91068431686e404a94cdbbcf8eeb667e"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\types.ts": {
+    "mtime": 1780864839.9428763,
+    "ast_hash": "bf12826fbf001b7d27a7aea74e37b0c8",
+    "semantic_hash": "bf12826fbf001b7d27a7aea74e37b0c8"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\utils.ts": {
+    "mtime": 1777242607.8072603,
+    "ast_hash": "0ecac91f95ca4e4d1ed88741ff8af8ea",
+    "semantic_hash": "0ecac91f95ca4e4d1ed88741ff8af8ea"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\src\\lib\\velocity.ts": {
+    "mtime": 1779330488.581837,
+    "ast_hash": "7fa57fc37527f164e22e833f4932d57d",
+    "semantic_hash": "7fa57fc37527f164e22e833f4932d57d"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\tailwind.config.ts": {
+    "mtime": 1780380201.1265166,
+    "ast_hash": "a3a086dff55649681af25101d9117adf",
+    "semantic_hash": "a3a086dff55649681af25101d9117adf"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\tsconfig.json": {
+    "mtime": 1777242432.455009,
+    "ast_hash": "354e9ad5b293f3b9b6d0a4f603cfb2d8",
+    "semantic_hash": "354e9ad5b293f3b9b6d0a4f603cfb2d8"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\README.md": {
+    "mtime": 1779067212.0224495,
+    "ast_hash": "ede188d33628e1eb7a5e49c4bb94e251",
+    "semantic_hash": "ede188d33628e1eb7a5e49c4bb94e251"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\NEXT_SESSION_PROMPT.md": {
+    "mtime": 1780803294.2726338,
+    "ast_hash": "c32c582f2c3ef172f2ae6295e50bb6e0",
+    "semantic_hash": "c32c582f2c3ef172f2ae6295e50bb6e0"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\README.md": {
+    "mtime": 1779053761.3887427,
+    "ast_hash": "63e16f5d22b659938ef04984f1b59789",
+    "semantic_hash": "63e16f5d22b659938ef04984f1b59789"
+  },
+  "C:\\Users\\ashay\\powerlifting-coach\\cv-service\\requirements.txt": {
+    "mtime": 1779052704.6737263,
+    "ast_hash": "acc37657c27ac1f744e826fa0a37e76e",
+    "semantic_hash": "acc37657c27ac1f744e826fa0a37e76e"
+  }
+}

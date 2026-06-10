@@ -12,7 +12,7 @@
 // beginner rep regression when reps are missed.
 
 import { rpePercent } from './calculations';
-import type { LiftType, SessionLog, Unit } from './types';
+import type { Exercise, LiftType, Program, SessionLog, Unit } from './types';
 
 // ---------- Lift inference ----------
 
@@ -22,6 +22,56 @@ export function liftOf(name: string): LiftType {
   if (n.includes('bench')) return 'bench';
   if (n.includes('dead') || n.includes('rdl') || n.includes('rack pull')) return 'deadlift';
   return 'other';
+}
+
+// ---------- Finding the next scheduled instance of a lift ----------
+// Walks the program in (week, day) order and returns the next occurrence of
+// `lift` strictly after (fromWeek, fromDay). If nothing is ahead (end of the
+// program), it wraps to the first occurrence so the loop always has a "next".
+
+export interface ProgramOccurrence {
+  weekNumber: number;
+  dayNumber: number;
+  dayName: string;
+  exercise: Exercise;
+}
+
+export function findNextOccurrence(
+  program: Program,
+  lift: LiftType,
+  fromWeek: number | null,
+  fromDay: number | null,
+  opts: { preferComp?: boolean } = {},
+): ProgramOccurrence | null {
+  const seq: ProgramOccurrence[] = [];
+  for (const w of [...program.weeks].sort((a, b) => a.weekNumber - b.weekNumber)) {
+    for (const d of [...w.days].sort((a, b) => a.dayNumber - b.dayNumber)) {
+      for (const ex of d.exercises) {
+        if (liftOf(ex.name) !== lift) continue;
+        seq.push({
+          weekNumber: w.weekNumber,
+          dayNumber: d.dayNumber,
+          dayName: d.dayName,
+          exercise: ex,
+        });
+      }
+    }
+  }
+  if (seq.length === 0) return null;
+
+  const isAhead = (o: ProgramOccurrence) =>
+    fromWeek == null
+      ? true
+      : o.weekNumber > fromWeek ||
+        (o.weekNumber === fromWeek && (fromDay == null || o.dayNumber > fromDay));
+
+  const ahead = seq.filter(isAhead);
+  const pool = ahead.length > 0 ? ahead : seq; // wrap if nothing scheduled ahead
+  if (opts.preferComp) {
+    const comp = pool.find((o) => o.exercise.isCompetitionLift);
+    if (comp) return comp;
+  }
+  return pool[0];
 }
 
 // ---------- e1RM from a logged set ----------

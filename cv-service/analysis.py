@@ -420,6 +420,16 @@ def analyze_lift(
             f1 = min(n - 1, int(round(rep["phases"]["press"][1] * fps)))
             if f1 - f0 >= 3:
                 path_px = path_px[f0 : f1 + 1]
+        else:
+            # No clean reps to slice to. The whole-clip wrist path (walk-up,
+            # setup, re-grip, drop) renders as a scribble — instead show only the
+            # single biggest pull: the lowest bar point (floor) -> the highest
+            # point reached after it (lockout). That is the clean near-vertical
+            # line a deadlift bar path should be, even when reps weren't isolated.
+            lo = int(np.argmax(ry))                     # floor = lowest bar (max y)
+            hi = (lo + int(np.argmin(ry[lo:]))) if lo < n - 1 else lo
+            if hi - lo >= 3:
+                path_px = path_px[lo : hi + 1]
         overlay = _render_overlay(track, path_px, 0.0)
     else:
         path_px = np.column_stack([(barX / aspect) * w, (-up) * h])
@@ -432,17 +442,30 @@ def analyze_lift(
             "and in frame."
         )
     if not reps:
+        # Framing advice is per-lift: a deadlift/squat is filmed standing (no
+        # "foot of the bench", no rack), so the bench wording would be wrong.
+        if lift == "bench":
+            frame_hint = ("film from the side or foot of the bench with the whole "
+                          "body and the full press (unrack -> re-rack) in frame")
+            full_lift = "the whole press (unrack -> re-rack)"
+        elif lift == "deadlift":
+            frame_hint = ("film from the side with the whole body and the full "
+                          "pull (floor to lockout) in frame")
+            full_lift = "the whole pull (floor to lockout)"
+        else:  # squat
+            frame_hint = ("film from the side with the whole body and the full "
+                          "squat (top to bottom to top) in frame")
+            full_lift = "the whole squat"
         if track.coverage < 0.5:
             warnings.append(
                 "Couldn't read clean reps — the lifter was only tracked in "
-                f"{round(track.coverage * 100)}% of frames. Best results: film "
-                "from the side or foot of the bench with the whole body and the "
-                "full lift (unrack -> re-rack) in frame, well lit and steady."
+                f"{round(track.coverage * 100)}% of frames. Best results: "
+                f"{frame_hint}, well lit and steady."
             )
         else:
             warnings.append(
                 "Tracked the lifter but couldn't isolate distinct reps — make "
-                "sure the whole lift (unrack -> re-rack) is in frame."
+                f"sure {full_lift} is in frame."
             )
 
     n_pts = max(1, n // 240)

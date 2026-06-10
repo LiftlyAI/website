@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { getDb, uuid } from '@/lib/db';
 import { toLbs } from '@/lib/calculations';
-import type { AthleteProfile, CvAnalysis } from '@/lib/types';
+import { computeHandoff } from '@/lib/handoff';
+import type { AthleteProfile, CvAnalysis, LiftType } from '@/lib/types';
 
 const Body = z.object({
   formCheckId: z.string().min(1),
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   const db = getDb();
   const fc = db
     .prepare(
-      `SELECT lift_type, load_kg, estimated_rpe, cv_json
+      `SELECT lift_type, load_kg, estimated_rpe, cv_json, ai_analysis
        FROM form_checks WHERE id = ? AND athlete_id = ?`,
     )
     .get(parsed.data.formCheckId, session.id) as
@@ -46,6 +47,7 @@ export async function POST(req: NextRequest) {
         load_kg: number | null;
         estimated_rpe: number | null;
         cv_json: string | null;
+        ai_analysis: string | null;
       }
     | undefined;
   if (!fc) {
@@ -82,6 +84,20 @@ export async function POST(req: NextRequest) {
     )
     .get(session.id) as { current_week: number } | undefined;
 
+  // Carry the form-check's top cue into the session note so the fix travels
+  // with the logged set (and into the coach's context on the next read).
+  let cue = '';
+  try {
+    const a = fc.ai_analysis
+      ? (JSON.parse(fc.ai_analysis) as { priorityCues?: string[]; nextSession?: string })
+      : null;
+    cue = a?.priorityCues?.[0] ?? a?.nextSession ?? '';
+  } catch {
+    /* ai_analysis is raw text on older rows — nothing to extract */
+  }
+  const note =
+    `Auto-logged from form check (measured RPE ${rpe}).` + (cue ? ` Cue: ${cue}` : '');
+
   const id = uuid();
   const today = new Date().toISOString().slice(0, 10);
   const exercises = [
@@ -101,9 +117,17 @@ export async function POST(req: NextRequest) {
     pRow?.current_week ?? null,
     null,
     JSON.stringify(exercises),
-    `Auto-logged from form check (measured RPE ${rpe}).`,
+    note,
     null,
     Date.now(),
   );
-  return NextResponse.json({ ok: true, id, weight, unit, reps, rpe });
+
+  const handoff = computeHandoff(
+    db,
+    session.id,
+    [fc.lift_type as LiftType],
+    pRow?.current_week ?? null,
+    null,
+  );
+  return NextResponse.json({ ok: true, id, weight, unit, reps, rpe, handoff });
 }
