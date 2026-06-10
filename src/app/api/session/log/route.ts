@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { execute, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { liftOf } from '@/lib/programming';
 import { computeHandoff } from '@/lib/handoff';
+import { loadCoachingData, replacePendingLoadSuggestions } from '@/lib/coach-data';
+import { generateLoadSuggestions } from '@/lib/suggestions';
 
 const Body = z.object({
   date: z.string(),
@@ -71,6 +73,37 @@ export async function POST(req: NextRequest) {
     parsed.data.weekNumber ?? null,
     parsed.data.dayNumber ?? null,
   );
+
+  // Coached athletes get human-in-the-loop instead: the same adaptations go to
+  // their coach's pending queue, and the lifter sees none of them until the
+  // coach approves. Self-serve athletes are unaffected.
+  const coachedBy =
+    (
+      await queryOne<{ coached_by: string | null }>(
+        'SELECT coached_by FROM athletes WHERE id = ?',
+        [session.id],
+      )
+    )?.coached_by ?? null;
+  if (coachedBy) {
+    const coaching = await loadCoachingData(session.id);
+    if (coaching) {
+      const payloads = generateLoadSuggestions({
+        program: coaching.program,
+        profile: coaching.profile,
+        logs: coaching.logs,
+        fromWeek: parsed.data.weekNumber ?? null,
+        fromDay: parsed.data.dayNumber ?? null,
+        lifts: loggedLifts,
+      });
+      await replacePendingLoadSuggestions(coachedBy, session.id, payloads, 'session-log');
+    }
+    return NextResponse.json({
+      ok: true,
+      id,
+      handoff: { ...handoff, adaptations: [] },
+      coachReview: true,
+    });
+  }
 
   return NextResponse.json({ ok: true, id, handoff });
 }

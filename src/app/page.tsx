@@ -30,10 +30,18 @@ export default async function Landing() {
             <Link href="/login" className="btn-primary">
               Start Lifting →
             </Link>
+            <Link href="/coach/login" className="btn-ghost">
+              For Coaches
+            </Link>
             <a href="#how" className="btn-ghost">
               How it works
             </a>
           </div>
+
+          <p className="mt-4 text-xs font-mono text-chalk-mute">
+            Coaching a roster? Triage all your clients at a glance — the AI does the
+            first pass, you approve every change.
+          </p>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
             {[

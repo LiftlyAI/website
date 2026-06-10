@@ -5,7 +5,7 @@
 // app/api/auth/logout. There is no local file DB here — all access goes through
 // the Postgres helpers in ./db (Vercel's filesystem is read-only).
 import { createSupabaseServerClient } from './supabase/server';
-import { execute, queryOne } from './db';
+import { execute, queryOne, uuid } from './db';
 
 export interface SessionAthlete {
   id: string;
@@ -15,6 +15,11 @@ export interface SessionAthlete {
 }
 
 export async function getSession(): Promise<SessionAthlete | null> {
+  // No Supabase configured → treat as logged out rather than throwing, so the
+  // landing page and non-lifter surfaces (coach console) still render.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return null;
+  }
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -30,6 +35,25 @@ export async function getSession(): Promise<SessionAthlete | null> {
 
   if (!row) {
     const email = (user.email ?? '').toLowerCase().trim();
+    // A coach may have pre-created this athlete by email (roster invite) before
+    // their first Supabase sign-in — adopt that row, with its program and coach
+    // link intact, instead of forking a second account keyed on the Supabase id.
+    // (The email UNIQUE constraint would otherwise make the insert below a no-op
+    // and strand them.)
+    const byEmail = await queryOne<{
+      id: string;
+      email: string;
+      name: string | null;
+      profile_json: string | null;
+    }>('SELECT id, email, name, profile_json FROM athletes WHERE email = ?', [email]);
+    if (byEmail) {
+      return {
+        id: byEmail.id,
+        email: byEmail.email,
+        name: byEmail.name,
+        hasProfile: !!byEmail.profile_json,
+      };
+    }
     // ON CONFLICT DO NOTHING guards against a race on simultaneous first requests.
     await execute(
       'INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING',
@@ -45,4 +69,36 @@ export async function requireSession(): Promise<SessionAthlete> {
   const s = await getSession();
   if (!s) throw new Error('UNAUTHORIZED');
   return s;
+}
+
+// Get-or-create by email, for flows where the athlete hasn't signed in yet
+// (coach roster invites). When they later sign in via Supabase, getSession
+// adopts this row by email match.
+export async function getOrCreateAthleteByEmail(
+  email: string,
+  name?: string,
+): Promise<SessionAthlete> {
+  const normalized = email.trim().toLowerCase();
+  const existing = await queryOne<{
+    id: string;
+    email: string;
+    name: string | null;
+    profile_json: string | null;
+  }>('SELECT id, email, name, profile_json FROM athletes WHERE email = ?', [normalized]);
+  if (existing) {
+    return {
+      id: existing.id,
+      email: existing.email,
+      name: existing.name,
+      hasProfile: !!existing.profile_json,
+    };
+  }
+  const id = uuid();
+  await execute('INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?)', [
+    id,
+    normalized,
+    name ?? null,
+    Date.now(),
+  ]);
+  return { id, email: normalized, name: name ?? null, hasProfile: false };
 }

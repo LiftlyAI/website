@@ -344,3 +344,66 @@ export interface WeeklyReview {
   findings: DecisionFinding[];
   sundayTweak: string; // the one change to make next week (or "hold the line")
 }
+
+// ---------- Coach console (B2B human-in-the-loop layer) ----------
+// The engines propose; the coach approves/edits/rejects. Nothing reaches a
+// coached athlete's program until the coach signs off.
+
+export type SuggestionStatus = 'pending' | 'approved' | 'rejected';
+
+// One proposed load change for the next scheduled occurrence of a lift.
+// Carries (weekNumber, dayNumber, exerciseName) so an approval can be applied
+// to the program JSON later without re-deriving the occurrence.
+export interface LoadSuggestionPayload {
+  lift: LiftType;
+  exerciseName: string;
+  weekNumber: number;
+  dayNumber: number;
+  dayName: string;
+  plannedWeight: number;
+  suggestedWeight: number;
+  reason: string;
+  deload: boolean;
+  unit: Unit;
+}
+
+export interface CoachSuggestion {
+  id: string;
+  coachId: string;
+  athleteId: string;
+  kind: 'load_adjust';
+  payload: LoadSuggestionPayload;
+  editedWeight: number | null; // coach's override of suggestedWeight, if any
+  status: SuggestionStatus;
+  source: string | null; // which engine produced it, e.g. 'autoregulation'
+  coachNote: string | null;
+  createdAt: number;
+  resolvedAt: number | null;
+}
+
+export interface RosterEntry {
+  athleteId: string;
+  name: string | null;
+  email: string;
+  hasProfile: boolean;
+  lastSessionDate: string | null; // ISO yyyy-mm-dd
+  daysSinceLastSession: number | null; // null = never logged
+  pendingSuggestions: number;
+}
+
+export interface TriageFlag {
+  severity: DecisionSeverity;
+  title: string;
+  detail: string;
+}
+
+// One roster row in the "who needs attention this week" queue, ranked by score.
+export interface TriageItem {
+  athleteId: string;
+  name: string | null;
+  email: string;
+  score: number;
+  flags: TriageFlag[];
+  daysSinceLastSession: number | null;
+  pendingSuggestions: number;
+}

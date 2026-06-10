@@ -111,3 +111,43 @@ create table if not exists readiness_logs (
   unique(athlete_id, date)
 );
 create index if not exists idx_readiness_logs_athlete on readiness_logs(athlete_id, date);
+
+-- B2B coach layer. A coach owns a roster via coach_athletes; coach_suggestions
+-- is the human-in-the-loop queue: the engines propose, the coach approves/edits/
+-- rejects, and only then does a coached athlete's program change. `coached_by` on
+-- athletes routes a coached lifter's load changes through that approval queue
+-- instead of applying directly.
+alter table athletes add column if not exists coached_by text;
+
+create table if not exists coaches (
+  id         text primary key,
+  email      text unique not null,
+  name       text,
+  created_at bigint not null
+);
+
+create table if not exists coach_athletes (
+  coach_id   text not null references coaches(id) on delete cascade,
+  athlete_id text not null references athletes(id) on delete cascade,
+  status     text not null default 'active',
+  created_at bigint not null,
+  primary key (coach_id, athlete_id)
+);
+
+create table if not exists coach_suggestions (
+  id            text primary key,
+  coach_id      text not null references coaches(id) on delete cascade,
+  athlete_id    text not null references athletes(id) on delete cascade,
+  kind          text not null,
+  payload_json  text not null,
+  edited_weight double precision,
+  status        text not null default 'pending',
+  source        text,
+  coach_note    text,
+  created_at    bigint not null,
+  resolved_at   bigint
+);
+create index if not exists idx_coach_suggestions_coach
+  on coach_suggestions(coach_id, status, created_at);
+create index if not exists idx_coach_suggestions_athlete
+  on coach_suggestions(athlete_id, status, created_at);

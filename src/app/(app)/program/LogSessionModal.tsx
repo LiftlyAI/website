@@ -33,6 +33,7 @@ export function LogSessionModal({
   const [bodyweight, setBodyweight] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [handoff, setHandoff] = useState<LoopHandoff | null>(null);
+  const [coachReview, setCoachReview] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const [logged, setLogged] = useState<LoggedExercise[]>(
@@ -76,6 +77,7 @@ export function LogSessionModal({
       // Don't dead-end: hold the modal open and show what this log just
       // changed for the next session + the obvious next step (film it).
       setHandoff((data.handoff as LoopHandoff) ?? null);
+      setCoachReview(Boolean(data.coachReview));
       setSaved(true);
       setSubmitting(false);
       router.refresh();
@@ -101,7 +103,15 @@ export function LogSessionModal({
         </div>
 
         {saved ? (
-          <HandoffPanel handoff={handoff} onDone={onClose} />
+          <>
+            {coachReview && (
+              <div className="mx-5 mt-5 rounded-lg border border-blood/40 bg-blood/10 px-4 py-3 text-sm text-chalk-dim font-body">
+                Sent to your coach — suggested load changes apply once they review and
+                approve them.
+              </div>
+            )}
+            <HandoffPanel handoff={handoff} onDone={onClose} />
+          </>
         ) : (
           <>
             <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
