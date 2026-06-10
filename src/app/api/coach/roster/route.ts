@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireCoach } from '@/lib/coach-auth';
-import { getOrCreateAthlete } from '@/lib/auth';
+import { getOrCreateAthleteByEmail } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { listRoster } from '@/lib/coach-data';
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   let added = 0;
   for (const c of parsed.data.clients) {
-    const athlete = getOrCreateAthlete(c.email, c.name);
+    const athlete = getOrCreateAthleteByEmail(c.email, c.name);
     link.run(coach.id, athlete.id, Date.now());
     mark.run(coach.id, athlete.id);
     added++;
