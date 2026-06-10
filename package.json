@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test tests/readiness.test.ts tests/decision-rules.test.ts tests/weekly-review.test.ts",
+    "test": "node --import tsx --test tests/readiness.test.ts tests/decision-rules.test.ts tests/weekly-review.test.ts tests/triage.test.ts tests/suggestions.test.ts",
     "db:init": "tsx scripts/init-db.ts"
   },
   "dependencies": {

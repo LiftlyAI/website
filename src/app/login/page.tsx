@@ -72,7 +72,11 @@ export default function LoginPage() {
         <p className="text-sm text-chalk-mute mb-6 font-body">
           {mode === 'signin'
             ? 'Sign in to your account to continue training.'
-            : 'Create an account to start your program.'}
+            : 'Create an account to start your program.'}{' '}
+          Coaching a roster?{' '}
+          <Link href="/coach/login" className="text-blood hover:text-blood-glow">
+            Coach sign in →
+          </Link>
         </p>
 
         <form onSubmit={submit} className="space-y-4">

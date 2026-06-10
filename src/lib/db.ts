@@ -135,6 +135,43 @@ function ensureSchema(db: Database.Database) {
       UNIQUE(athlete_id, date)
     );
     CREATE INDEX IF NOT EXISTS idx_readiness_logs_athlete ON readiness_logs(athlete_id, date);
+
+    -- B2B coach layer. A coach owns a roster via coach_athletes;
+    -- coach_suggestions is the human-in-the-loop queue: the engines propose,
+    -- the coach approves/edits/rejects, and only then does a coached athlete's
+    -- program change.
+    CREATE TABLE IF NOT EXISTS coaches (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT,
+      created_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS coach_athletes (
+      coach_id TEXT NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+      status TEXT NOT NULL DEFAULT 'active',
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (coach_id, athlete_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS coach_suggestions (
+      id TEXT PRIMARY KEY,
+      coach_id TEXT NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,
+      payload_json TEXT NOT NULL,
+      edited_weight REAL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      source TEXT,
+      coach_note TEXT,
+      created_at INTEGER NOT NULL,
+      resolved_at INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_coach_suggestions_coach
+      ON coach_suggestions(coach_id, status, created_at);
+    CREATE INDEX IF NOT EXISTS idx_coach_suggestions_athlete
+      ON coach_suggestions(athlete_id, status, created_at);
   `);
 
   // Additive migrations for form_checks (existing dbs predate bar-path CV).
@@ -143,6 +180,9 @@ function ensureSchema(db: Database.Database) {
   addColumnIfMissing(db, 'form_checks', 'load_kg', 'REAL');
   // velocity_log predates the move from m/s to slowdown%.
   addColumnIfMissing(db, 'velocity_log', 'slowdown_pct', 'REAL');
+  // Set when a coach manages this athlete: load changes then route through the
+  // coach_suggestions approval queue instead of applying directly.
+  addColumnIfMissing(db, 'athletes', 'coached_by', 'TEXT');
   relaxVelocityLogMcv(db);
 }
 
