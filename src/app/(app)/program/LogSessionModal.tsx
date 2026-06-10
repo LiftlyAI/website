@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { X, Check, Video, ArrowRight } from 'lucide-react';
+import { X, Check, Video, ArrowRight, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ProgramDay, LoopHandoff } from '@/lib/types';
 
@@ -202,6 +202,30 @@ function HandoffPanel({
   const changed = (handoff?.adaptations ?? []).filter((a) => a.changed);
   const filmLift = handoff?.filmLift ?? null;
 
+  // The coach's one-line read on this log. Best-effort: if the endpoint returns
+  // null (no AI key, provider down) we just render nothing — never blocks.
+  const [coachNote, setCoachNote] = useState<string | null>(null);
+  const [noteLoading, setNoteLoading] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/coach/note', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ event: 'log' }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (alive) setCoachNote(typeof d?.note === 'string' ? d.note : null);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (alive) setNoteLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <>
       <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
@@ -209,6 +233,19 @@ function HandoffPanel({
           <Check className="w-5 h-5" />
           <span className="stencil-heading text-lg">Session logged</span>
         </div>
+
+        {(noteLoading || coachNote) && (
+          <div className="border-l-2 border-blood pl-3">
+            <div className="stencil-heading text-[10px] tracking-widest text-blood mb-1 inline-flex items-center gap-1">
+              <MessageSquare className="w-3 h-3" /> COACH’S READ
+            </div>
+            {coachNote ? (
+              <p className="text-sm text-chalk font-body italic">{coachNote}</p>
+            ) : (
+              <p className="text-xs text-chalk-mute font-mono animate-pulse">reading your log…</p>
+            )}
+          </div>
+        )}
 
         {changed.length > 0 ? (
           <div>

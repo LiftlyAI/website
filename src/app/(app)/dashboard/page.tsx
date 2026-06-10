@@ -3,11 +3,20 @@ import { requireSession } from '@/lib/auth';
 import { getDb } from '@/lib/db';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Dumbbell, Video, MessageSquare, Apple, ArrowRight } from 'lucide-react';
-import type { AthleteProfile, Program, ProgramDay } from '@/lib/types';
+import type {
+  AthleteProfile,
+  Program,
+  ProgramDay,
+  ReadinessAssessment,
+  ReadinessLog,
+} from '@/lib/types';
 import { estimatedOneRM } from '@/lib/calculations';
 import { computeHandoff } from '@/lib/handoff';
+import { assessReadinessLog } from '@/lib/readiness';
+import { computeWeeklyReview } from '@/lib/review-data';
 import { fmtDate } from '@/lib/utils';
 import { TodayLoopCard, type LoopStep } from './TodayLoopCard';
+import { WeeklyReviewCard } from './WeeklyReviewCard';
 
 export default async function Dashboard() {
   const session = await requireSession();
@@ -118,6 +127,46 @@ export default async function Dashboard() {
     ? computeHandoff(db, session.id, ['squat', 'bench', 'deadlift'], null, null)
     : { adaptations: [], filmLift: null };
 
+  // Today's OPTIONAL readiness check-in (drives a soft cap, never gates the loop).
+  const readinessRow = db
+    .prepare(
+      'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? AND date = ?',
+    )
+    .get(session.id, todayStr) as
+    | {
+        id: string;
+        athlete_id: string;
+        date: string;
+        sleep: number;
+        energy: number;
+        soreness: number;
+        stress: number;
+        pain: number | null;
+        pain_note: string | null;
+        note: string | null;
+        created_at: number;
+      }
+    | undefined;
+  const readiness: ReadinessLog | null = readinessRow
+    ? {
+        id: readinessRow.id,
+        athleteId: readinessRow.athlete_id,
+        date: readinessRow.date,
+        sleep: readinessRow.sleep,
+        energy: readinessRow.energy,
+        soreness: readinessRow.soreness,
+        stress: readinessRow.stress,
+        pain: readinessRow.pain,
+        painNote: readinessRow.pain_note,
+        note: readinessRow.note,
+        createdAt: readinessRow.created_at,
+      }
+    : null;
+  const assessment: ReadinessAssessment | null = readiness ? assessReadinessLog(readiness) : null;
+
+  // The Sunday tweak — planned vs actual + what the loop noticed this week.
+  const weeklyReview = program ? computeWeeklyReview(db, session.id) : null;
+
   let step: LoopStep;
   if (!program) step = 'program';
   else if (daysSinceLast != null && daysSinceLast >= 5) step = 'resume';
@@ -182,6 +231,8 @@ export default async function Dashboard() {
             daysSinceLast={daysSinceLast}
             adaptations={handoff.adaptations}
             filmLift={filmLift}
+            readiness={readiness}
+            assessment={assessment}
           />
         </div>
 
@@ -202,6 +253,13 @@ export default async function Dashboard() {
           <QuickAction href="/program" icon={<Dumbbell className="w-4 h-4" />} label="Full program" />
         </div>
       </div>
+
+      {/* Adapt, made visible — planned vs actual + the one change for next week. */}
+      {weeklyReview && (
+        <div className="mt-6">
+          <WeeklyReviewCard review={weeklyReview} />
+        </div>
+      )}
     </div>
   );
 }

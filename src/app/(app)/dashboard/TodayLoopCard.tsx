@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { RPEBadge } from '@/components/ui/RPEBadge';
 import { cn } from '@/lib/utils';
 import { LogSessionModal } from '../program/LogSessionModal';
-import type { LoopAdaptation, ProgramDay } from '@/lib/types';
+import { ReadinessCard } from './ReadinessCard';
+import type { LoopAdaptation, ProgramDay, ReadinessAssessment, ReadinessLog } from '@/lib/types';
 
 export type LoopStep = 'program' | 'resume' | 'execute' | 'review' | 'adapt';
 
@@ -27,6 +28,8 @@ export function TodayLoopCard({
   daysSinceLast,
   adaptations,
   filmLift,
+  readiness,
+  assessment,
 }: {
   step: LoopStep;
   day: ProgramDay | null;
@@ -35,16 +38,26 @@ export function TodayLoopCard({
   daysSinceLast: number | null;
   adaptations: LoopAdaptation[];
   filmLift: 'squat' | 'bench' | 'deadlift' | null;
+  readiness: ReadinessLog | null;
+  assessment: ReadinessAssessment | null;
 }) {
   const [logOpen, setLogOpen] = useState(false);
   const changed = adaptations.filter((a) => a.changed);
+  // A soft, suggested ceiling from today's check-in — only shown while there's
+  // training ahead today, and always framed as the lifter's call.
+  const rpeCap = assessment?.rpeCap ?? null;
 
   return (
     <div className="chalk-card p-5">
       {/* The loop, made visible — current stage lit. */}
       <Stepper active={activeIndex(step)} />
 
-      <div className="mt-5">
+      {/* Optional readiness check-in — never gates the loop. */}
+      <div className="mt-4">
+        <ReadinessCard readiness={readiness} assessment={assessment} />
+      </div>
+
+      <div className="mt-1">
         {step === 'program' && <ProgramStep />}
         {step === 'resume' && (
           <ResumeStep
@@ -52,6 +65,7 @@ export function TodayLoopCard({
             daysSinceLast={daysSinceLast}
             unit={unit}
             filmLift={filmLift}
+            rpeCap={rpeCap}
             onLog={() => setLogOpen(true)}
           />
         )}
@@ -61,6 +75,7 @@ export function TodayLoopCard({
             unit={unit}
             changed={changed}
             filmLift={filmLift}
+            rpeCap={rpeCap}
             onLog={() => setLogOpen(true)}
           />
         )}
@@ -140,17 +155,32 @@ function ExerciseList({ day, unit }: { day: ProgramDay; unit: 'lbs' | 'kg' }) {
   );
 }
 
+function RpeCapNote({ rpeCap }: { rpeCap: number | null }) {
+  if (rpeCap == null) return null;
+  return (
+    <div className="mt-3 border border-rpe-mod/40 bg-rpe-mod/10 p-2.5 text-[12px] text-rpe-mod font-body flex gap-2">
+      <span className="font-mono text-[10px] tracking-widest shrink-0 mt-0.5">CAP</span>
+      <span>
+        Today’s check-in suggests holding the top set to RPE {rpeCap}. It’s a ceiling, not an order —
+        if the bar moves well, trust that over the number.
+      </span>
+    </div>
+  );
+}
+
 function ExecuteStep({
   day,
   unit,
   changed,
   filmLift,
+  rpeCap,
   onLog,
 }: {
   day: ProgramDay | null;
   unit: 'lbs' | 'kg';
   changed: LoopAdaptation[];
   filmLift: 'squat' | 'bench' | 'deadlift' | null;
+  rpeCap: number | null;
   onLog: () => void;
 }) {
   if (!day) {
@@ -163,6 +193,7 @@ function ExecuteStep({
       </div>
       <div className="stencil-heading text-xl text-chalk">Train, then log it</div>
       <ExerciseList day={day} unit={unit} />
+      <RpeCapNote rpeCap={rpeCap} />
 
       {changed.length > 0 && (
         <div className="mt-4 border border-iron-800 bg-iron-900/40 p-3">
@@ -195,12 +226,14 @@ function ResumeStep({
   daysSinceLast,
   unit,
   filmLift,
+  rpeCap,
   onLog,
 }: {
   day: ProgramDay | null;
   daysSinceLast: number | null;
   unit: 'lbs' | 'kg';
   filmLift: 'squat' | 'bench' | 'deadlift' | null;
+  rpeCap: number | null;
   onLog: () => void;
 }) {
   return (
@@ -219,6 +252,7 @@ function ResumeStep({
             DAY {day.dayNumber} · {day.dayName}
           </div>
           <ExerciseList day={day} unit={unit} />
+          <RpeCapNote rpeCap={rpeCap} />
           <div className="flex gap-3 mt-5 flex-wrap">
             <Button onClick={onLog} size="sm">
               Log a re-entry session
