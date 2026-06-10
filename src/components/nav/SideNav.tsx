@@ -9,6 +9,7 @@ import {
   TrendingUp,
   MessageSquare,
   User,
+  Info,
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,7 @@ const links = [
   { href: '/progress', label: 'Progress', icon: TrendingUp },
   { href: '/chat', label: 'Coach', icon: MessageSquare },
   { href: '/profile', label: 'Profile', icon: User },
+  { href: '/about', label: 'About', icon: Info },
 ];
 
 export function SideNav() {

@@ -11,6 +11,7 @@ import {
   Apple,
   TrendingUp,
   User,
+  Info,
   LogOut,
   X,
 } from 'lucide-react';
@@ -29,6 +30,7 @@ const secondary = [
   { href: '/nutrition', label: 'Nutrition', icon: Apple },
   { href: '/progress', label: 'Progress', icon: TrendingUp },
   { href: '/profile', label: 'Profile', icon: User },
+  { href: '/about', label: 'About', icon: Info },
 ];
 
 export function MobileNav() {
