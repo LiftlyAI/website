@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import type { AthleteProfile, Program } from '@/lib/types';
@@ -13,10 +13,10 @@ export async function POST() {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const row = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   if (!row?.profile_json) {
     return NextResponse.json({ error: 'no profile' }, { status: 400 });
   }
@@ -50,15 +50,16 @@ export async function POST() {
     );
   }
 
-  db.prepare(
+  await execute(
     'INSERT INTO programs (id, athlete_id, program_json, current_week, current_block, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-  ).run(
-    uuid(),
-    session.id,
-    JSON.stringify(program),
-    1,
-    program.currentBlock ?? program.weeks[0]?.blockName ?? 'Hypertrophy',
-    Date.now(),
+    [
+      uuid(),
+      session.id,
+      JSON.stringify(program),
+      1,
+      program.currentBlock ?? program.weeks[0]?.blockName ?? 'Hypertrophy',
+      Date.now(),
+    ],
   );
 
   return NextResponse.json({ ok: true });

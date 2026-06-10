@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, uuid } from '@/lib/db';
 import { aiGenerate, safeParseJson } from '@/lib/ai';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import { noviceMaxEstimate } from '@/lib/calculations';
@@ -43,10 +43,11 @@ export async function POST(req: NextRequest) {
     };
   }
 
-  const db = getDb();
-  db.prepare(
-    'UPDATE athletes SET name = ?, profile_json = ? WHERE id = ?',
-  ).run(profile.name, JSON.stringify(profile), session.id);
+  await execute('UPDATE athletes SET name = ?, profile_json = ? WHERE id = ?', [
+    profile.name,
+    JSON.stringify(profile),
+    session.id,
+  ]);
 
   if (parsed.data.skipProgramGeneration) {
     return NextResponse.json({ ok: true });
@@ -56,15 +57,16 @@ export async function POST(req: NextRequest) {
   try {
     const program = await generateProgram(profile);
     const programId = uuid();
-    db.prepare(
+    await execute(
       'INSERT INTO programs (id, athlete_id, program_json, current_week, current_block, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    ).run(
-      programId,
-      session.id,
-      JSON.stringify(program),
-      1,
-      program.currentBlock ?? program.weeks[0]?.blockName ?? 'Hypertrophy',
-      Date.now(),
+      [
+        programId,
+        session.id,
+        JSON.stringify(program),
+        1,
+        program.currentBlock ?? program.weeks[0]?.blockName ?? 'Hypertrophy',
+        Date.now(),
+      ],
     );
     return NextResponse.json({ ok: true, programId });
   } catch (err: unknown) {

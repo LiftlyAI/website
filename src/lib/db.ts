@@ -1,205 +1,90 @@
-import Database from 'better-sqlite3';
-import path from 'node:path';
-import fs from 'node:fs';
+// Data layer — Supabase Postgres via postgres.js.
+//
+// Why postgres.js + the Supabase *transaction* pooler (port 6543): Vercel runs
+// each route in a short-lived serverless function with a read-only filesystem,
+// so the old better-sqlite3 file DB couldn't exist there (ENOENT). A direct
+// Postgres connection through the pooler is the serverless-safe replacement.
+//
+// All access here is server-side and already gated by our own cookie auth
+// (see auth.ts), so we connect with the trusted DB role and do NOT rely on
+// Supabase RLS — the app enforces per-athlete access via `athlete_id`.
+//
+// The query helpers keep the existing `?`-placeholder SQL intact by rewriting
+// `?` -> `$1..$n` before sending. `ON CONFLICT (...) DO UPDATE SET x =
+// excluded.x` is valid in both SQLite and Postgres, so those survive unchanged.
 
-let _db: Database.Database | null = null;
+import postgres from 'postgres';
 
-export function getDb(): Database.Database {
-  if (_db) return _db;
+type Sql = ReturnType<typeof postgres>;
 
-  const dbPath = process.env.DATABASE_PATH ?? './data/coach.db';
-  const dir = path.dirname(dbPath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+// Reuse one client across hot-reloads (dev) and warm invocations (serverless).
+const globalForPg = globalThis as unknown as { _coachSql?: Sql };
 
-  _db = new Database(dbPath);
-  _db.pragma('journal_mode = WAL');
-  _db.pragma('foreign_keys = ON');
+function client(): Sql {
+  if (globalForPg._coachSql) return globalForPg._coachSql;
 
-  ensureSchema(_db);
-  return _db;
-}
-
-function ensureSchema(db: Database.Database) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS athletes (
-      id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
-      name TEXT,
-      profile_json TEXT,
-      created_at INTEGER NOT NULL
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      'DATABASE_URL is not set. Add your Supabase Postgres connection string ' +
+        '(Project Settings → Database → Connection string → Transaction pooler) ' +
+        'to .env.local and to your Vercel environment variables.',
     );
-
-    CREATE TABLE IF NOT EXISTS programs (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      program_json TEXT NOT NULL,
-      current_week INTEGER NOT NULL DEFAULT 1,
-      current_block TEXT,
-      created_at INTEGER NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS session_logs (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      date TEXT NOT NULL,
-      week_number INTEGER,
-      day_number INTEGER,
-      exercises_json TEXT NOT NULL,
-      notes TEXT,
-      bodyweight REAL,
-      created_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_session_logs_athlete ON session_logs(athlete_id, date);
-
-    CREATE TABLE IF NOT EXISTS form_checks (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      lift_type TEXT NOT NULL,
-      video_path TEXT,
-      frames_count INTEGER,
-      user_context TEXT,
-      ai_analysis TEXT,
-      estimated_rpe REAL,
-      created_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_form_checks_athlete ON form_checks(athlete_id, created_at);
-
-    -- One row per analysed set: the load + measured mean concentric
-    -- velocity + (once the lifter confirms it) the actual RPE/RIR. This is
-    -- the lifter's personal load–velocity profile, used to calibrate the
-    -- velocity→RPE estimate over time.
-    CREATE TABLE IF NOT EXISTS velocity_log (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      form_check_id TEXT REFERENCES form_checks(id) ON DELETE CASCADE,
-      lift_type TEXT NOT NULL,
-      load_kg REAL,
-      bodyweight_kg REAL,
-      reps INTEGER,
-      mcv_ms REAL,
-      slowdown_pct REAL,
-      actual_rpe REAL,
-      date TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_velocity_log_athlete
-      ON velocity_log(athlete_id, lift_type, created_at);
-
-    CREATE TABLE IF NOT EXISTS chat_messages (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      role TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_chat_messages_athlete ON chat_messages(athlete_id, created_at);
-
-    CREATE TABLE IF NOT EXISTS bodyweight_logs (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      date TEXT NOT NULL,
-      bodyweight REAL NOT NULL,
-      created_at INTEGER NOT NULL,
-      UNIQUE(athlete_id, date)
-    );
-
-    -- One row per generated meal plan. plan_json is the MealPlan; targets_json
-    -- is the macro snapshot at generation time (used to flag staleness when the
-    -- athlete's computed targets later change). steer = the optional per-plan
-    -- free-text the lifter typed for this generation.
-    CREATE TABLE IF NOT EXISTS meal_plans (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      plan_json TEXT NOT NULL,
-      targets_json TEXT NOT NULL,
-      steer TEXT,
-      created_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_meal_plans_athlete ON meal_plans(athlete_id, created_at);
-
-    -- One row per day per athlete: an OPTIONAL readiness self-report. sleep/energy
-    -- 1-10 (10 = best); soreness/stress/pain 1-10 (10 = worst). pain is the acute/
-    -- joint-pain flag, nullable. Never required; drives a soft RPE cap, not a deload.
-    CREATE TABLE IF NOT EXISTS readiness_logs (
-      id TEXT PRIMARY KEY,
-      athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-      date TEXT NOT NULL,
-      sleep INTEGER NOT NULL,
-      energy INTEGER NOT NULL,
-      soreness INTEGER NOT NULL,
-      stress INTEGER NOT NULL,
-      pain INTEGER,
-      pain_note TEXT,
-      note TEXT,
-      created_at INTEGER NOT NULL,
-      UNIQUE(athlete_id, date)
-    );
-    CREATE INDEX IF NOT EXISTS idx_readiness_logs_athlete ON readiness_logs(athlete_id, date);
-  `);
-
-  // Additive migrations for form_checks (existing dbs predate bar-path CV).
-  addColumnIfMissing(db, 'form_checks', 'cv_json', 'TEXT');
-  addColumnIfMissing(db, 'form_checks', 'rpe_confidence', 'TEXT');
-  addColumnIfMissing(db, 'form_checks', 'load_kg', 'REAL');
-  // velocity_log predates the move from m/s to slowdown%.
-  addColumnIfMissing(db, 'velocity_log', 'slowdown_pct', 'REAL');
-  relaxVelocityLogMcv(db);
-}
-
-// The first schema shipped `velocity_log.mcv_ms REAL NOT NULL`. We no longer
-// write that column (effort is slowdown%, not m/s), so on older dbs the
-// constraint blocks every insert. SQLite can't drop NOT NULL via ALTER, so
-// rebuild the table without it. No-op once the column is already nullable.
-function relaxVelocityLogMcv(db: Database.Database) {
-  const cols = db.prepare(`PRAGMA table_info(velocity_log)`).all() as {
-    name: string;
-    notnull: number;
-  }[];
-  const mcv = cols.find((c) => c.name === 'mcv_ms');
-  if (!mcv || mcv.notnull !== 1) return; // fresh db or already migrated
-
-  db.pragma('foreign_keys = OFF');
-  db.transaction(() => {
-    db.exec(`
-      CREATE TABLE velocity_log__new (
-        id TEXT PRIMARY KEY,
-        athlete_id TEXT NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
-        form_check_id TEXT REFERENCES form_checks(id) ON DELETE CASCADE,
-        lift_type TEXT NOT NULL,
-        load_kg REAL,
-        bodyweight_kg REAL,
-        reps INTEGER,
-        mcv_ms REAL,
-        slowdown_pct REAL,
-        actual_rpe REAL,
-        date TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      );
-      INSERT INTO velocity_log__new
-        (id, athlete_id, form_check_id, lift_type, load_kg, bodyweight_kg,
-         reps, mcv_ms, slowdown_pct, actual_rpe, date, created_at)
-        SELECT id, athlete_id, form_check_id, lift_type, load_kg, bodyweight_kg,
-               reps, mcv_ms, slowdown_pct, actual_rpe, date, created_at
-        FROM velocity_log;
-      DROP TABLE velocity_log;
-      ALTER TABLE velocity_log__new RENAME TO velocity_log;
-      CREATE INDEX IF NOT EXISTS idx_velocity_log_athlete
-        ON velocity_log(athlete_id, lift_type, created_at);
-    `);
-  })();
-  db.pragma('foreign_keys = ON');
-}
-
-function addColumnIfMissing(
-  db: Database.Database,
-  table: string,
-  column: string,
-  type: string,
-) {
-  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
-  if (!cols.some((c) => c.name === column)) {
-    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
   }
+
+  const sql = postgres(url, {
+    // The transaction pooler (PgBouncer) does not support prepared statements.
+    prepare: false,
+    ssl: 'require',
+    // Serverless: keep the per-instance pool tiny.
+    max: 1,
+    idle_timeout: 20,
+    types: {
+      // Return int8/bigint columns — our `created_at` millisecond timestamps and
+      // every COUNT(*) — as plain JS numbers instead of strings/BigInt. All such
+      // values are well under 2^53, so this is lossless and matches the old
+      // better-sqlite3 behaviour the rest of the code assumes.
+      bigint: {
+        to: 20,
+        from: [20],
+        serialize: (x: number | bigint) => x.toString(),
+        parse: (x: string) => Number(x),
+      },
+    },
+  });
+
+  globalForPg._coachSql = sql;
+  return sql;
+}
+
+// `?` placeholders -> `$1..$n`. None of our SQL contains `?` inside string
+// literals, so a plain sequential replace is safe.
+function toPg(text: string): string {
+  let i = 0;
+  return text.replace(/\?/g, () => `$${++i}`);
+}
+
+/** Run a query and return all rows. */
+export async function query<T = Record<string, unknown>>(
+  text: string,
+  params: unknown[] = [],
+): Promise<T[]> {
+  const rows = await client().unsafe(toPg(text), params as never[]);
+  return rows as unknown as T[];
+}
+
+/** Run a query and return the first row (or undefined). */
+export async function queryOne<T = Record<string, unknown>>(
+  text: string,
+  params: unknown[] = [],
+): Promise<T | undefined> {
+  const rows = await query<T>(text, params);
+  return rows[0];
+}
+
+/** Run a write (INSERT/UPDATE/DELETE) where the result rows are not needed. */
+export async function execute(text: string, params: unknown[] = []): Promise<void> {
+  await client().unsafe(toPg(text), params as never[]);
 }
 
 export function uuid(): string {

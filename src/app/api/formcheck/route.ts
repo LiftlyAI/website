@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, query, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import { buildFormCheckPrompt, systemPromptFor } from '@/lib/prompts/formcheck';
 import { analyzeVideo, CvServiceError } from '@/lib/cvService';
@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
   const lift = liftRaw as CvLift;
   const stance = form.get('stance') ? String(form.get('stance')) : null;
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const row = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   const athlete = row?.profile_json
     ? (JSON.parse(row.profile_json) as AthleteProfile)
     : undefined;
@@ -65,14 +65,13 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. RPE from rep-time slowdown, calibrated to the lifter ----------------
-  const calibRows = db
-    .prepare(
-      `SELECT slowdown_pct, actual_rpe FROM velocity_log
+  const calibRows = await query<{ slowdown_pct: number; actual_rpe: number }>(
+    `SELECT slowdown_pct, actual_rpe FROM velocity_log
        WHERE athlete_id = ? AND lift_type = ?
          AND actual_rpe IS NOT NULL AND slowdown_pct IS NOT NULL
        ORDER BY created_at DESC LIMIT 40`,
-    )
-    .all(session.id, lift) as { slowdown_pct: number; actual_rpe: number }[];
+    [session.id, lift],
+  );
   const history: CalibrationPoint[] = calibRows.map((r) => ({
     lossPct: r.slowdown_pct,
     rpe: r.actual_rpe,
@@ -122,44 +121,46 @@ export async function POST(req: NextRequest) {
   const today = new Date().toISOString().slice(0, 10);
 
   try {
-    db.prepare(
+    await execute(
       `INSERT INTO form_checks
          (id, athlete_id, lift_type, video_path, frames_count, user_context,
           ai_analysis, estimated_rpe, rpe_confidence, load_kg, cv_json, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(
-      id,
-      session.id,
-      lift,
-      null,
-      cv.pose.totalFrames,
-      userContext,
-      storedAnalysis,
-      rpe.value,
-      rpe.confidence,
-      loadKg,
-      JSON.stringify(cv),
-      now,
+      [
+        id,
+        session.id,
+        lift,
+        null,
+        cv.pose.totalFrames,
+        userContext,
+        storedAnalysis,
+        rpe.value,
+        rpe.confidence,
+        loadKg,
+        JSON.stringify(cv),
+        now,
+      ],
     );
 
     // Track this set for calibration; actual RPE is filled in when the lifter
     // confirms it (POST /api/formcheck/calibrate).
-    db.prepare(
+    await execute(
       `INSERT INTO velocity_log
          (id, athlete_id, form_check_id, lift_type, load_kg, bodyweight_kg,
           reps, slowdown_pct, actual_rpe, date, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
-    ).run(
-      uuid(),
-      session.id,
-      id,
-      lift,
-      loadKg,
-      bodyweightKg,
-      cv.summary.repCount,
-      lossPct,
-      today,
-      now,
+      [
+        uuid(),
+        session.id,
+        id,
+        lift,
+        loadKg,
+        bodyweightKg,
+        cv.summary.repCount,
+        lossPct,
+        today,
+        now,
+      ],
     );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'failed to save analysis';

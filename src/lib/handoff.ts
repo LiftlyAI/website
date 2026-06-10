@@ -3,7 +3,7 @@
 // recent history and runs the existing autoregulation engine against the NEXT
 // scheduled instance of each compound the lifter just touched. DB reads only.
 
-import type DatabaseT from 'better-sqlite3';
+import { query, queryOne } from './db';
 import {
   adjustExercise,
   extractLifterSets,
@@ -22,40 +22,38 @@ import type {
 
 const COMPOUNDS: LiftType[] = ['squat', 'bench', 'deadlift'];
 
-export function computeHandoff(
-  db: DatabaseT.Database,
+export async function computeHandoff(
   athleteId: string,
   loggedLifts: LiftType[],
   fromWeek: number | null,
   fromDay: number | null,
-): LoopHandoff {
+): Promise<LoopHandoff> {
   const compounds = COMPOUNDS.filter((l) => loggedLifts.includes(l));
   const filmLift = (compounds[0] as 'squat' | 'bench' | 'deadlift' | undefined) ?? null;
   if (compounds.length === 0) return { adaptations: [], filmLift: null };
 
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(athleteId) as { profile_json: string } | undefined;
+  const aRow = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [athleteId],
+  );
   if (!aRow?.profile_json) return { adaptations: [], filmLift };
   const profile = JSON.parse(aRow.profile_json) as AthleteProfile;
 
-  const pRow = db
-    .prepare(
-      'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(athleteId) as { program_json: string; current_week: number } | undefined;
+  const pRow = await queryOne<{ program_json: string; current_week: number }>(
+    'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [athleteId],
+  );
   if (!pRow) return { adaptations: [], filmLift };
   const program = JSON.parse(pRow.program_json) as Program;
 
   // ~60 days covers any practical autoregulation window (matches /program/adjust).
   const sinceMs = Date.now() - 60 * 24 * 60 * 60 * 1000;
-  const logRows = db
-    .prepare(
-      `SELECT date, exercises_json FROM session_logs
+  const logRows = await query<{ date: string; exercises_json: string }>(
+    `SELECT date, exercises_json FROM session_logs
        WHERE athlete_id = ? AND created_at >= ?
        ORDER BY date DESC`,
-    )
-    .all(athleteId, sinceMs) as { date: string; exercises_json: string }[];
+    [athleteId, sinceMs],
+  );
   const logs: SessionLog[] = logRows.map((r) => ({
     id: '',
     athleteId,

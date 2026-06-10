@@ -1,20 +1,13 @@
 import { Suspense } from 'react';
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { query } from '@/lib/db';
 import { FormCheckClient } from './FormCheckClient';
 import type { FormCheckResult } from '@/lib/types';
 
 export default async function FormCheckPage() {
   const session = await requireSession();
-  const db = getDb();
 
-  const rows = db
-    .prepare(
-      `SELECT id, lift_type, video_path, frames_count, user_context, ai_analysis,
-              estimated_rpe, rpe_confidence, load_kg, cv_json, created_at
-       FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 50`,
-    )
-    .all(session.id) as {
+  const rows = await query<{
     id: string;
     lift_type: string;
     video_path: string | null;
@@ -26,7 +19,12 @@ export default async function FormCheckPage() {
     load_kg: number | null;
     cv_json: string | null;
     created_at: number;
-  }[];
+  }>(
+    `SELECT id, lift_type, video_path, frames_count, user_context, ai_analysis,
+              estimated_rpe, rpe_confidence, load_kg, cv_json, created_at
+       FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 50`,
+    [session.id],
+  );
 
   const formChecks: FormCheckResult[] = rows.map((r) => ({
     id: r.id,

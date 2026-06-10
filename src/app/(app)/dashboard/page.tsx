@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { query, queryOne } from '@/lib/db';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Dumbbell, Video, MessageSquare, Apple, ArrowRight } from 'lucide-react';
 import type {
@@ -20,31 +20,31 @@ import { WeeklyReviewCard } from './WeeklyReviewCard';
 
 export default async function Dashboard() {
   const session = await requireSession();
-  const db = getDb();
 
-  const athlete = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string };
+  const athlete = (await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  ))!;
   const profile = JSON.parse(athlete.profile_json) as AthleteProfile;
 
-  const programRow = db
-    .prepare(
-      'SELECT program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(session.id) as
-    | { program_json: string; current_week: number; current_block: string }
-    | undefined;
+  const programRow = await queryOne<{
+    program_json: string;
+    current_week: number;
+    current_block: string;
+  }>(
+    'SELECT program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [session.id],
+  );
 
   const program = programRow ? (JSON.parse(programRow.program_json) as Program) : null;
   const currentWeekNum = programRow?.current_week ?? 1;
   const currentWeek = program?.weeks.find((w) => w.weekNumber === currentWeekNum);
 
   // Recent sessions for e1RM
-  const recentSessions = db
-    .prepare(
-      'SELECT exercises_json, date FROM session_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 30',
-    )
-    .all(session.id) as { exercises_json: string; date: string }[];
+  const recentSessions = await query<{ exercises_json: string; date: string }>(
+    'SELECT exercises_json, date FROM session_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 30',
+    [session.id],
+  );
 
   const e1RMs: Record<string, number> = {};
   for (const s of recentSessions) {
@@ -70,19 +70,19 @@ export default async function Dashboard() {
   }
 
   // Bodyweight latest
-  const bw = db
-    .prepare(
-      'SELECT bodyweight, date FROM bodyweight_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 1',
-    )
-    .get(session.id) as { bodyweight: number; date: string } | undefined;
+  const bw = await queryOne<{ bodyweight: number; date: string }>(
+    'SELECT bodyweight, date FROM bodyweight_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 1',
+    [session.id],
+  );
 
   // Weekly tonnage (this week)
   const weekStart = new Date();
   weekStart.setDate(weekStart.getDate() - weekStart.getDay());
   const weekStartStr = weekStart.toISOString().slice(0, 10);
-  const weekSessions = db
-    .prepare('SELECT exercises_json FROM session_logs WHERE athlete_id = ? AND date >= ?')
-    .all(session.id, weekStartStr) as { exercises_json: string }[];
+  const weekSessions = await query<{ exercises_json: string }>(
+    'SELECT exercises_json FROM session_logs WHERE athlete_id = ? AND date >= ?',
+    [session.id, weekStartStr],
+  );
 
   let weeklyTonnage = 0;
   for (const s of weekSessions) {
@@ -98,23 +98,24 @@ export default async function Dashboard() {
   startOfToday.setHours(0, 0, 0, 0);
 
   const loggedToday =
-    (db
-      .prepare('SELECT COUNT(*) AS c FROM session_logs WHERE athlete_id = ? AND date = ?')
-      .get(session.id, todayStr) as { c: number }).c > 0;
+    (await queryOne<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM session_logs WHERE athlete_id = ? AND date = ?',
+      [session.id, todayStr],
+    ))!.c > 0;
 
-  const lastRow = db
-    .prepare(
-      'SELECT date FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 1',
-    )
-    .get(session.id) as { date: string } | undefined;
+  const lastRow = await queryOne<{ date: string }>(
+    'SELECT date FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 1',
+    [session.id],
+  );
   const daysSinceLast = lastRow
     ? Math.floor((Date.now() - Date.parse(lastRow.date)) / 86_400_000)
     : null;
 
   const filmedToday =
-    (db
-      .prepare('SELECT COUNT(*) AS c FROM form_checks WHERE athlete_id = ? AND created_at >= ?')
-      .get(session.id, startOfToday.getTime()) as { c: number }).c > 0;
+    (await queryOne<{ c: number }>(
+      'SELECT COUNT(*) AS c FROM form_checks WHERE athlete_id = ? AND created_at >= ?',
+      [session.id, startOfToday.getTime()],
+    ))!.c > 0;
 
   // Today's scheduled day (weekday → day index, cycling the available days).
   const weekday = new Date().getDay(); // 0 = Sunday
@@ -124,29 +125,26 @@ export default async function Dashboard() {
 
   // Upcoming auto-tuned targets for each compound's next scheduled instance.
   const handoff = program
-    ? computeHandoff(db, session.id, ['squat', 'bench', 'deadlift'], null, null)
+    ? await computeHandoff(session.id, ['squat', 'bench', 'deadlift'], null, null)
     : { adaptations: [], filmLift: null };
 
   // Today's OPTIONAL readiness check-in (drives a soft cap, never gates the loop).
-  const readinessRow = db
-    .prepare(
-      'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? AND date = ?',
-    )
-    .get(session.id, todayStr) as
-    | {
-        id: string;
-        athlete_id: string;
-        date: string;
-        sleep: number;
-        energy: number;
-        soreness: number;
-        stress: number;
-        pain: number | null;
-        pain_note: string | null;
-        note: string | null;
-        created_at: number;
-      }
-    | undefined;
+  const readinessRow = await queryOne<{
+    id: string;
+    athlete_id: string;
+    date: string;
+    sleep: number;
+    energy: number;
+    soreness: number;
+    stress: number;
+    pain: number | null;
+    pain_note: string | null;
+    note: string | null;
+    created_at: number;
+  }>(
+    'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? AND date = ?',
+    [session.id, todayStr],
+  );
   const readiness: ReadinessLog | null = readinessRow
     ? {
         id: readinessRow.id,
@@ -165,7 +163,7 @@ export default async function Dashboard() {
   const assessment: ReadinessAssessment | null = readiness ? assessReadinessLog(readiness) : null;
 
   // The Sunday tweak — planned vs actual + what the loop noticed this week.
-  const weeklyReview = program ? computeWeeklyReview(db, session.id) : null;
+  const weeklyReview = program ? await computeWeeklyReview(session.id) : null;
 
   let step: LoopStep;
   if (!program) step = 'program';

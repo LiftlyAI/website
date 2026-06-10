@@ -3,7 +3,7 @@
 // need, then hands off to the pure evaluateDecisions / buildWeeklyReview. Keeping
 // the I/O here means the rule logic stays unit-testable in isolation.
 
-import type DatabaseT from 'better-sqlite3';
+import { query, queryOne } from './db';
 import { estimatedOneRM } from './calculations';
 import { liftOf } from './programming';
 import { evaluateDecisions, type DecisionContext, type FormCheckSummary, type ReadinessDay, type SessionE1rm } from './decision-rules';
@@ -27,21 +27,23 @@ function weekStartISO(now = new Date()): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function computeWeeklyReview(db: DatabaseT.Database, athleteId: string): WeeklyReview | null {
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(athleteId) as { profile_json: string | null } | undefined;
+export async function computeWeeklyReview(athleteId: string): Promise<WeeklyReview | null> {
+  const aRow = await queryOne<{ profile_json: string | null }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [athleteId],
+  );
   if (!aRow?.profile_json) return null;
   const profile = JSON.parse(aRow.profile_json) as AthleteProfile;
   const unit: Unit = profile.unit;
 
-  const pRow = db
-    .prepare(
-      'SELECT program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(athleteId) as
-    | { program_json: string; current_week: number; current_block: string | null }
-    | undefined;
+  const pRow = await queryOne<{
+    program_json: string;
+    current_week: number;
+    current_block: string | null;
+  }>(
+    'SELECT program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [athleteId],
+  );
   if (!pRow) return null;
   const program = JSON.parse(pRow.program_json) as Program;
   const currentWeek =
@@ -66,9 +68,10 @@ export function computeWeeklyReview(db: DatabaseT.Database, athleteId: string): 
   }
 
   // ---- Actual, from this week's logs ----
-  const weekRows = db
-    .prepare('SELECT date, exercises_json FROM session_logs WHERE athlete_id = ? AND date >= ?')
-    .all(athleteId, weekStart) as { date: string; exercises_json: string }[];
+  const weekRows = await query<{ date: string; exercises_json: string }>(
+    'SELECT date, exercises_json FROM session_logs WHERE athlete_id = ? AND date >= ?',
+    [athleteId, weekStart],
+  );
   const sessionDates = new Set<string>();
   let actualTonnage = 0;
   const actualTop: Partial<Record<LiftType, number>> = {};
@@ -93,11 +96,10 @@ export function computeWeeklyReview(db: DatabaseT.Database, athleteId: string): 
 
   // ---- Decision-rule inputs ----
   // Readiness, last week, newest-first.
-  const rRows = db
-    .prepare(
-      'SELECT date, soreness, pain FROM readiness_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 7',
-    )
-    .all(athleteId) as { date: string; soreness: number; pain: number | null }[];
+  const rRows = await query<{ date: string; soreness: number; pain: number | null }>(
+    'SELECT date, soreness, pain FROM readiness_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 7',
+    [athleteId],
+  );
   const readiness: ReadinessDay[] = rRows.map((r) => ({
     date: r.date,
     soreness: r.soreness,
@@ -105,16 +107,15 @@ export function computeWeeklyReview(db: DatabaseT.Database, athleteId: string): 
   }));
 
   // Recent form checks, newest-first, with CV-derived faults + velocity loss.
-  const fcRows = db
-    .prepare(
-      'SELECT lift_type, ai_analysis, cv_json, created_at FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 6',
-    )
-    .all(athleteId) as {
+  const fcRows = await query<{
     lift_type: string;
     ai_analysis: string | null;
     cv_json: string | null;
     created_at: number;
-  }[];
+  }>(
+    'SELECT lift_type, ai_analysis, cv_json, created_at FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 6',
+    [athleteId],
+  );
   const formChecks: FormCheckSummary[] = fcRows.map((r) => {
     let formNotes: string[] = [];
     let velocityLossPct: number | null = null;
@@ -137,16 +138,15 @@ export function computeWeeklyReview(db: DatabaseT.Database, athleteId: string): 
   });
 
   // e1RM per session per lift across the block window (~60d), oldest-first.
-  const blockRows = db
-    .prepare(
-      `SELECT date, exercises_json FROM session_logs
-       WHERE athlete_id = ? AND created_at >= ?
-       ORDER BY date ASC`,
-    )
-    .all(athleteId, Date.now() - 60 * 24 * 60 * 60 * 1000) as {
+  const blockRows = await query<{
     date: string;
     exercises_json: string;
-  }[];
+  }>(
+    `SELECT date, exercises_json FROM session_logs
+       WHERE athlete_id = ? AND created_at >= ?
+       ORDER BY date ASC`,
+    [athleteId, Date.now() - 60 * 24 * 60 * 60 * 1000],
+  );
   const sessionsByLift: Partial<Record<LiftType, SessionE1rm[]>> = {};
   for (const lift of COMPOUNDS) sessionsByLift[lift] = [];
   for (const r of blockRows) {

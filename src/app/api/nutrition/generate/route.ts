@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import type { AiMessage } from '@/lib/ai';
 import { NUTRITION_SYSTEM_PROMPT, buildNutritionUserPrompt } from '@/lib/prompts/nutrition';
@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
   const parsed = Body.safeParse(raw ?? {});
   const steer = parsed.success ? parsed.data.steer?.trim() || null : null;
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const row = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   if (!row?.profile_json) {
     return NextResponse.json({ error: 'profile missing' }, { status: 400 });
   }
@@ -104,9 +104,10 @@ export async function POST(req: NextRequest) {
 
   const id = uuid();
   const createdAt = Date.now();
-  db.prepare(
+  await execute(
     'INSERT INTO meal_plans (id, athlete_id, plan_json, targets_json, steer, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-  ).run(id, session.id, JSON.stringify(plan), JSON.stringify(targets), steer, createdAt);
+    [id, session.id, JSON.stringify(plan), JSON.stringify(targets), steer, createdAt],
+  );
 
   return NextResponse.json({ ok: true, plan, id, createdAt, steer });
 }

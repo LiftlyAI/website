@@ -1,5 +1,11 @@
+// Auth: Supabase Auth (email + password) for the session, Postgres for the
+// athlete row. The Supabase user id IS the athletes.id, so once a user verifies
+// their email we lazily provision their athlete row on first authenticated
+// request. Login/signup happen client-side (see app/login/page.tsx); logout is
+// app/api/auth/logout. There is no local file DB here — all access goes through
+// the Postgres helpers in ./db (Vercel's filesystem is read-only).
 import { createSupabaseServerClient } from './supabase/server';
-import { getDb } from './db';
+import { execute, queryOne } from './db';
 
 export interface SessionAthlete {
   id: string;
@@ -15,18 +21,20 @@ export async function getSession(): Promise<SessionAthlete | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT id, email, name, profile_json FROM athletes WHERE id = ?')
-    .get(user.id) as
-    | { id: string; email: string; name: string | null; profile_json: string | null }
-    | undefined;
+  const row = await queryOne<{
+    id: string;
+    email: string;
+    name: string | null;
+    profile_json: string | null;
+  }>('SELECT id, email, name, profile_json FROM athletes WHERE id = ?', [user.id]);
 
   if (!row) {
-    const email = user.email!.toLowerCase().trim();
-    // INSERT OR IGNORE guards against a race on simultaneous first requests
-    db.prepare('INSERT OR IGNORE INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?)')
-      .run(user.id, email, null, Date.now());
+    const email = (user.email ?? '').toLowerCase().trim();
+    // ON CONFLICT DO NOTHING guards against a race on simultaneous first requests.
+    await execute(
+      'INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING',
+      [user.id, email, null, Date.now()],
+    );
     return { id: user.id, email, name: null, hasProfile: false };
   }
 
