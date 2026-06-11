@@ -3,8 +3,7 @@
 // coach session. Every coach-initiated read/write on an athlete must go through
 // requireCoachOwns — that is the tenant-isolation boundary.
 import { cookies } from 'next/headers';
-import type DatabaseT from 'better-sqlite3';
-import { getDb, uuid } from './db';
+import { execute, queryOne, uuid } from './db';
 
 const COOKIE_NAME = 'pl_coach_session';
 const ONE_YEAR = 60 * 60 * 24 * 365;
@@ -15,21 +14,21 @@ export interface SessionCoach {
   name: string | null;
 }
 
-export function getOrCreateCoach(email: string, name?: string): SessionCoach {
-  const db = getDb();
+export async function getOrCreateCoach(email: string, name?: string): Promise<SessionCoach> {
   const normalized = email.trim().toLowerCase();
-  const existing = db
-    .prepare('SELECT id, email, name FROM coaches WHERE email = ?')
-    .get(normalized) as SessionCoach | undefined;
+  const existing = await queryOne<SessionCoach>(
+    'SELECT id, email, name FROM coaches WHERE email = ?',
+    [normalized],
+  );
   if (existing) return existing;
 
   const id = uuid();
-  db.prepare('INSERT INTO coaches (id, email, name, created_at) VALUES (?, ?, ?, ?)').run(
+  await execute('INSERT INTO coaches (id, email, name, created_at) VALUES (?, ?, ?, ?)', [
     id,
     normalized,
     name ?? null,
     Date.now(),
-  );
+  ]);
   return { id, email: normalized, name: name ?? null };
 }
 
@@ -54,10 +53,9 @@ export async function getCoachSession(): Promise<SessionCoach | null> {
   const coachId = c.get(COOKIE_NAME)?.value;
   if (!coachId) return null;
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT id, email, name FROM coaches WHERE id = ?')
-    .get(coachId) as SessionCoach | undefined;
+  const row = await queryOne<SessionCoach>('SELECT id, email, name FROM coaches WHERE id = ?', [
+    coachId,
+  ]);
   return row ?? null;
 }
 
@@ -67,22 +65,17 @@ export async function requireCoach(): Promise<SessionCoach> {
   return s;
 }
 
-export function coachOwnsAthlete(
-  db: DatabaseT.Database,
-  coachId: string,
-  athleteId: string,
-): boolean {
-  const row = db
-    .prepare(
-      "SELECT 1 FROM coach_athletes WHERE coach_id = ? AND athlete_id = ? AND status = 'active'",
-    )
-    .get(coachId, athleteId);
+export async function coachOwnsAthlete(coachId: string, athleteId: string): Promise<boolean> {
+  const row = await queryOne(
+    "SELECT 1 AS one FROM coach_athletes WHERE coach_id = ? AND athlete_id = ? AND status = 'active'",
+    [coachId, athleteId],
+  );
   return !!row;
 }
 
 // The object-level authorization gate for every coach action on an athlete.
 export async function requireCoachOwns(athleteId: string): Promise<SessionCoach> {
   const coach = await requireCoach();
-  if (!coachOwnsAthlete(getDb(), coach.id, athleteId)) throw new Error('FORBIDDEN');
+  if (!(await coachOwnsAthlete(coach.id, athleteId))) throw new Error('FORBIDDEN');
   return coach;
 }

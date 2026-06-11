@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, query, queryOne, uuid } from '@/lib/db';
 import { aiStream, isAiKeyError } from '@/lib/ai';
 import { buildChatSystemPrompt, type ChatSessionSummary } from '@/lib/prompts/chat';
 import { assessReadinessLog } from '@/lib/readiness';
@@ -36,38 +36,35 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const db = getDb();
-
-  const profileRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const profileRow = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   const profile = profileRow?.profile_json
     ? (JSON.parse(profileRow.profile_json) as AthleteProfile)
     : null;
 
-  const programRow = db
-    .prepare(
-      'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(session.id) as { program_json: string; current_week: number } | undefined;
+  const programRow = await queryOne<{ program_json: string; current_week: number }>(
+    'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [session.id],
+  );
   const program = programRow ? (JSON.parse(programRow.program_json) as Program) : null;
   const currentWeek =
     program && programRow
       ? program.weeks.find((w) => w.weekNumber === programRow.current_week) ?? program.weeks[0]
       : null;
 
-  const fcRows = db
-    .prepare(
-      'SELECT id, lift_type, ai_analysis, estimated_rpe, user_context, created_at FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 3',
-    )
-    .all(session.id) as {
+  const fcRows = await query<{
     id: string;
     lift_type: string;
     ai_analysis: string;
     estimated_rpe: number | null;
     user_context: string;
     created_at: number;
-  }[];
+  }>(
+    'SELECT id, lift_type, ai_analysis, estimated_rpe, user_context, created_at FROM form_checks WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 3',
+    [session.id],
+  );
   const recentFormChecks: FormCheckResult[] = fcRows.map((r) => ({
     id: r.id,
     athleteId: session.id,
@@ -85,23 +82,18 @@ export async function POST(req: NextRequest) {
 
   // Recent sessions (last 5) — top set per lift + how it felt, so the coach can
   // talk about what the lifter actually did, not just the prescription.
-  const sessRows = db
-    .prepare(
-      'SELECT date, exercises_json, bodyweight, notes FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 5',
-    )
-    .all(session.id) as {
+  const sessRows = await query<{
     date: string;
     exercises_json: string;
     bodyweight: number | null;
     notes: string | null;
-  }[];
+  }>(
+    'SELECT date, exercises_json, bodyweight, notes FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 5',
+    [session.id],
+  );
   const readinessByDate = new Map<string, string>();
   if (sessRows.length > 0) {
-    const rRows = db
-      .prepare(
-        'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 10',
-      )
-      .all(session.id) as {
+    const rRows = await query<{
       id: string;
       athlete_id: string;
       date: string;
@@ -113,7 +105,10 @@ export async function POST(req: NextRequest) {
       pain_note: string | null;
       note: string | null;
       created_at: number;
-    }[];
+    }>(
+      'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? ORDER BY date DESC LIMIT 10',
+      [session.id],
+    );
     for (const r of rRows) {
       const a = assessReadinessLog({
         id: r.id,
@@ -154,19 +149,19 @@ export async function POST(req: NextRequest) {
   });
 
   // History (last 20)
-  const histRows = db
-    .prepare(
-      'SELECT role, content FROM chat_messages WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 20',
-    )
-    .all(session.id) as { role: 'user' | 'assistant'; content: string }[];
+  const histRows = await query<{ role: 'user' | 'assistant'; content: string }>(
+    'SELECT role, content FROM chat_messages WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 20',
+    [session.id],
+  );
   const history = histRows
     .reverse()
     .map((m) => ({ role: m.role, content: m.content }));
 
   // Save user message now
-  db.prepare(
+  await execute(
     'INSERT INTO chat_messages (id, athlete_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)',
-  ).run(uuid(), session.id, 'user', parsed.data.message, Date.now());
+    [uuid(), session.id, 'user', parsed.data.message, Date.now()],
+  );
 
   const system = buildChatSystemPrompt({
     profile,
@@ -207,9 +202,10 @@ export async function POST(req: NextRequest) {
       } finally {
         // Save assistant message
         if (acc.trim()) {
-          db.prepare(
+          await execute(
             'INSERT INTO chat_messages (id, athlete_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)',
-          ).run(uuid(), session.id, 'assistant', acc, Date.now());
+            [uuid(), session.id, 'assistant', acc, Date.now()],
+          );
         }
         controller.close();
       }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { coachOwnsAthlete, requireCoach } from '@/lib/coach-auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { loadCoachingData } from '@/lib/coach-data';
 import { bestOneRms, personalizeWeek } from '@/lib/suggestions';
 import type { Program, ProgramWeek } from '@/lib/types';
@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const db = getDb();
   const template: ProgramWeek = {
     weekNumber: 0, // set per athlete below
     blockName: parsed.data.blockName,
@@ -59,14 +58,15 @@ export async function POST(req: NextRequest) {
   const results: { athleteId: string; ok: boolean; weekNumber?: number; reason?: string }[] =
     [];
   for (const athleteId of parsed.data.athleteIds) {
-    if (!coachOwnsAthlete(db, coach.id, athleteId)) {
+    if (!(await coachOwnsAthlete(coach.id, athleteId))) {
       results.push({ athleteId, ok: false, reason: 'not your client' });
       continue;
     }
-    const coaching = loadCoachingData(db, athleteId);
-    const aRow = db
-      .prepare('SELECT name, profile_json FROM athletes WHERE id = ?')
-      .get(athleteId) as { name: string | null; profile_json: string | null } | undefined;
+    const coaching = await loadCoachingData(athleteId);
+    const aRow = await queryOne<{ name: string | null; profile_json: string | null }>(
+      'SELECT name, profile_json FROM athletes WHERE id = ?',
+      [athleteId],
+    );
     if (!aRow?.profile_json) {
       results.push({ athleteId, ok: false, reason: 'client has not onboarded yet' });
       continue;
@@ -83,11 +83,11 @@ export async function POST(req: NextRequest) {
       program.weeks.push(week);
       program.totalWeeks = program.weeks.length;
       program.currentBlock = parsed.data.blockName;
-      db.prepare('UPDATE programs SET program_json = ?, current_block = ? WHERE id = ?').run(
+      await execute('UPDATE programs SET program_json = ?, current_block = ? WHERE id = ?', [
         JSON.stringify(program),
         parsed.data.blockName,
         coaching.programId,
-      );
+      ]);
     } else {
       // No program yet: this block becomes their first one.
       week.weekNumber = 1;
@@ -98,9 +98,10 @@ export async function POST(req: NextRequest) {
         totalWeeks: 1,
         weeks: [week],
       };
-      db.prepare(
+      await execute(
         'INSERT INTO programs (id, athlete_id, program_json, current_week, current_block, created_at) VALUES (?, ?, ?, 1, ?, ?)',
-      ).run(uuid(), athleteId, JSON.stringify(program), parsed.data.blockName, Date.now());
+        [uuid(), athleteId, JSON.stringify(program), parsed.data.blockName, Date.now()],
+      );
     }
     results.push({ athleteId, ok: true, weekNumber: week.weekNumber });
   }

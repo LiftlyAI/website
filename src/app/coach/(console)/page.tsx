@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCoachSession } from '@/lib/coach-auth';
-import { getDb } from '@/lib/db';
 import { triageForCoach } from '@/lib/coach-data';
 import { Card } from '@/components/ui/Card';
 import type { DecisionSeverity } from '@/lib/types';
@@ -17,7 +16,7 @@ const SEVERITY_TEXT: Record<DecisionSeverity, string> = {
 export default async function TriagePage() {
   const coach = await getCoachSession();
   if (!coach) redirect('/coach/login');
-  const items = triageForCoach(getDb(), coach.id);
+  const items = await triageForCoach(coach.id);
 
   return (
     <div className="space-y-6">

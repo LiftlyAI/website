@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { toLbs } from '@/lib/calculations';
 import { computeHandoff } from '@/lib/handoff';
 import type { AthleteProfile, CvAnalysis, LiftType } from '@/lib/types';
@@ -35,21 +35,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
 
-  const db = getDb();
-  const fc = db
-    .prepare(
-      `SELECT lift_type, load_kg, estimated_rpe, cv_json, ai_analysis
+  const fc = await queryOne<{
+    lift_type: string;
+    load_kg: number | null;
+    estimated_rpe: number | null;
+    cv_json: string | null;
+    ai_analysis: string | null;
+  }>(
+    `SELECT lift_type, load_kg, estimated_rpe, cv_json, ai_analysis
        FROM form_checks WHERE id = ? AND athlete_id = ?`,
-    )
-    .get(parsed.data.formCheckId, session.id) as
-    | {
-        lift_type: string;
-        load_kg: number | null;
-        estimated_rpe: number | null;
-        cv_json: string | null;
-        ai_analysis: string | null;
-      }
-    | undefined;
+    [parsed.data.formCheckId, session.id],
+  );
   if (!fc) {
     return NextResponse.json({ error: 'form check not found' }, { status: 404 });
   }
@@ -68,9 +64,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const aRow = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   const unit: 'kg' | 'lbs' = aRow?.profile_json
     ? (JSON.parse(aRow.profile_json) as AthleteProfile).unit
     : 'kg';
@@ -78,11 +75,10 @@ export async function POST(req: NextRequest) {
 
   // Mark the session against the active program week, if any, so the entry
   // shows up alongside manual logs.
-  const pRow = db
-    .prepare(
-      'SELECT current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(session.id) as { current_week: number } | undefined;
+  const pRow = await queryOne<{ current_week: number }>(
+    'SELECT current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [session.id],
+  );
 
   // Carry the form-check's top cue into the session note so the fix travels
   // with the logged set (and into the coach's context on the next read).
@@ -106,24 +102,24 @@ export async function POST(req: NextRequest) {
       sets: [{ reps, weight, actualRPE: rpe }],
     },
   ];
-  db.prepare(
+  await execute(
     `INSERT INTO session_logs
        (id, athlete_id, date, week_number, day_number, exercises_json, notes, bodyweight, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    session.id,
-    today,
-    pRow?.current_week ?? null,
-    null,
-    JSON.stringify(exercises),
-    note,
-    null,
-    Date.now(),
+    [
+      id,
+      session.id,
+      today,
+      pRow?.current_week ?? null,
+      null,
+      JSON.stringify(exercises),
+      note,
+      null,
+      Date.now(),
+    ],
   );
 
-  const handoff = computeHandoff(
-    db,
+  const handoff = await computeHandoff(
     session.id,
     [fc.lift_type as LiftType],
     pRow?.current_week ?? null,

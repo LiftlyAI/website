@@ -3,8 +3,7 @@
 // triage / suggestion engines. Callers are responsible for the ownership check
 // (requireCoachOwns) BEFORE reaching for any athlete id in here.
 
-import type DatabaseT from 'better-sqlite3';
-import { uuid } from './db';
+import { execute, query, queryOne, uuid } from './db';
 import { computeWeeklyReview } from './review-data';
 import { buildTriage, type TriageInput } from './triage';
 import type {
@@ -24,28 +23,27 @@ function daysSince(dateISO: string | null, now = new Date()): number | null {
   return Math.max(0, Math.floor((now.getTime() - then.getTime()) / 86_400_000));
 }
 
-export function listRoster(db: DatabaseT.Database, coachId: string): RosterEntry[] {
-  const rows = db
-    .prepare(
-      `SELECT a.id AS athleteId, a.name, a.email,
-              (a.profile_json IS NOT NULL) AS hasProfile,
-              (SELECT MAX(date) FROM session_logs s WHERE s.athlete_id = a.id) AS lastDate,
-              (SELECT COUNT(*) FROM coach_suggestions cs
-                WHERE cs.athlete_id = a.id AND cs.coach_id = ca.coach_id
-                  AND cs.status = 'pending') AS pending
-       FROM coach_athletes ca
-       JOIN athletes a ON a.id = ca.athlete_id
-       WHERE ca.coach_id = ? AND ca.status = 'active'
-       ORDER BY a.name, a.email`,
-    )
-    .all(coachId) as {
+export async function listRoster(coachId: string): Promise<RosterEntry[]> {
+  const rows = await query<{
     athleteId: string;
     name: string | null;
     email: string;
-    hasProfile: number;
+    hasProfile: boolean;
     lastDate: string | null;
     pending: number;
-  }[];
+  }>(
+    `SELECT a.id AS "athleteId", a.name, a.email,
+            (a.profile_json IS NOT NULL) AS "hasProfile",
+            (SELECT MAX(date) FROM session_logs s WHERE s.athlete_id = a.id) AS "lastDate",
+            (SELECT COUNT(*) FROM coach_suggestions cs
+              WHERE cs.athlete_id = a.id AND cs.coach_id = ca.coach_id
+                AND cs.status = 'pending') AS pending
+     FROM coach_athletes ca
+     JOIN athletes a ON a.id = ca.athlete_id
+     WHERE ca.coach_id = ? AND ca.status = 'active'
+     ORDER BY a.name, a.email`,
+    [coachId],
+  );
 
   return rows.map((r) => ({
     athleteId: r.athleteId,
@@ -54,22 +52,24 @@ export function listRoster(db: DatabaseT.Database, coachId: string): RosterEntry
     hasProfile: !!r.hasProfile,
     lastSessionDate: r.lastDate,
     daysSinceLastSession: daysSince(r.lastDate),
-    pendingSuggestions: r.pending,
+    pendingSuggestions: Number(r.pending),
   }));
 }
 
 // The roster-wide AI first pass: run the existing weekly-review/decision-rule
 // engines per client and rank who needs the coach's eyes.
-export function triageForCoach(db: DatabaseT.Database, coachId: string): TriageItem[] {
-  const roster = listRoster(db, coachId);
-  const inputs: TriageInput[] = roster.map((r) => ({
-    athleteId: r.athleteId,
-    name: r.name,
-    email: r.email,
-    findings: r.hasProfile ? computeWeeklyReview(db, r.athleteId)?.findings ?? [] : [],
-    daysSinceLastSession: r.daysSinceLastSession,
-    pendingSuggestions: r.pendingSuggestions,
-  }));
+export async function triageForCoach(coachId: string): Promise<TriageItem[]> {
+  const roster = await listRoster(coachId);
+  const inputs: TriageInput[] = await Promise.all(
+    roster.map(async (r) => ({
+      athleteId: r.athleteId,
+      name: r.name,
+      email: r.email,
+      findings: r.hasProfile ? (await computeWeeklyReview(r.athleteId))?.findings ?? [] : [],
+      daysSinceLastSession: r.daysSinceLastSession,
+      pendingSuggestions: r.pendingSuggestions,
+    })),
+  );
   return buildTriage(inputs);
 }
 
@@ -83,32 +83,28 @@ export interface AthleteCoachingData {
   logs: SessionLog[];
 }
 
-export function loadCoachingData(
-  db: DatabaseT.Database,
-  athleteId: string,
-): AthleteCoachingData | null {
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(athleteId) as { profile_json: string | null } | undefined;
+export async function loadCoachingData(athleteId: string): Promise<AthleteCoachingData | null> {
+  const aRow = await queryOne<{ profile_json: string | null }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [athleteId],
+  );
   if (!aRow?.profile_json) return null;
   const profile = JSON.parse(aRow.profile_json) as AthleteProfile;
 
-  const pRow = db
-    .prepare(
-      'SELECT id, program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(athleteId) as { id: string; program_json: string; current_week: number } | undefined;
+  const pRow = await queryOne<{ id: string; program_json: string; current_week: number }>(
+    'SELECT id, program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [athleteId],
+  );
   if (!pRow) return null;
 
   // ~60 days covers any practical autoregulation window (matches handoff.ts).
   const sinceMs = Date.now() - 60 * 24 * 60 * 60 * 1000;
-  const logRows = db
-    .prepare(
-      `SELECT date, exercises_json FROM session_logs
+  const logRows = await query<{ date: string; exercises_json: string }>(
+    `SELECT date, exercises_json FROM session_logs
        WHERE athlete_id = ? AND created_at >= ?
        ORDER BY date DESC`,
-    )
-    .all(athleteId, sinceMs) as { date: string; exercises_json: string }[];
+    [athleteId, sinceMs],
+  );
   const logs: SessionLog[] = logRows.map((r) => ({
     id: '',
     athleteId,
@@ -133,27 +129,24 @@ export function loadCoachingData(
 // Regenerate semantics: a fresh first pass replaces any still-pending load
 // suggestions for that athlete (stale proposals in a 55-client queue are worse
 // than none). Approved/rejected rows are history and never touched.
-export function replacePendingLoadSuggestions(
-  db: DatabaseT.Database,
+export async function replacePendingLoadSuggestions(
   coachId: string,
   athleteId: string,
   payloads: LoadSuggestionPayload[],
   source: string,
-): number {
-  const replace = db.transaction(() => {
-    db.prepare(
-      "DELETE FROM coach_suggestions WHERE coach_id = ? AND athlete_id = ? AND status = 'pending' AND kind = 'load_adjust'",
-    ).run(coachId, athleteId);
-    const insert = db.prepare(
+): Promise<number> {
+  await execute(
+    "DELETE FROM coach_suggestions WHERE coach_id = ? AND athlete_id = ? AND status = 'pending' AND kind = 'load_adjust'",
+    [coachId, athleteId],
+  );
+  for (const p of payloads) {
+    await execute(
       `INSERT INTO coach_suggestions
          (id, coach_id, athlete_id, kind, payload_json, status, source, created_at)
        VALUES (?, ?, ?, 'load_adjust', ?, 'pending', ?, ?)`,
+      [uuid(), coachId, athleteId, JSON.stringify(p), source, Date.now()],
     );
-    for (const p of payloads) {
-      insert.run(uuid(), coachId, athleteId, JSON.stringify(p), source, Date.now());
-    }
-  });
-  replace();
+  }
   return payloads.length;
 }
 
@@ -187,28 +180,21 @@ function toSuggestion(r: SuggestionRow): CoachSuggestion {
   };
 }
 
-export function listSuggestions(
-  db: DatabaseT.Database,
+export async function listSuggestions(
   coachId: string,
   athleteId: string,
-): CoachSuggestion[] {
-  const rows = db
-    .prepare(
-      `SELECT * FROM coach_suggestions
+): Promise<CoachSuggestion[]> {
+  const rows = await query<SuggestionRow>(
+    `SELECT * FROM coach_suggestions
        WHERE coach_id = ? AND athlete_id = ?
        ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC
        LIMIT 50`,
-    )
-    .all(coachId, athleteId) as SuggestionRow[];
+    [coachId, athleteId],
+  );
   return rows.map(toSuggestion);
 }
 
-export function getSuggestion(
-  db: DatabaseT.Database,
-  id: string,
-): CoachSuggestion | null {
-  const row = db.prepare('SELECT * FROM coach_suggestions WHERE id = ?').get(id) as
-    | SuggestionRow
-    | undefined;
+export async function getSuggestion(id: string): Promise<CoachSuggestion | null> {
+  const row = await queryOne<SuggestionRow>('SELECT * FROM coach_suggestions WHERE id = ?', [id]);
   return row ? toSuggestion(row) : null;
 }

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid email' }, { status: 400 });
   }
-  const coach = getOrCreateCoach(parsed.data.email, parsed.data.name);
+  const coach = await getOrCreateCoach(parsed.data.email, parsed.data.name);
   await setCoachSession(coach.id);
   return NextResponse.json({ id: coach.id, email: coach.email, name: coach.name });
 }

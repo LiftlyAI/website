@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, uuid } from '@/lib/db';
 import { readinessModifier } from '@/lib/readiness';
 
 const dial = z.number().int().min(1).max(10);
@@ -31,10 +31,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
   const b = parsed.data;
-  const db = getDb();
 
   // One report per day — re-submitting today just updates it.
-  db.prepare(
+  await execute(
     `INSERT INTO readiness_logs
        (id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -46,18 +45,19 @@ export async function POST(req: NextRequest) {
        pain = excluded.pain,
        pain_note = excluded.pain_note,
        note = excluded.note`,
-  ).run(
-    uuid(),
-    session.id,
-    b.date,
-    b.sleep,
-    b.energy,
-    b.soreness,
-    b.stress,
-    b.pain ?? null,
-    b.painNote ?? null,
-    b.note ?? null,
-    Date.now(),
+    [
+      uuid(),
+      session.id,
+      b.date,
+      b.sleep,
+      b.energy,
+      b.soreness,
+      b.stress,
+      b.pain ?? null,
+      b.painNote ?? null,
+      b.note ?? null,
+      Date.now(),
+    ],
   );
 
   const assessment = readinessModifier({

@@ -1,5 +1,11 @@
+// Auth: Supabase Auth (email + password) for the session, Postgres for the
+// athlete row. The Supabase user id IS the athletes.id, so once a user verifies
+// their email we lazily provision their athlete row on first authenticated
+// request. Login/signup happen client-side (see app/login/page.tsx); logout is
+// app/api/auth/logout. There is no local file DB here — all access goes through
+// the Postgres helpers in ./db (Vercel's filesystem is read-only).
 import { createSupabaseServerClient } from './supabase/server';
-import { getDb, uuid } from './db';
+import { execute, queryOne, uuid } from './db';
 
 export interface SessionAthlete {
   id: string;
@@ -20,25 +26,26 @@ export async function getSession(): Promise<SessionAthlete | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const db = getDb();
-  const row = db
-    .prepare('SELECT id, email, name, profile_json FROM athletes WHERE id = ?')
-    .get(user.id) as
-    | { id: string; email: string; name: string | null; profile_json: string | null }
-    | undefined;
+  const row = await queryOne<{
+    id: string;
+    email: string;
+    name: string | null;
+    profile_json: string | null;
+  }>('SELECT id, email, name, profile_json FROM athletes WHERE id = ?', [user.id]);
 
   if (!row) {
-    const email = user.email!.toLowerCase().trim();
-    // A coach may have pre-created this athlete by email (roster invite)
-    // before their first Supabase sign-in — adopt that row, with its program
-    // and coach link intact, instead of forking a second account keyed on the
-    // Supabase id. (The email UNIQUE constraint would make the insert below
-    // silently no-op and strand them otherwise.)
-    const byEmail = db
-      .prepare('SELECT id, email, name, profile_json FROM athletes WHERE email = ?')
-      .get(email) as
-      | { id: string; email: string; name: string | null; profile_json: string | null }
-      | undefined;
+    const email = (user.email ?? '').toLowerCase().trim();
+    // A coach may have pre-created this athlete by email (roster invite) before
+    // their first Supabase sign-in — adopt that row, with its program and coach
+    // link intact, instead of forking a second account keyed on the Supabase id.
+    // (The email UNIQUE constraint would otherwise make the insert below a no-op
+    // and strand them.)
+    const byEmail = await queryOne<{
+      id: string;
+      email: string;
+      name: string | null;
+      profile_json: string | null;
+    }>('SELECT id, email, name, profile_json FROM athletes WHERE email = ?', [email]);
     if (byEmail) {
       return {
         id: byEmail.id,
@@ -47,9 +54,11 @@ export async function getSession(): Promise<SessionAthlete | null> {
         hasProfile: !!byEmail.profile_json,
       };
     }
-    // INSERT OR IGNORE guards against a race on simultaneous first requests
-    db.prepare('INSERT OR IGNORE INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?)')
-      .run(user.id, email, null, Date.now());
+    // ON CONFLICT DO NOTHING guards against a race on simultaneous first requests.
+    await execute(
+      'INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING',
+      [user.id, email, null, Date.now()],
+    );
     return { id: user.id, email, name: null, hasProfile: false };
   }
 
@@ -65,14 +74,17 @@ export async function requireSession(): Promise<SessionAthlete> {
 // Get-or-create by email, for flows where the athlete hasn't signed in yet
 // (coach roster invites). When they later sign in via Supabase, getSession
 // adopts this row by email match.
-export function getOrCreateAthleteByEmail(email: string, name?: string): SessionAthlete {
-  const db = getDb();
+export async function getOrCreateAthleteByEmail(
+  email: string,
+  name?: string,
+): Promise<SessionAthlete> {
   const normalized = email.trim().toLowerCase();
-  const existing = db
-    .prepare('SELECT id, email, name, profile_json FROM athletes WHERE email = ?')
-    .get(normalized) as
-    | { id: string; email: string; name: string | null; profile_json: string | null }
-    | undefined;
+  const existing = await queryOne<{
+    id: string;
+    email: string;
+    name: string | null;
+    profile_json: string | null;
+  }>('SELECT id, email, name, profile_json FROM athletes WHERE email = ?', [normalized]);
   if (existing) {
     return {
       id: existing.id,
@@ -82,11 +94,11 @@ export function getOrCreateAthleteByEmail(email: string, name?: string): Session
     };
   }
   const id = uuid();
-  db.prepare('INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?)').run(
+  await execute('INSERT INTO athletes (id, email, name, created_at) VALUES (?, ?, ?, ?)', [
     id,
     normalized,
     name ?? null,
     Date.now(),
-  );
+  ]);
   return { id, email: normalized, name: name ?? null, hasProfile: false };
 }

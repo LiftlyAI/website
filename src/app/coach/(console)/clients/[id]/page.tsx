@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { coachOwnsAthlete, getCoachSession } from '@/lib/coach-auth';
-import { getDb } from '@/lib/db';
+import { queryOne } from '@/lib/db';
 import { listSuggestions } from '@/lib/coach-data';
 import { computeWeeklyReview } from '@/lib/review-data';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -18,22 +18,21 @@ const SEVERITY_TEXT: Record<DecisionSeverity, string> = {
 export default async function ClientPage({ params }: { params: { id: string } }) {
   const coach = await getCoachSession();
   if (!coach) redirect('/coach/login');
-  const db = getDb();
   // Object-level authorization: a coach can only open their own clients.
-  if (!coachOwnsAthlete(db, coach.id, params.id)) notFound();
+  if (!(await coachOwnsAthlete(coach.id, params.id))) notFound();
 
-  const aRow = db
-    .prepare('SELECT name, email, profile_json FROM athletes WHERE id = ?')
-    .get(params.id) as
-    | { name: string | null; email: string; profile_json: string | null }
-    | undefined;
+  const aRow = await queryOne<{
+    name: string | null;
+    email: string;
+    profile_json: string | null;
+  }>('SELECT name, email, profile_json FROM athletes WHERE id = ?', [params.id]);
   if (!aRow) notFound();
   const profile = aRow.profile_json
     ? (JSON.parse(aRow.profile_json) as AthleteProfile)
     : null;
 
-  const review = profile ? computeWeeklyReview(db, params.id) : null;
-  const suggestions = listSuggestions(db, coach.id, params.id);
+  const review = profile ? await computeWeeklyReview(params.id) : null;
+  const suggestions = await listSuggestions(coach.id, params.id);
 
   return (
     <div className="space-y-6">

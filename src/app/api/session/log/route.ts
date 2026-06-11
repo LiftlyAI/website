@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb, uuid } from '@/lib/db';
+import { execute, queryOne, uuid } from '@/lib/db';
 import { liftOf } from '@/lib/programming';
 import { computeHandoff } from '@/lib/handoff';
 import { loadCoachingData, replacePendingLoadSuggestions } from '@/lib/coach-data';
@@ -39,35 +39,35 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
-  const db = getDb();
   const id = uuid();
-  db.prepare(
+  await execute(
     'INSERT INTO session_logs (id, athlete_id, date, week_number, day_number, exercises_json, notes, bodyweight, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-  ).run(
-    id,
-    session.id,
-    parsed.data.date,
-    parsed.data.weekNumber ?? null,
-    parsed.data.dayNumber ?? null,
-    JSON.stringify(parsed.data.exercises),
-    parsed.data.notes ?? null,
-    parsed.data.bodyweight ?? null,
-    Date.now(),
+    [
+      id,
+      session.id,
+      parsed.data.date,
+      parsed.data.weekNumber ?? null,
+      parsed.data.dayNumber ?? null,
+      JSON.stringify(parsed.data.exercises),
+      parsed.data.notes ?? null,
+      parsed.data.bodyweight ?? null,
+      Date.now(),
+    ],
   );
 
   // Mirror bodyweight into bodyweight_logs (one per date)
   if (parsed.data.bodyweight) {
-    db.prepare(
+    await execute(
       `INSERT INTO bodyweight_logs (id, athlete_id, date, bodyweight, created_at)
        VALUES (?, ?, ?, ?, ?)
        ON CONFLICT(athlete_id, date) DO UPDATE SET bodyweight = excluded.bodyweight`,
-    ).run(uuid(), session.id, parsed.data.date, parsed.data.bodyweight, Date.now());
+      [uuid(), session.id, parsed.data.date, parsed.data.bodyweight, Date.now()],
+    );
   }
   // Close the loop: tell the caller what this log just changed for the next
   // scheduled session of each compound, so the UI can hand off to the next step.
   const loggedLifts = [...new Set(parsed.data.exercises.map((e) => liftOf(e.exercise)))];
-  const handoff = computeHandoff(
-    db,
+  const handoff = await computeHandoff(
     session.id,
     loggedLifts,
     parsed.data.weekNumber ?? null,
@@ -79,12 +79,13 @@ export async function POST(req: NextRequest) {
   // coach approves. Self-serve athletes are unaffected.
   const coachedBy =
     (
-      db.prepare('SELECT coached_by FROM athletes WHERE id = ?').get(session.id) as
-        | { coached_by: string | null }
-        | undefined
+      await queryOne<{ coached_by: string | null }>(
+        'SELECT coached_by FROM athletes WHERE id = ?',
+        [session.id],
+      )
     )?.coached_by ?? null;
   if (coachedBy) {
-    const coaching = loadCoachingData(db, session.id);
+    const coaching = await loadCoachingData(session.id);
     if (coaching) {
       const payloads = generateLoadSuggestions({
         program: coaching.program,
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
         fromDay: parsed.data.dayNumber ?? null,
         lifts: loggedLifts,
       });
-      replacePendingLoadSuggestions(db, coachedBy, session.id, payloads, 'session-log');
+      await replacePendingLoadSuggestions(coachedBy, session.id, payloads, 'session-log');
     }
     return NextResponse.json({
       ok: true,

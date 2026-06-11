@@ -1,24 +1,26 @@
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { queryOne } from '@/lib/db';
 import type { AthleteProfile, Program } from '@/lib/types';
 import { ProgramView } from './ProgramView';
 
 export default async function ProgramPage() {
   const session = await requireSession();
-  const db = getDb();
 
-  const athlete = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string };
+  const athlete = (await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  ))!;
   const profile = JSON.parse(athlete.profile_json) as AthleteProfile;
 
-  const programRow = db
-    .prepare(
-      'SELECT id, program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(session.id) as
-    | { id: string; program_json: string; current_week: number; current_block: string }
-    | undefined;
+  const programRow = await queryOne<{
+    id: string;
+    program_json: string;
+    current_week: number;
+    current_block: string;
+  }>(
+    'SELECT id, program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [session.id],
+  );
 
   if (!programRow) {
     return (

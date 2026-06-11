@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation';
 import { getCoachSession } from '@/lib/coach-auth';
-import { getDb } from '@/lib/db';
 import { listRoster } from '@/lib/coach-data';
 import { BulkClient } from './BulkClient';
 
@@ -9,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function BulkPage() {
   const coach = await getCoachSession();
   if (!coach) redirect('/coach/login');
-  const roster = listRoster(getDb(), coach.id);
+  const roster = await listRoster(coach.id);
 
   return (
     <div className="space-y-6">

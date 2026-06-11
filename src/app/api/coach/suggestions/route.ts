@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireCoach, requireCoachOwns } from '@/lib/coach-auth';
-import { getDb } from '@/lib/db';
+import { execute } from '@/lib/db';
 import {
   getSuggestion,
   loadCoachingData,
@@ -29,8 +29,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const db = getDb();
-  const coaching = loadCoachingData(db, parsed.data.athleteId);
+  const coaching = await loadCoachingData(parsed.data.athleteId);
   if (!coaching) {
     return NextResponse.json(
       { error: 'client has no profile or program yet' },
@@ -44,8 +43,7 @@ export async function POST(req: NextRequest) {
     fromWeek: coaching.currentWeek,
     fromDay: null,
   });
-  const created = replacePendingLoadSuggestions(
-    db,
+  const created = await replacePendingLoadSuggestions(
     coach.id,
     parsed.data.athleteId,
     payloads,
@@ -76,8 +74,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
 
-  const db = getDb();
-  const suggestion = getSuggestion(db, parsed.data.id);
+  const suggestion = await getSuggestion(parsed.data.id);
   // 404 on both missing and not-owned: don't leak other coaches' queue ids.
   if (!suggestion || suggestion.coachId !== coach.id) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
@@ -87,14 +84,15 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (parsed.data.action === 'reject') {
-    db.prepare(
+    await execute(
       "UPDATE coach_suggestions SET status = 'rejected', coach_note = ?, resolved_at = ? WHERE id = ?",
-    ).run(parsed.data.note ?? null, Date.now(), suggestion.id);
+      [parsed.data.note ?? null, Date.now(), suggestion.id],
+    );
     return NextResponse.json({ ok: true, status: 'rejected' });
   }
 
   const finalWeight = parsed.data.weight ?? suggestion.payload.suggestedWeight;
-  const coaching = loadCoachingData(db, suggestion.athleteId);
+  const coaching = await loadCoachingData(suggestion.athleteId);
   if (!coaching) {
     return NextResponse.json({ error: 'client program missing' }, { status: 409 });
   }
@@ -110,22 +108,20 @@ export async function PATCH(req: NextRequest) {
       { status: 409 },
     );
   }
-  const update = db.transaction(() => {
-    db.prepare('UPDATE programs SET program_json = ? WHERE id = ?').run(
-      JSON.stringify(program),
-      coaching.programId,
-    );
-    db.prepare(
-      "UPDATE coach_suggestions SET status = 'approved', edited_weight = ?, coach_note = ?, resolved_at = ? WHERE id = ?",
-    ).run(
+  await execute('UPDATE programs SET program_json = ? WHERE id = ?', [
+    JSON.stringify(program),
+    coaching.programId,
+  ]);
+  await execute(
+    "UPDATE coach_suggestions SET status = 'approved', edited_weight = ?, coach_note = ?, resolved_at = ? WHERE id = ?",
+    [
       parsed.data.weight != null && parsed.data.weight !== suggestion.payload.suggestedWeight
         ? parsed.data.weight
         : null,
       parsed.data.note ?? null,
       Date.now(),
       suggestion.id,
-    );
-  });
-  update();
+    ],
+  );
   return NextResponse.json({ ok: true, status: 'approved', appliedWeight: finalWeight });
 }

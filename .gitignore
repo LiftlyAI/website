@@ -26,6 +26,9 @@ cv-service/_smoke.*
 cv-service/_nohuman.*
 cv-service/_resp.json
 
+# Build artifacts
+tsconfig.tsbuildinfo
+
 # Editor
 .vscode/
 .idea/

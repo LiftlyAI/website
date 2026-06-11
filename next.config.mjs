@@ -3,7 +3,7 @@ const nextConfig = {
   // Next 14 uses experimental.serverComponentsExternalPackages; the top-level
   // `serverExternalPackages` is Next 15+ only.
   experimental: {
-    serverComponentsExternalPackages: ['better-sqlite3'],
+    serverComponentsExternalPackages: ['postgres'],
     serverActions: {
       bodySizeLimit: '50mb',
     },

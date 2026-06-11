@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireCoach } from '@/lib/coach-auth';
 import { getOrCreateAthleteByEmail } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { execute } from '@/lib/db';
 import { listRoster } from '@/lib/coach-data';
 
 // Bulk-friendly on purpose: a coach migrating off TrainHeroic pastes their
@@ -27,21 +27,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
   }
 
-  const db = getDb();
-  const link = db.prepare(
-    `INSERT INTO coach_athletes (coach_id, athlete_id, status, created_at)
-     VALUES (?, ?, 'active', ?)
-     ON CONFLICT(coach_id, athlete_id) DO UPDATE SET status = 'active'`,
-  );
-  const mark = db.prepare('UPDATE athletes SET coached_by = ? WHERE id = ?');
-
   let added = 0;
   for (const c of parsed.data.clients) {
-    const athlete = getOrCreateAthleteByEmail(c.email, c.name);
-    link.run(coach.id, athlete.id, Date.now());
-    mark.run(coach.id, athlete.id);
+    const athlete = await getOrCreateAthleteByEmail(c.email, c.name);
+    await execute(
+      `INSERT INTO coach_athletes (coach_id, athlete_id, status, created_at)
+       VALUES (?, ?, 'active', ?)
+       ON CONFLICT(coach_id, athlete_id) DO UPDATE SET status = 'active'`,
+      [coach.id, athlete.id, Date.now()],
+    );
+    await execute('UPDATE athletes SET coached_by = ? WHERE id = ?', [coach.id, athlete.id]);
     added++;
   }
 
-  return NextResponse.json({ ok: true, added, roster: listRoster(db, coach.id) });
+  return NextResponse.json({ ok: true, added, roster: await listRoster(coach.id) });
 }

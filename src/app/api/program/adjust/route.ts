@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { query, queryOne } from '@/lib/db';
 import {
   adjustExercise,
   extractLifterSets,
@@ -31,20 +31,19 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const weekNumber = Number(body?.weekNumber) || null;
 
-  const db = getDb();
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string } | undefined;
+  const aRow = await queryOne<{ profile_json: string }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   if (!aRow?.profile_json) {
     return NextResponse.json({ error: 'no profile' }, { status: 400 });
   }
   const profile = JSON.parse(aRow.profile_json) as AthleteProfile;
 
-  const pRow = db
-    .prepare(
-      'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    )
-    .get(session.id) as { program_json: string; current_week: number } | undefined;
+  const pRow = await queryOne<{ program_json: string; current_week: number }>(
+    'SELECT program_json, current_week FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
+    [session.id],
+  );
   if (!pRow) {
     return NextResponse.json({ ok: true, adjustments: {} });
   }
@@ -58,13 +57,12 @@ export async function POST(req: NextRequest) {
 
   // ~60 days of session history covers any practical autoregulation window.
   const sinceMs = Date.now() - 60 * 24 * 60 * 60 * 1000;
-  const logRows = db
-    .prepare(
-      `SELECT date, exercises_json FROM session_logs
+  const logRows = await query<{ date: string; exercises_json: string }>(
+    `SELECT date, exercises_json FROM session_logs
        WHERE athlete_id = ? AND created_at >= ?
        ORDER BY date DESC`,
-    )
-    .all(session.id, sinceMs) as { date: string; exercises_json: string }[];
+    [session.id, sinceMs],
+  );
   const logs: SessionLog[] = logRows.map((r) => ({
     id: '',
     athleteId: session.id,

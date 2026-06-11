@@ -1,5 +1,5 @@
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { query, queryOne } from '@/lib/db';
 import type { AthleteProfile } from '@/lib/types';
 import { estimatedOneRM } from '@/lib/calculations';
 import { ProgressView } from './ProgressView';
@@ -25,21 +25,17 @@ interface VolumePoint {
 
 export default async function ProgressPage() {
   const session = await requireSession();
-  const db = getDb();
 
   const profile = JSON.parse(
-    (
-      db.prepare('SELECT profile_json FROM athletes WHERE id = ?').get(session.id) as {
-        profile_json: string;
-      }
-    ).profile_json,
+    (await queryOne<{ profile_json: string }>('SELECT profile_json FROM athletes WHERE id = ?', [
+      session.id,
+    ]))!.profile_json,
   ) as AthleteProfile;
 
-  const sessions = db
-    .prepare(
-      'SELECT date, exercises_json FROM session_logs WHERE athlete_id = ? ORDER BY date ASC',
-    )
-    .all(session.id) as { date: string; exercises_json: string }[];
+  const sessions = await query<{ date: string; exercises_json: string }>(
+    'SELECT date, exercises_json FROM session_logs WHERE athlete_id = ? ORDER BY date ASC',
+    [session.id],
+  );
 
   // e1RM time series (best e1RM per session per lift)
   const e1rms: E1RMPoint[] = sessions.map((s) => {
@@ -70,11 +66,10 @@ export default async function ProgressPage() {
   });
 
   // Bodyweight + 7-day rolling
-  const bwRows = db
-    .prepare(
-      'SELECT date, bodyweight FROM bodyweight_logs WHERE athlete_id = ? ORDER BY date ASC',
-    )
-    .all(session.id) as { date: string; bodyweight: number }[];
+  const bwRows = await query<{ date: string; bodyweight: number }>(
+    'SELECT date, bodyweight FROM bodyweight_logs WHERE athlete_id = ? ORDER BY date ASC',
+    [session.id],
+  );
   const bwPoints: BWPoint[] = bwRows.map((r, i) => {
     const window = bwRows.slice(Math.max(0, i - 6), i + 1);
     const rolling7 = window.reduce((s, x) => s + x.bodyweight, 0) / window.length;

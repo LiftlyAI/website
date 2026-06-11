@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
-import { getDb } from '@/lib/db';
+import { queryOne } from '@/lib/db';
 import { aiGenerate, isAiKeyError } from '@/lib/ai';
 import { computeHandoff } from '@/lib/handoff';
 import { liftOf } from '@/lib/programming';
@@ -25,21 +25,23 @@ export async function POST(req: NextRequest) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 });
 
-  const db = getDb();
-  const aRow = db
-    .prepare('SELECT profile_json FROM athletes WHERE id = ?')
-    .get(session.id) as { profile_json: string | null } | undefined;
+  const aRow = await queryOne<{ profile_json: string | null }>(
+    'SELECT profile_json FROM athletes WHERE id = ?',
+    [session.id],
+  );
   if (!aRow?.profile_json) return NextResponse.json({ note: null });
   const profile = JSON.parse(aRow.profile_json) as AthleteProfile;
 
   // Latest session log (the thing they just saved).
-  const logRow = db
-    .prepare(
-      'SELECT date, week_number, day_number, exercises_json FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 1',
-    )
-    .get(session.id) as
-    | { date: string; week_number: number | null; day_number: number | null; exercises_json: string }
-    | undefined;
+  const logRow = await queryOne<{
+    date: string;
+    week_number: number | null;
+    day_number: number | null;
+    exercises_json: string;
+  }>(
+    'SELECT date, week_number, day_number, exercises_json FROM session_logs WHERE athlete_id = ? ORDER BY date DESC, created_at DESC LIMIT 1',
+    [session.id],
+  );
 
   let loggedSummary: string | null = null;
   let loggedLifts: LiftType[] = [];
@@ -59,8 +61,7 @@ export async function POST(req: NextRequest) {
         .join(', ') || null;
   }
 
-  const handoff = computeHandoff(
-    db,
+  const handoff = await computeHandoff(
     session.id,
     loggedLifts,
     logRow?.week_number ?? null,
@@ -69,25 +70,22 @@ export async function POST(req: NextRequest) {
 
   // Today's readiness, if any.
   const todayStr = new Date().toISOString().slice(0, 10);
-  const rRow = db
-    .prepare(
-      'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? AND date = ?',
-    )
-    .get(session.id, todayStr) as
-    | {
-        id: string;
-        athlete_id: string;
-        date: string;
-        sleep: number;
-        energy: number;
-        soreness: number;
-        stress: number;
-        pain: number | null;
-        pain_note: string | null;
-        note: string | null;
-        created_at: number;
-      }
-    | undefined;
+  const rRow = await queryOne<{
+    id: string;
+    athlete_id: string;
+    date: string;
+    sleep: number;
+    energy: number;
+    soreness: number;
+    stress: number;
+    pain: number | null;
+    pain_note: string | null;
+    note: string | null;
+    created_at: number;
+  }>(
+    'SELECT id, athlete_id, date, sleep, energy, soreness, stress, pain, pain_note, note, created_at FROM readiness_logs WHERE athlete_id = ? AND date = ?',
+    [session.id, todayStr],
+  );
   const readiness = rRow
     ? assessReadinessLog({
         id: rRow.id,
