@@ -19,8 +19,9 @@ export default async function TriagePage() {
   const items = await triageForCoach(coach.id);
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-6">
       <div>
+        <div className="page-kicker mb-2">// FIRST PASS</div>
         <h1 className="stencil-heading text-3xl text-chalk mb-2">This week&apos;s triage</h1>
         <div className="accent-divider mb-3 max-w-[80px]" />
         <p className="text-sm text-chalk-mute font-body max-w-2xl">

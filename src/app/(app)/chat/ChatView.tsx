@@ -83,7 +83,7 @@ export function ChatView({
   return (
     <div className="flex flex-col h-[calc(100dvh-6rem)] lg:h-screen">
       <div className="border-b border-iron-800 px-4 sm:px-8 py-4">
-        <div className="font-mono text-xs text-chalk-mute tracking-widest">YOUR COACH</div>
+        <div className="page-kicker">// YOUR COACH</div>
         <div className="stencil-heading text-2xl text-chalk leading-none">
           ASK ANYTHING<span className="text-blood">.</span>
         </div>

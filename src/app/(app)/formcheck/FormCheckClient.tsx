@@ -23,12 +23,10 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
   const [checks, setChecks] = useState(initialChecks);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
+    <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
       <div className="mb-8 flex items-baseline justify-between flex-wrap gap-4">
         <div>
-          <div className="font-mono text-xs text-chalk-mute tracking-widest mb-1">
-            COACH'S DESK
-          </div>
+          <div className="page-kicker mb-2">// COACH&apos;S DESK</div>
           <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">FORM CHECK</h1>
           <div className="accent-divider mt-3 max-w-[120px]" />
           <p className="text-sm text-chalk-mute mt-3 max-w-xl">

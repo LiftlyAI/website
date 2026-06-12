@@ -13,8 +13,9 @@ export default async function RosterPage() {
   const roster = await listRoster(coach.id);
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-6">
       <div>
+        <div className="page-kicker mb-2">// YOUR LIFTERS</div>
         <h1 className="stencil-heading text-3xl text-chalk mb-2">Roster</h1>
         <div className="accent-divider mb-3 max-w-[80px]" />
         <p className="text-sm text-chalk-mute font-body max-w-2xl">

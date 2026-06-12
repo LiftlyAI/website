@@ -175,10 +175,11 @@ export default async function Dashboard() {
   const filmLift = guessFilmLift(todayDay) ?? handoff.filmLift;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">
+    <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-7xl">
       {/* Hero strip */}
       <div className="mb-10">
-        <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">
+        <div className="page-kicker mb-2">
+          {'// '}
           {new Date()
             .toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
             .toUpperCase()}
@@ -218,7 +219,7 @@ export default async function Dashboard() {
       {/* Main row — the loop spine + the week at a glance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">
+          <div className="page-kicker mb-2">
             TODAY{program ? ` · ${programRow?.current_block ?? program.currentBlock} · WEEK ${currentWeekNum}` : ''}
           </div>
           <TodayLoopCard

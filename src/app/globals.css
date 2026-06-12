@@ -127,6 +127,215 @@ body {
   }
 }
 
+/* ──────────────────── App-wide motion & micro-interactions ──────────────────── */
+
+/* Route-change entrance: whole page rises in (applied by PageTransition). */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.page-enter {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered child entrances — add .stagger to any container. */
+.stagger > * {
+  animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.11s; }
+.stagger > *:nth-child(3) { animation-delay: 0.17s; }
+.stagger > *:nth-child(4) { animation-delay: 0.23s; }
+.stagger > *:nth-child(5) { animation-delay: 0.29s; }
+.stagger > *:nth-child(6) { animation-delay: 0.35s; }
+.stagger > *:nth-child(7) { animation-delay: 0.41s; }
+.stagger > *:nth-child(8) { animation-delay: 0.47s; }
+.stagger > *:nth-child(n + 9) { animation-delay: 0.53s; }
+
+/* Sheen sweep on primary buttons — light band crosses on hover. */
+.btn-primary,
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before,
+.btn-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 65%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.btn-primary:hover::before,
+.btn-sheen:hover::before {
+  transform: translateX(130%);
+}
+.btn-primary:active,
+.btn-sheen:active,
+.btn-ghost:active {
+  transform: scale(0.97);
+}
+
+/* Inputs: focus lifts the field with a soft blue ring. */
+.input-iron:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 4px 14px -6px rgba(59, 130, 246, 0.35);
+}
+
+/* Cards: hairline brightens on hover everywhere. */
+.chalk-card {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* Mobile "More" sheet slides up. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.sheet-enter {
+  animation: sheet-up 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.scrim-enter {
+  animation: fade-in 0.25s ease both;
+}
+
+/* Section kicker — the landing's `// LABEL` look, shared by every page. */
+.page-kicker {
+  @apply font-mono text-xs text-blood;
+  letter-spacing: 0.35em;
+}
+
+/* Auth screens: slow aurora drift behind a faint engineering grid. */
+.auth-aurora {
+  background-image:
+    radial-gradient(640px circle at 20% 25%, rgba(59, 130, 246, 0.16), transparent 60%),
+    radial-gradient(560px circle at 80% 75%, rgba(99, 102, 241, 0.13), transparent 60%),
+    radial-gradient(480px circle at 65% 15%, rgba(34, 211, 238, 0.07), transparent 55%);
+  animation: aurora-drift 14s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  from {
+    background-position: 0% 0%, 0% 0%, 0% 0%;
+  }
+  to {
+    background-position: 6% 10%, -8% -6%, 4% 12%;
+  }
+}
+.grid-lines {
+  background-image:
+    linear-gradient(rgba(244, 247, 251, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 247, 251, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Side-nav links: indicator bar grows in; icon nudges on hover. */
+.side-link {
+  position: relative;
+}
+.side-link::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  height: 60%;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #60a5fa, #3b82f6);
+  transform: translateY(-50%) scaleY(0);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.side-link[data-active='true']::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.side-link svg {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.side-link:hover svg {
+  transform: translateX(2px) scale(1.08);
+}
+
+/* ───────────────────────── Landing experience ───────────────────────── */
+
+/* Infinite marquee — two identical strips, track slides one strip-width.
+   GSAP adds velocity-reactive skew on top of this. */
+.marquee-track {
+  animation: marquee-slide 28s linear infinite;
+}
+@keyframes marquee-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Nav links — underline sweeps in from the left on hover */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.2s ease;
+}
+.nav-link:hover {
+  color: #f4f7fb;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: #3b82f6;
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+/* Scroll-hint bead falling down its rail */
+.scroll-hint-bead {
+  animation: bead-fall 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes bead-fall {
+  0% {
+    transform: translateY(-100%);
+  }
+  60% {
+    transform: translateY(300%);
+  }
+  100% {
+    transform: translateY(300%);
+  }
+}
+
 /* Loading plate animation */
 .plate-loader {
   width: 88px;

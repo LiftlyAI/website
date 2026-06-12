@@ -29,17 +29,17 @@ const links = [
 export function SideNav() {
   const pathname = usePathname();
   return (
-    <aside className="w-60 shrink-0 border-r border-iron-800 bg-iron-950 min-h-screen hidden lg:flex flex-col">
-      <div className="p-5 border-b border-iron-800">
-        <Link href="/dashboard" className="block">
-          <LiftlyLogo size={28} className="text-chalk" />
-          <div className="font-mono text-[10px] text-chalk-mute mt-2 tracking-widest">
-            EST. THIS MONTH
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-iron-800 bg-iron-950/80 backdrop-blur-xl lg:flex">
+      <div className="border-b border-iron-800 p-5">
+        <Link href="/dashboard" className="group block">
+          <LiftlyLogo size={28} className="text-chalk transition-colors group-hover:text-blood-glow" />
+          <div className="mt-2 font-mono text-[10px] tracking-[0.3em] text-chalk-mute">
+            AI POWERLIFTING COACH
           </div>
         </Link>
       </div>
 
-      <nav className="flex-1 py-4">
+      <nav className="stagger flex-1 overflow-y-auto py-4">
         {links.map((l) => {
           const Icon = l.icon;
           const active = pathname?.startsWith(l.href);
@@ -47,16 +47,19 @@ export function SideNav() {
             <Link
               key={l.href}
               href={l.href}
+              data-active={active || undefined}
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg font-body font-medium text-sm',
-                'transition-all duration-150',
+                'side-link mx-3 flex items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm font-medium',
+                'transition-all duration-200',
                 active
-                  ? 'text-blood bg-blood/10 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.25)]'
-                  : 'text-chalk-dim hover:text-chalk hover:bg-iron-800/70',
+                  ? 'bg-gradient-to-r from-blood/15 to-transparent text-chalk shadow-[inset_0_0_0_1px_rgba(59,130,246,0.2)]'
+                  : 'text-chalk-dim hover:translate-x-0.5 hover:bg-iron-800/70 hover:text-chalk',
               )}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className={cn('h-4 w-4', active && 'text-blood')} />
               {l.label}
+              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blood shadow-glow-sm" />}
             </Link>
           );
         })}
@@ -65,9 +68,9 @@ export function SideNav() {
       <form action="/api/auth/logout" method="POST" className="border-t border-iron-800">
         <button
           type="submit"
-          className="w-full flex items-center gap-3 px-5 py-4 font-body font-medium text-sm text-chalk-mute hover:text-blood hover:bg-iron-900 transition-colors"
+          className="group flex w-full items-center gap-3 px-5 py-4 font-body text-sm font-medium text-chalk-mute transition-colors hover:bg-iron-900 hover:text-blood"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
           Sign Out
         </button>
       </form>

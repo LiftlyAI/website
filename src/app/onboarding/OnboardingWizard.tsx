@@ -86,20 +86,20 @@ export function OnboardingWizard({ email, initialName }: { email: string; initia
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-iron-950">
+    <div className="auth-aurora grid-lines min-h-screen flex flex-col bg-iron-950">
       {/* Progress bar */}
       <div className="px-6 pt-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="stencil-heading text-xs tracking-widest text-chalk-mute">
-            STEP {step} OF {TOTAL_STEPS}
+          <span className="page-kicker text-xs">
+            {'// '}STEP {step} OF {TOTAL_STEPS}
           </span>
           <span className="font-mono text-xs text-chalk-mute">
             {Math.round((step / TOTAL_STEPS) * 100)}%
           </span>
         </div>
-        <div className="h-1 bg-iron-800 w-full">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-iron-800">
           <div
-            className="h-full bg-blood transition-all duration-300"
+            className="h-full rounded-full bg-gradient-to-r from-blood-dim via-blood to-blood-glow shadow-glow-sm transition-all duration-500 ease-out"
             style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
           />
         </div>
@@ -107,11 +107,13 @@ export function OnboardingWizard({ email, initialName }: { email: string; initia
 
       <div className="flex-1 flex justify-center px-6 py-10">
         <div className="w-full max-w-2xl">
-          {step === 1 && <Step1 profile={profile} update={update} />}
-          {step === 2 && <Step2 profile={profile} update={update} />}
-          {step === 3 && <Step3 profile={profile} update={update} />}
-          {step === 4 && <Step4 profile={profile} update={update} />}
-          {step === 5 && <Step5 profile={profile} update={update} />}
+          <div key={step} className="page-enter">
+            {step === 1 && <Step1 profile={profile} update={update} />}
+            {step === 2 && <Step2 profile={profile} update={update} />}
+            {step === 3 && <Step3 profile={profile} update={update} />}
+            {step === 4 && <Step4 profile={profile} update={update} />}
+            {step === 5 && <Step5 profile={profile} update={update} />}
+          </div>
 
           {error && <div className="text-sm text-rpe-max font-mono mt-4">{error}</div>}
 

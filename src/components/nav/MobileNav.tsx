@@ -46,9 +46,10 @@ export function MobileNav() {
           <button
             aria-label="Close menu"
             onClick={() => setMoreOpen(false)}
-            className="absolute inset-0 bg-ink/70 backdrop-blur-sm"
+            className="scrim-enter absolute inset-0 bg-ink/70 backdrop-blur-sm"
           />
-          <div className="absolute bottom-0 inset-x-0 bg-iron-900 border-t border-iron-700 rounded-t-lg p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="sheet-enter absolute bottom-0 inset-x-0 bg-iron-900/95 backdrop-blur-xl border-t border-iron-700 rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-iron-600" />
             <div className="flex items-center justify-between mb-3">
               <span className="font-body font-semibold text-sm text-chalk-dim">More</span>
               <button
@@ -70,8 +71,10 @@ export function MobileNav() {
                     onClick={() => setMoreOpen(false)}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'flex flex-col items-center gap-2 py-4 rounded-sm chalk-border transition-colors',
-                      active ? 'text-blood border-blood' : 'text-chalk-dim hover:text-chalk',
+                      'flex flex-col items-center gap-2 py-4 rounded-lg chalk-border transition-all active:scale-95',
+                      active
+                        ? 'text-blood border-blood/60 bg-blood/10 shadow-glow-sm'
+                        : 'text-chalk-dim hover:text-chalk hover:bg-iron-800/60',
                     )}
                   >
                     <Icon className="w-5 h-5" />
@@ -108,11 +111,14 @@ export function MobileNav() {
                 href={l.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 min-h-[56px] py-2 transition-colors',
-                  active ? 'text-blood' : 'text-chalk-mute hover:text-chalk',
+                  'relative flex flex-col items-center justify-center gap-1 min-h-[56px] py-2 transition-all',
+                  active ? 'text-blood' : 'text-chalk-mute hover:text-chalk active:scale-95',
                 )}
               >
-                <Icon className="w-5 h-5" />
+                {active && (
+                  <span className="absolute top-0 h-0.5 w-8 rounded-b bg-blood shadow-glow-sm" />
+                )}
+                <Icon className={cn('w-5 h-5 transition-transform', active && '-translate-y-0.5')} />
                 <span className="text-[10px] font-mono tracking-wide">{l.label}</span>
               </Link>
             );
