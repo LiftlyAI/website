@@ -71,9 +71,9 @@ export function NutritionView({
   const hasAllergies = !!(profile.allergies && profile.allergies.trim());
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-6xl">
+    <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-6xl">
       <div className="mb-8">
-        <div className="font-mono text-xs text-chalk-mute tracking-widest mb-1">FUEL</div>
+        <div className="page-kicker mb-2">// FUEL</div>
         <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">NUTRITION</h1>
         <div className="accent-divider mt-3 max-w-[120px]" />
       </div>

@@ -35,8 +35,9 @@ export default async function ClientPage({ params }: { params: { id: string } })
   const suggestions = await listSuggestions(coach.id, params.id);
 
   return (
-    <div className="space-y-6">
+    <div className="stagger space-y-6">
       <div>
+        <div className="page-kicker mb-2">// CLIENT FILE</div>
         <h1 className="stencil-heading text-3xl text-chalk mb-1">
           {aRow.name ?? aRow.email}
         </h1>

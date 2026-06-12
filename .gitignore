@@ -29,6 +29,9 @@ cv-service/_resp.json
 # Build artifacts
 tsconfig.tsbuildinfo
 
+# Smoke-test screenshots
+scripts/landing-*.png
+
 # Editor
 .vscode/
 .idea/

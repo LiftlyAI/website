@@ -15,9 +15,9 @@ export const metadata = {
 // changes. This is the lifter-facing explanation of the closed loop.
 export default function AboutPage() {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-3xl">
+    <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-3xl">
       <div className="mb-8">
-        <div className="font-mono text-xs text-chalk-mute tracking-widest mb-2">ABOUT</div>
+        <div className="page-kicker mb-2">// ABOUT</div>
         <h1 className="stencil-heading text-4xl sm:text-5xl text-chalk leading-none">
           HOW YOUR PROGRAM <span className="text-blood">ADAPTS</span>
         </h1>
