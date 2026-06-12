@@ -47,21 +47,25 @@ const FEATURES = [
 const STEPS = [
   {
     num: '01',
+    verb: 'CALIBRATE',
     title: 'Tell it how you lift',
     body: 'Your maxes, your schedule, your federation, your weak points. Ninety seconds of onboarding, zero filler questions.',
   },
   {
     num: '02',
+    verb: 'PROGRAM',
     title: 'Get your block',
     body: 'A periodized program lands the moment you finish onboarding. Every set, every percentage, every rest day accounted for.',
   },
   {
     num: '03',
+    verb: 'ADAPT',
     title: 'Log and adapt',
     body: 'Rate your sets with RPE. The program reads your readiness and adjusts load before fatigue becomes a missed lift.',
   },
   {
     num: '04',
+    verb: 'COMPETE',
     title: 'Peak on the platform',
     body: 'Taper timed to meet day. Openers picked from data, not vibes. Show up strong, go nine for nine.',
   },
@@ -70,7 +74,7 @@ const STEPS = [
 const STATS = [
   { value: 3, suffix: '', label: 'lifts that matter' },
   { value: 100, suffix: '%', label: 'tailored to your numbers' },
-  { value: 10, suffix: '', label: 'RPE-capped autoregulation' },
+  { value: 10, suffix: '', label: 'RPE scale, calibrated every session' },
   { value: 0, suffix: '', label: 'fluff, ever' },
 ];
 
@@ -125,7 +129,6 @@ export function LandingExperience() {
           )
           .from('.hero-sub', { y: 28, autoAlpha: 0, duration: 0.7 }, '-=0.5')
           .from('.hero-cta', { y: 24, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, '-=0.45')
-          .from('.hero-scroll-hint', { autoAlpha: 0, duration: 0.8 }, '-=0.2')
           .from('.hero-canvas', { autoAlpha: 0, duration: 1.4, ease: 'power2.inOut' }, 0.2);
 
         // ---- Nav: hide on scroll down, return on scroll up -------------------
@@ -384,19 +387,7 @@ export function LandingExperience() {
                 For Coaches
               </Link>
             </Magnetic>
-            <Magnetic className="hero-cta" strength={0.25}>
-              <a href="#features" className="btn-ghost">
-                Explore ↓
-              </a>
-            </Magnetic>
           </div>
-        </div>
-
-        <div className="hero-scroll-hint absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-center">
-          <div className="mx-auto mb-2 h-9 w-[1.5px] overflow-hidden rounded bg-iron-700">
-            <div className="scroll-hint-bead h-3 w-full rounded bg-blood" />
-          </div>
-          <span className="font-mono text-[10px] tracking-[0.3em] text-chalk-mute">SCROLL</span>
         </div>
       </section>
 
@@ -502,7 +493,7 @@ export function LandingExperience() {
                     <span className="absolute h-3 w-3 animate-ping rounded-full bg-blood/60" />
                   </span>
                   <p className="mb-2 font-mono text-sm tracking-[0.25em] text-blood">
-                    STEP {step.num}
+                    {step.verb}
                   </p>
                   <h3 className="stencil-heading mb-3 text-2xl text-chalk md:text-3xl">
                     {step.title}
@@ -542,9 +533,6 @@ export function LandingExperience() {
       <section id="coaches" className="py-28 md:py-36">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 md:grid-cols-2">
           <div data-reveal>
-            <p className="mb-3 font-mono text-sm tracking-[0.35em] text-blood">
-              <ScrambleText text="// FOR COACHES" />
-            </p>
             <h2 className="stencil-heading mb-6 text-4xl text-chalk md:text-5xl">
               Your whole roster,
               <br />
