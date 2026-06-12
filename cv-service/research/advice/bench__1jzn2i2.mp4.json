@@ -1,0 +1,163 @@
+{
+  "lift": "bench",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 364,
+    "totalFrames": 364,
+    "coverage": 1.0,
+    "quality": "good"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.033,
+      "pauseS": 0.0,
+      "concentricS": 1.233,
+      "romTorso": 0.894,
+      "concRiseTorso": 0.894,
+      "barDriftTorso": 0.267,
+      "towardShoulderTorso": 0.166,
+      "curveRatio": 0.728,
+      "touchOnTorso": -1.328,
+      "elbowAngleBottom": 141.9,
+      "elbowAngleLockout": 164.1,
+      "elbowFlareDeg": 24.3,
+      "wristAheadOfElbowTorso": -0.067,
+      "depthHipMinusKneeTorso": -0.486,
+      "kneeVsAnkleTorso": -0.894,
+      "barOverMidfootTorso": 0.514,
+      "lockoutHipKneeAnkleDeg": 60.6,
+      "hipLeadAtStartTorso": -0.176,
+      "phases": {
+        "descent": [
+          1.033,
+          3.4
+        ],
+        "pause": [
+          3.4,
+          3.4
+        ],
+        "press": [
+          3.4,
+          4.633
+        ],
+        "lockout": [
+          4.633,
+          4.633
+        ]
+      },
+      "slowdownVsFastestPct": 27.0
+    },
+    {
+      "index": 2,
+      "touchAndGo": true,
+      "descentS": 0.067,
+      "pauseS": 0.0,
+      "concentricS": 0.9,
+      "romTorso": 0.951,
+      "concRiseTorso": 0.576,
+      "barDriftTorso": -0.296,
+      "towardShoulderTorso": -0.315,
+      "curveRatio": 0.931,
+      "touchOnTorso": -1.997,
+      "elbowAngleBottom": 21.7,
+      "elbowAngleLockout": 156.4,
+      "elbowFlareDeg": 40.5,
+      "wristAheadOfElbowTorso": 0.165,
+      "depthHipMinusKneeTorso": -0.448,
+      "kneeVsAnkleTorso": -0.782,
+      "barOverMidfootTorso": 0.974,
+      "lockoutHipKneeAnkleDeg": 56.9,
+      "hipLeadAtStartTorso": -0.21,
+      "phases": {
+        "descent": [
+          7.633,
+          9.4
+        ],
+        "pause": [
+          9.4,
+          9.4
+        ],
+        "press": [
+          9.4,
+          10.3
+        ],
+        "lockout": [
+          10.3,
+          11.333
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    },
+    {
+      "index": 3,
+      "touchAndGo": true,
+      "descentS": 0.067,
+      "pauseS": 0.0,
+      "concentricS": 0.9,
+      "romTorso": 0.951,
+      "concRiseTorso": 0.576,
+      "barDriftTorso": -0.296,
+      "towardShoulderTorso": -0.315,
+      "curveRatio": 0.931,
+      "touchOnTorso": -1.997,
+      "elbowAngleBottom": 21.7,
+      "elbowAngleLockout": 156.4,
+      "elbowFlareDeg": 40.5,
+      "wristAheadOfElbowTorso": 0.165,
+      "depthHipMinusKneeTorso": -0.448,
+      "kneeVsAnkleTorso": -0.782,
+      "barOverMidfootTorso": 0.974,
+      "lockoutHipKneeAnkleDeg": 56.9,
+      "hipLeadAtStartTorso": -0.21,
+      "phases": {
+        "descent": [
+          7.633,
+          9.4
+        ],
+        "pause": [
+          9.4,
+          9.4
+        ],
+        "press": [
+          9.4,
+          10.3
+        ],
+        "lockout": [
+          10.3,
+          11.333
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 3,
+    "firstRepConcentricS": 1.233,
+    "fastestRepConcentricS": 0.9,
+    "lastRepConcentricS": 0.9,
+    "rpeBand": null,
+    "velocityLossPct": 0.0,
+    "wallRepIndex": null,
+    "rir": 5.0,
+    "rpe": 5.0,
+    "rpeConfidence": "estimated",
+    "barPathNote": "Bench bar path is a clear curve (horizontal travel ~0.29 torso on the press).",
+    "shoulderStabilityTorso": 0.082,
+    "hipStabilityTorso": 0.053,
+    "footMovementTorso": 0.155,
+    "formNotes": [
+      "Elbows very tucked (~35 deg) \u2014 watch the bar drifting low to the belly.",
+      "Touch-and-go \u2014 no visible pause on the chest. If you compete, practice a motionless pause; meets require one.",
+      "Wrist stays stacked over the elbow at the chest \u2014 good.",
+      "Bar drifts AWAY from the shoulders on the press \u2014 poor leverage.",
+      "Shoulders travel during the press \u2014 keep blades pinned and down.",
+      "Feet shifting \u2014 losing leg drive; plant and drive toward your head."
+    ],
+    "cameraView": "side",
+    "cameraViewRatio": 0.854
+  },
+  "warnings": []
+}

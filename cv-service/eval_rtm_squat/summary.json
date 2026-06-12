@@ -1,0 +1,19 @@
+[
+  {
+    "file": "315 lb squat.mp4",
+    "gtRPE": null,
+    "rpe": 9.0,
+    "reps": 1,
+    "coverage": 1.0,
+    "quality": "good",
+    "barSource": "plate",
+    "found": true,
+    "poseSec": 32.6,
+    "barSec": 54.1,
+    "anSec": 0.4,
+    "totalSec": 87.0,
+    "frames": 553,
+    "fps": 30.0,
+    "overlay": "315_lb_squat.mp4.overlay.png"
+  }
+]

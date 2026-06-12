@@ -1,0 +1,36 @@
+[
+  {
+    "file": "145 lb squat.mp4",
+    "gtRPE": null,
+    "rpe": null,
+    "reps": 0,
+    "coverage": 0.384,
+    "quality": "low",
+    "barSource": "plate",
+    "found": true,
+    "poseSec": 1882.4,
+    "barSec": 56.5,
+    "anSec": 0.1,
+    "totalSec": 1939.0,
+    "frames": 959,
+    "fps": 30.0,
+    "overlay": "145_lb_squat.mp4.overlay.png"
+  },
+  {
+    "file": "315 lb squat.mp4",
+    "gtRPE": null,
+    "rpe": null,
+    "reps": 0,
+    "coverage": 0.982,
+    "quality": "good",
+    "barSource": "plate",
+    "found": true,
+    "poseSec": 545.1,
+    "barSec": 137.4,
+    "anSec": 0.5,
+    "totalSec": 683.1,
+    "frames": 553,
+    "fps": 30.0,
+    "overlay": "315_lb_squat.mp4.overlay.png"
+  }
+]

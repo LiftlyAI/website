@@ -182,14 +182,14 @@ def render_overlay(pose: P.PoseTrack, bar, video_path: str, stride: int, out_png
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", default=os.path.join(os.path.dirname(__file__), "..", "sample_videos"))
-    ap.add_argument("--backend", choices=("yolo", "mediapipe"), default="yolo")
+    ap.add_argument("--backend", choices=("yolo", "rtm", "mediapipe"), default="yolo")
     ap.add_argument("--lift", choices=("bench", "squat", "deadlift"), default="bench")
     ap.add_argument("--model", default="yolov8x-pose.pt", help="YOLO pose weights (yolo backend)")
     ap.add_argument("--out", default=None, help="output dir (default eval_<backend>[_<lift>])")
     ap.add_argument("--only", default=None, help="substring filter on filename")
     args = ap.parse_args()
 
-    base = "eval_yolo" if args.backend == "yolo" else "eval_visual"
+    base = {"yolo": "eval_yolo", "rtm": "eval_rtm"}.get(args.backend, "eval_visual")
     if args.lift != "bench":
         base = f"{base}_{args.lift}"
     out_dir = args.out or os.path.join(os.path.dirname(__file__), base)
@@ -197,7 +197,12 @@ def main() -> int:
     from analysis import analyze_lift
     # Bench & deadlift: the hands grip the bar, so the wrist IS the bar — no
     # plate tracker. Only squat needs it (bar on the back, off the hands).
-    if args.backend == "yolo":
+    if args.backend == "rtm":
+        import pose_rtm
+        from pose_rtm import track_pose
+        ymodel = pose_rtm.make_model()
+        track_bar = None
+    elif args.backend == "yolo":
         from pose_yolo import track_pose
         from ultralytics import YOLO
         ymodel = YOLO(args.model)
@@ -225,7 +230,8 @@ def main() -> int:
         gt = ground_truth_rpe(name)
         try:
             t0 = time.time()
-            track = (track_pose(path, lift=args.lift, model=ymodel) if args.backend == "yolo"
+            track = (track_pose(path, lift=args.lift, model=ymodel)
+                     if args.backend in ("yolo", "rtm")
                      else track_pose(path, lift=args.lift))
             t_pose = time.time() - t0
 

@@ -1,0 +1,19 @@
+[
+  {
+    "file": "deadlift_sumo__1jd0wuf.mp4",
+    "gtRPE": null,
+    "rpe": 5.0,
+    "reps": 4,
+    "coverage": 0.976,
+    "quality": "good",
+    "barSource": "wrist",
+    "found": false,
+    "poseSec": 41.2,
+    "barSec": 0.0,
+    "anSec": 0.4,
+    "totalSec": 41.6,
+    "frames": 713,
+    "fps": 30.0,
+    "overlay": "deadlift_sumo__1jd0wuf.mp4.overlay.png"
+  }
+]

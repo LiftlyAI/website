@@ -1,0 +1,19 @@
+[
+  {
+    "file": "150 kg bench RPE 9.mp4",
+    "gtRPE": 9.0,
+    "rpe": 9.0,
+    "reps": 1,
+    "coverage": 0.781,
+    "quality": "fair",
+    "barSource": "wrist",
+    "found": false,
+    "poseSec": 42.0,
+    "barSec": 0.0,
+    "anSec": 0.1,
+    "totalSec": 42.1,
+    "frames": 629,
+    "fps": 30.0,
+    "overlay": "150_kg_bench_RPE_9.mp4.overlay.png"
+  }
+]
