@@ -312,24 +312,25 @@ export function LandingExperience() {
 
       {/* ============================== NAV ============================== */}
       <header className="landing-nav fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-iron-950/70 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <nav className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="text-chalk transition-colors hover:text-blood-glow">
-            <LiftlyLogo size={26} />
+            <LiftlyLogo size={30} />
           </Link>
-          <div className="hidden items-center gap-8 font-mono text-xs tracking-[0.18em] text-chalk-dim md:flex">
+          <div className="hidden items-center gap-9 font-mono text-sm tracking-[0.15em] text-chalk-dim md:flex">
             <a href="#features" className="nav-link">FEATURES</a>
             <a href="#how" className="nav-link">HOW IT WORKS</a>
             <a href="#coaches" className="nav-link">FOR COACHES</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link
               href="/login"
-              className="hidden font-mono text-xs tracking-[0.18em] text-chalk-dim transition-colors hover:text-chalk sm:block"
+              className="hidden font-mono text-sm tracking-[0.15em] text-chalk-dim transition-colors hover:text-chalk sm:block"
             >
               SIGN IN
             </Link>
             <Magnetic strength={0.25}>
               <Link href="/login" className="btn-primary !min-h-[38px] !px-4 !py-2 !text-xs">
+              <Link href="/login" className="btn-primary !min-h-[44px] !px-5 !py-2.5 !text-sm">
                 Start Lifting
               </Link>
             </Magnetic>
@@ -345,7 +346,7 @@ export function LandingExperience() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent to-iron-950" />
 
         <div className="hero-copy relative z-10 mx-auto w-full max-w-6xl px-6 pt-24">
-          <p className="hero-kicker mb-7 font-mono text-xs tracking-[0.45em] text-blood">
+          <p className="hero-kicker mb-7 font-mono text-sm tracking-[0.35em] text-blood">
             ──── AI POWERLIFTING COACH ────
           </p>
 
@@ -368,7 +369,7 @@ export function LandingExperience() {
             ))}
           </h1>
 
-          <p className="hero-sub mb-10 max-w-xl font-body text-lg text-chalk-dim">
+          <p className="hero-sub mb-10 max-w-xl font-body text-xl text-chalk-dim">
             Block periodization. Form check from your phone. Macros built for
             powerlifting. Built for lifters counting plates, not steps.
           </p>
@@ -422,10 +423,10 @@ export function LandingExperience() {
       <section id="features" className="features-pin relative flex min-h-screen flex-col justify-center py-24 md:py-0">
         <div className="mx-auto w-full max-w-6xl px-6">
           <div data-reveal className="mb-12 md:mb-16">
-            <p className="mb-3 font-mono text-xs tracking-[0.4em] text-blood">
+            <p className="mb-3 font-mono text-sm tracking-[0.35em] text-blood">
               <ScrambleText text="// THE SYSTEM" />
             </p>
-            <h2 className="stencil-heading text-4xl text-chalk md:text-6xl">
+            <h2 className="stencil-heading text-5xl text-chalk md:text-6xl">
               Three tools.
               <br />
               <span className="text-chalk-mute">Zero guesswork.</span>
@@ -443,15 +444,15 @@ export function LandingExperience() {
                     {feature.num}
                   </div>
                   <div>
-                    <p className="mb-2 font-mono text-[11px] tracking-[0.35em] text-blood">
+                    <p className="mb-2 font-mono text-xs tracking-[0.3em] text-blood">
                       {feature.tag}
                     </p>
                     <h3 className="stencil-heading mb-4 text-3xl text-chalk md:text-4xl">
                       {feature.title}
                     </h3>
-                    <p className="max-w-lg text-chalk-dim">{feature.body}</p>
+                    <p className="max-w-lg text-base text-chalk-dim">{feature.body}</p>
                   </div>
-                  <ul className="space-y-3 font-mono text-xs text-chalk-mute">
+                  <ul className="space-y-3 font-mono text-sm text-chalk-mute">
                     {feature.points.map((point) => (
                       <li key={point} className="flex items-center gap-2.5">
                         <span className="h-1 w-4 rounded bg-blood" />
@@ -475,10 +476,10 @@ export function LandingExperience() {
       <section id="how" className="relative py-28 md:py-36">
         <div className="mx-auto max-w-5xl px-6">
           <div data-reveal className="mb-20 text-center">
-            <p className="mb-3 font-mono text-xs tracking-[0.4em] text-blood">
+            <p className="mb-3 font-mono text-sm tracking-[0.35em] text-blood">
               <ScrambleText text="// THE PROCESS" />
             </p>
-            <h2 className="stencil-heading text-4xl text-chalk md:text-6xl">
+            <h2 className="stencil-heading text-5xl text-chalk md:text-6xl">
               Chalk up to peak.
             </h2>
           </div>
@@ -501,13 +502,13 @@ export function LandingExperience() {
                     <span className="absolute h-3 w-3 rounded-full bg-blood" />
                     <span className="absolute h-3 w-3 animate-ping rounded-full bg-blood/60" />
                   </span>
-                  <p className="mb-2 font-mono text-xs tracking-[0.3em] text-blood">
+                  <p className="mb-2 font-mono text-sm tracking-[0.25em] text-blood">
                     STEP {step.num}
                   </p>
                   <h3 className="stencil-heading mb-3 text-2xl text-chalk md:text-3xl">
                     {step.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-chalk-mute md:text-base">
+                  <p className="text-base leading-relaxed text-chalk-mute md:text-lg">
                     {step.body}
                   </p>
                 </li>
@@ -530,7 +531,7 @@ export function LandingExperience() {
                 {stat.value}
                 {stat.suffix}
               </div>
-              <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-chalk-mute">
+              <div className="font-mono text-xs uppercase tracking-[0.2em] text-chalk-mute">
                 {stat.label}
               </div>
             </div>
@@ -542,7 +543,7 @@ export function LandingExperience() {
       <section id="coaches" className="py-28 md:py-36">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 md:grid-cols-2">
           <div data-reveal>
-            <p className="mb-3 font-mono text-xs tracking-[0.4em] text-blood">
+            <p className="mb-3 font-mono text-sm tracking-[0.35em] text-blood">
               <ScrambleText text="// FOR COACHES" />
             </p>
             <h2 className="stencil-heading mb-6 text-4xl text-chalk md:text-5xl">
@@ -550,7 +551,7 @@ export function LandingExperience() {
               <br />
               <span className="text-chalk-mute">one glance.</span>
             </h2>
-            <p className="mb-8 max-w-md text-chalk-dim">
+            <p className="mb-8 max-w-md text-base text-chalk-dim">
               The AI takes the first pass on every client. It flags the ones who
               need you, drafts the adjustment, and waits. You approve every
               change. Nothing ships without your sign-off.
@@ -565,10 +566,10 @@ export function LandingExperience() {
           <div data-reveal>
             <TiltCard className="chalk-card relative overflow-hidden p-6">
               <div className="mb-4 flex items-center justify-between border-b border-iron-800 pb-4">
-                <span className="font-mono text-xs tracking-[0.25em] text-chalk-mute">
+                <span className="font-mono text-sm tracking-[0.2em] text-chalk-mute">
                   ROSTER TRIAGE
                 </span>
-                <span className="font-mono text-[10px] text-blood">LIVE</span>
+                <span className="font-mono text-xs text-blood">LIVE</span>
               </div>
               {[
                 { name: 'M. Okafor', flag: 'Readiness low · deload drafted', tone: 'text-rpe-hard' },
@@ -580,8 +581,8 @@ export function LandingExperience() {
                   key={row.name}
                   className="flex items-center justify-between gap-4 border-b border-iron-800/60 py-3.5 last:border-0"
                 >
-                  <span className="font-body text-sm font-semibold text-chalk">{row.name}</span>
-                  <span className={`font-mono text-[11px] ${row.tone}`}>{row.flag}</span>
+                  <span className="font-body text-base font-semibold text-chalk">{row.name}</span>
+                  <span className={`font-mono text-xs ${row.tone}`}>{row.flag}</span>
                 </div>
               ))}
             </TiltCard>
@@ -626,10 +627,10 @@ export function LandingExperience() {
           <Link href="/" className="text-chalk-dim transition-colors hover:text-chalk">
             <LiftlyLogo size={22} />
           </Link>
-          <span className="font-mono text-[11px] tracking-[0.2em] text-chalk-mute">
+          <span className="font-mono text-xs tracking-[0.15em] text-chalk-mute">
             NO FLUFF · NO PUSH NOTIFICATIONS · BUILT FOR THE PLATFORM
           </span>
-          <span className="font-mono text-[11px] text-chalk-mute">
+          <span className="font-mono text-xs text-chalk-mute">
             Powered by Anthropic Claude
           </span>
         </div>
