@@ -20,7 +20,7 @@ export default async function RosterPage() {
         <div className="accent-divider mb-3 max-w-[80px]" />
         <p className="text-sm text-chalk-mute font-body max-w-2xl">
           {roster.length} client{roster.length === 1 ? '' : 's'}. New clients sign in with
-          their email and onboard themselves — their program then routes through your
+          their email and onboard themselves. Their program then routes through your
           approval queue.
         </p>
       </div>

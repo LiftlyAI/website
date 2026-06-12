@@ -52,7 +52,7 @@ export function SuggestionQueue({
         {pending.length === 0 && (
           <p className="text-sm text-chalk-mute font-body">
             Nothing pending. Run the first pass to propose next-session loads off this
-            client&apos;s recent logs — nothing applies until you approve it.
+            client&apos;s recent logs. Nothing applies until you approve it.
           </p>
         )}
         {pending.map((s) => (

@@ -24,14 +24,14 @@ const FEATURES = [
   {
     num: '01',
     title: 'Periodized Program',
-    body: 'Hypertrophy → Strength → Peak. Block periodization adapted to your maxes, your schedule, and your weak points — recalculated as you log.',
+    body: 'Hypertrophy → Strength → Peak. Block periodization tuned to your maxes, your schedule, your weak points. It recalculates every time you log a set.',
     tag: 'PROGRAM ENGINE',
     points: ['1RM-driven loading', 'RPE autoregulation', 'Weak-point targeting'],
   },
   {
     num: '02',
     title: 'Form Check',
-    body: 'Upload a clip from your phone. Get frame-aware cues on bar path, brace, knee tracking, and lockout — like a coach watching from the side.',
+    body: 'Film a set on your phone. Get frame-aware cues on bar path, brace, knee tracking, and lockout, the way a coach reads you from the side.',
     tag: 'VIDEO ANALYSIS',
     points: ['Bar path tracking', 'Brace & setup cues', 'Lockout diagnostics'],
   },
@@ -53,7 +53,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Get your block',
-    body: 'A periodized program lands instantly — every set, every percentage, every rest day accounted for.',
+    body: 'A periodized program lands the moment you finish onboarding. Every set, every percentage, every rest day accounted for.',
   },
   {
     num: '03',
@@ -551,7 +551,7 @@ export function LandingExperience() {
               <span className="text-chalk-mute">one glance.</span>
             </h2>
             <p className="mb-8 max-w-md text-chalk-dim">
-              The AI does the first pass on every client — flags the ones who
+              The AI takes the first pass on every client. It flags the ones who
               need you, drafts the adjustment, and waits. You approve every
               change. Nothing ships without your sign-off.
             </p>
@@ -571,10 +571,10 @@ export function LandingExperience() {
                 <span className="font-mono text-[10px] text-blood">LIVE</span>
               </div>
               {[
-                { name: 'M. Okafor', flag: 'Readiness low — deload drafted', tone: 'text-rpe-hard' },
-                { name: 'S. Lindqvist', flag: 'Bench stalled 2 weeks — variation queued', tone: 'text-rpe-mod' },
-                { name: 'J. Park', flag: 'On track — peak week begins Monday', tone: 'text-rpe-easy' },
-                { name: 'A. Reyes', flag: 'PR squat logged — program advanced', tone: 'text-rpe-easy' },
+                { name: 'M. Okafor', flag: 'Readiness low · deload drafted', tone: 'text-rpe-hard' },
+                { name: 'S. Lindqvist', flag: 'Bench stalled 2 weeks · variation queued', tone: 'text-rpe-mod' },
+                { name: 'J. Park', flag: 'On track · peak week begins Monday', tone: 'text-rpe-easy' },
+                { name: 'A. Reyes', flag: 'PR squat logged · program advanced', tone: 'text-rpe-easy' },
               ].map((row) => (
                 <div
                   key={row.name}

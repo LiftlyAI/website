@@ -48,7 +48,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
       {!profile ? (
         <Card>
           <p className="text-sm text-chalk-dim font-body">
-            This client hasn&apos;t onboarded yet — once they sign in and finish intake,
+            This client hasn&apos;t onboarded yet. Once they sign in and finish intake,
             their maxes, program and triage signals show up here.
           </p>
         </Card>

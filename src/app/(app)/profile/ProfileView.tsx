@@ -221,18 +221,18 @@ export function ProfileView({ profile, email }: { profile: AthleteProfile; email
               onChange={(e) => update('mealsPerDay', parseInt(e.target.value, 10) || 4)}
             />
             <Textarea
-              label="Allergies — never included"
+              label="Allergies · never included"
               value={draft.allergies ?? ''}
               onChange={(e) => update('allergies', e.target.value)}
               placeholder="e.g. peanuts, shellfish"
-              hint="Hard constraint — enforced on every meal plan."
+              hint="Hard constraint. Enforced on every meal plan."
             />
             <Textarea
               label="Food preferences"
               value={draft.foodPreferences ?? ''}
               onChange={(e) => update('foodPreferences', e.target.value)}
               placeholder="Cuisines you like, foods you avoid, time or budget"
-              hint="Soft — honoured when it fits your macros."
+              hint="Soft preference, honoured when it fits your macros."
             />
           </div>
         </Card>

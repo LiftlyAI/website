@@ -69,7 +69,7 @@ export default function CoachLoginPage() {
         <h1 className="stencil-heading text-4xl text-chalk mb-2">Coach sign in</h1>
         <div className="accent-divider mb-6 max-w-[80px]" />
         <p className="text-sm text-chalk-mute mb-6 font-body">
-          Enter your email to open the coach console. No password — your email is your
+          Enter your email to open the coach console. No password. Your email is your
           handle. Lifters sign in <Link href="/login" className="text-blood hover:text-blood-glow">here</Link>.
         </p>
 
@@ -87,7 +87,7 @@ export default function CoachLoginPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="optional — only used on first sign in"
+            placeholder="optional, only used on first sign in"
           />
           {error && <div className="text-sm text-rpe-max font-mono">{error}</div>}
           <Button type="submit" loading={loading} className="w-full">

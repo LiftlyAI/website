@@ -106,7 +106,7 @@ export function LogSessionModal({
           <>
             {coachReview && (
               <div className="mx-5 mt-5 rounded-lg border border-blood/40 bg-blood/10 px-4 py-3 text-sm text-chalk-dim font-body">
-                Sent to your coach — suggested load changes apply once they review and
+                Sent to your coach. Suggested load changes apply once they review and
                 approve them.
               </div>
             )}

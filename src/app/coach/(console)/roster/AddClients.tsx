@@ -29,7 +29,7 @@ export function AddClients() {
   async function submit() {
     const clients = parseClients(text);
     if (clients.length === 0) {
-      setError('No emails found — one client per line, "email, name".');
+      setError('No emails found. One client per line: "email, name".');
       return;
     }
     setLoading(true);
@@ -62,7 +62,7 @@ export function AddClients() {
       />
       <div className="space-y-3">
         <Textarea
-          label="One per line — email, name"
+          label="One per line: email, name"
           rows={4}
           value={text}
           onChange={(e) => setText(e.target.value)}

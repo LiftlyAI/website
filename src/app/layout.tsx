@@ -22,7 +22,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Liftly — AI Powerlifting Coach',
+  title: 'Liftly · AI Powerlifting Coach',
   description: 'AI-powered block periodization, form check, and nutrition for serious lifters.',
 };
 
