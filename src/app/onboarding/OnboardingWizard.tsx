@@ -268,7 +268,7 @@ function Step2({ profile, update }: StepProps) {
 
         <div>
           <div className="stencil-heading text-xs text-chalk-dim mb-3">
-            CURRENT 1-REP MAXES — leave blank if unknown
+            CURRENT 1-REP MAXES · leave blank if unknown
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Input
@@ -459,7 +459,7 @@ function Step4({ profile, update }: StepProps) {
           </div>
         </div>
         <Textarea
-          label="Allergies — never included"
+          label="Allergies · never included"
           value={profile.allergies ?? ''}
           onChange={(e) => update('allergies', e.target.value)}
           placeholder="e.g. peanuts, shellfish, eggs"
@@ -471,7 +471,7 @@ function Step4({ profile, update }: StepProps) {
           value={profile.foodPreferences ?? ''}
           onChange={(e) => update('foodPreferences', e.target.value)}
           placeholder="Cuisines you like, foods you avoid, time or budget limits"
-          hint="Soft preferences — honoured when they fit your macros."
+          hint="Soft preferences, honoured when they fit your macros."
           rows={2}
         />
       </div>

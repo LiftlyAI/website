@@ -71,7 +71,7 @@ export function ReadinessCard({
       <div className="flex items-center gap-2.5 min-w-0">
         <Activity className="w-4 h-4 text-chalk-mute shrink-0" />
         <span className="text-sm text-chalk-mute font-body">
-          How are you feeling today? <span className="text-chalk-mute/60">Optional — it only ever suggests, never overrides.</span>
+          How are you feeling today? <span className="text-chalk-mute/60">Optional. It suggests a ceiling; it never overrides your program.</span>
         </span>
       </div>
       <button
@@ -204,7 +204,7 @@ function ReadinessModal({ existing, onClose }: { existing: ReadinessLog | null; 
                   className="input-iron text-sm"
                 />
                 <p className="text-[11px] text-rpe-mod font-body">
-                  Pain isn’t something to train through — this routes you to mobility work and, if it
+                  Pain isn’t something to train through. It routes you to mobility work and, if it
                   persists, a PT. It never silently changes your program.
                 </p>
               </div>

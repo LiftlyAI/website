@@ -99,7 +99,7 @@ export function ProgramView({
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <div>
             <div className="stencil-heading text-2xl text-chalk">
-              {week.blockName} <span className="text-chalk-mute">— Week {week.weekNumber}</span>
+              {week.blockName} <span className="text-chalk-mute">· Week {week.weekNumber}</span>
             </div>
             <div className="text-sm text-chalk-mute mt-1 font-body">{week.theme}</div>
           </div>

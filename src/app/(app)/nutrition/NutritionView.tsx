@@ -155,7 +155,7 @@ export function NutritionView({
 
           {stale && (
             <div className="text-xs font-mono text-rpe-mod mb-3 border border-rpe-mod/30 px-3 py-2">
-              Your macro targets changed since this plan was generated — regenerate to match your current numbers.
+              Your macro targets changed since this plan was generated. Regenerate to match your current numbers.
             </div>
           )}
 
@@ -270,7 +270,7 @@ export function NutritionView({
         </Card>
 
         <Card className="md:col-span-2">
-          <CardHeader title="Supplements" subtitle="evidence-tiered — small rock, not the foundation" />
+          <CardHeader title="Supplements" subtitle="evidence-tiered · the small rock, not the foundation" />
           <div className="space-y-4">
             <div>
               <div className="font-mono text-[10px] tracking-widest text-chalk-mute mb-2">STRONG EVIDENCE</div>
@@ -279,7 +279,7 @@ export function NutritionView({
                   name="Creatine monohydrate"
                   dose="3–5 g/day, any time"
                   evidence="A"
-                  note="Most reliable ergogenic aid. Plain monohydrate — fancier forms cost more, work the same. Saturates in ~3–4 wks. Normal 1–2 kg scale gain = water. Vegans see especially large response."
+                  note="Most reliable ergogenic aid. Plain monohydrate. Fancier forms cost more and work the same. Saturates in ~3–4 wks. Normal 1–2 kg scale gain = water. Vegans see the biggest response."
                 />
                 <Supp
                   name="Caffeine"

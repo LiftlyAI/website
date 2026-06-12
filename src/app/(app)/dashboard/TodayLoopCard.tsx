@@ -161,8 +161,8 @@ function RpeCapNote({ rpeCap }: { rpeCap: number | null }) {
     <div className="mt-3 border border-rpe-mod/40 bg-rpe-mod/10 p-2.5 text-[12px] text-rpe-mod font-body flex gap-2">
       <span className="font-mono text-[10px] tracking-widest shrink-0 mt-0.5">CAP</span>
       <span>
-        Today’s check-in suggests holding the top set to RPE {rpeCap}. It’s a ceiling, not an order —
-        if the bar moves well, trust that over the number.
+        Today’s check-in suggests holding the top set to RPE {rpeCap}. Treat it as a ceiling. If the
+        bar moves well, trust that over the number.
       </span>
     </div>
   );
@@ -241,9 +241,9 @@ function ResumeStep({
       <div className="bg-rpe-mod/10 border border-rpe-mod/40 p-3 text-sm text-rpe-mod flex gap-2">
         <RotateCcw className="w-4 h-4 shrink-0 mt-0.5" />
         <span>
-          Welcome back — {daysSinceLast} days off. Ease in: take the first compound to RPE 6–7
-          and build from there. The numbers below are from your last session, so treat them as a
-          ceiling, not a target.
+          Welcome back. {daysSinceLast} days off. Ease in: take the first compound to RPE 6–7
+          and build from there. The numbers below come from your last session, so treat them as a
+          ceiling to work up to, not a target to hit.
         </span>
       </div>
       {day && (

@@ -25,9 +25,8 @@ export default async function TriagePage() {
         <h1 className="stencil-heading text-3xl text-chalk mb-2">This week&apos;s triage</h1>
         <div className="accent-divider mb-3 max-w-[80px]" />
         <p className="text-sm text-chalk-mute font-body max-w-2xl">
-          The engines&apos; first pass across your roster, ranked by who needs your eyes.
-          Nothing here changes a client&apos;s program — open a client to review and
-          approve.
+          The engine&apos;s first pass across your roster, ranked by who needs your eyes.
+          Nothing here changes a client&apos;s program. Open a client to review and approve.
         </p>
       </div>
 
@@ -65,7 +64,7 @@ export default async function TriagePage() {
                     </div>
                     {item.flags.length === 0 ? (
                       <p className="text-xs text-chalk-mute font-body mt-1">
-                        On track — nothing flagged this week.
+                        On track. Nothing flagged this week.
                       </p>
                     ) : (
                       <ul className="mt-1 space-y-0.5">

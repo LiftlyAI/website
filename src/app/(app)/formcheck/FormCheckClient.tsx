@@ -206,7 +206,7 @@ function FormCheckCard({
 
           {s && (
             <div>
-              <SectionTitle>Effort — concentric time (chest → lockout)</SectionTitle>
+              <SectionTitle>Effort · concentric time (chest → lockout)</SectionTitle>
               <p className="text-sm text-chalk-dim">
                 First rep{' '}
                 <span className="font-mono text-chalk">
@@ -438,7 +438,7 @@ function CalibrateControl({
       setMsg(
         `Logged. ${data.calibratedSets} calibrated set${
           data.calibratedSets === 1 ? '' : 's'
-        } — profile is "${data.calibrationState}".`,
+        } · profile is "${data.calibrationState}".`,
       );
       onDone();
     } catch (e) {
@@ -461,14 +461,14 @@ function CalibrateControl({
             value={rpe}
             onChange={(e) => setRpe(e.target.value)}
             options={[
-              { value: '6', label: 'RPE 6 — 4 reps left' },
-              { value: '7', label: 'RPE 7 — 3 reps left' },
+              { value: '6', label: 'RPE 6 · 4 reps left' },
+              { value: '7', label: 'RPE 7 · 3 reps left' },
               { value: '7.5', label: 'RPE 7.5' },
-              { value: '8', label: 'RPE 8 — 2 reps left' },
+              { value: '8', label: 'RPE 8 · 2 reps left' },
               { value: '8.5', label: 'RPE 8.5' },
-              { value: '9', label: 'RPE 9 — 1 rep left' },
+              { value: '9', label: 'RPE 9 · 1 rep left' },
               { value: '9.5', label: 'RPE 9.5' },
-              { value: '10', label: 'RPE 10 — nothing left' },
+              { value: '10', label: 'RPE 10 · nothing left' },
             ]}
             className="w-56"
           />
