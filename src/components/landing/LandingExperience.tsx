@@ -329,7 +329,6 @@ export function LandingExperience() {
               SIGN IN
             </Link>
             <Magnetic strength={0.25}>
-              <Link href="/login" className="btn-primary !min-h-[38px] !px-4 !py-2 !text-xs">
               <Link href="/login" className="btn-primary !min-h-[44px] !px-5 !py-2.5 !text-sm">
                 Start Lifting
               </Link>
