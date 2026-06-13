@@ -320,6 +320,7 @@ export function LandingExperience() {
             <a href="#features" className="nav-link">FEATURES</a>
             <a href="#how" className="nav-link">HOW IT WORKS</a>
             <a href="#coaches" className="nav-link">FOR COACHES</a>
+            <Link href="/blog" className="nav-link">GUIDES</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link
@@ -626,9 +627,10 @@ export function LandingExperience() {
           <Link href="/" className="text-chalk-dim transition-colors hover:text-chalk">
             <LiftlyLogo size={22} />
           </Link>
-          <span className="font-mono text-xs tracking-[0.15em] text-chalk-mute">
-            NO FLUFF · NO PUSH NOTIFICATIONS · BUILT FOR THE PLATFORM
-          </span>
+          <div className="flex items-center gap-6 font-mono text-xs tracking-[0.15em] text-chalk-mute">
+            <Link href="/blog" className="transition-colors hover:text-chalk-dim">GUIDES</Link>
+            <span>NO FLUFF · NO PUSH NOTIFICATIONS · BUILT FOR THE PLATFORM</span>
+          </div>
           <span className="font-mono text-xs text-chalk-mute">
             Powered by Anthropic Claude
           </span>
