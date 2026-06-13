@@ -71,7 +71,10 @@ app = modal.App(APP_NAME, image=image)
 
 @app.function(
     cpu=4.0,
-    memory=4096,
+    # Headroom over the 4 GB that OOM-killed the worker on full-res phone clips.
+    # The real fix is downscaling frames on read (pose_yolo.FRAME_LONG_SIDE_CAP);
+    # this is belt-and-suspenders. Safe to drop back to 4096 once that's proven.
+    memory=8192,
     timeout=600,
     min_containers=1,
 )

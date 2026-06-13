@@ -1,0 +1,882 @@
+{
+  "analysis.py": {
+    "mtime": 1781264594.8943965,
+    "ast_hash": "6cf7379e2419b785473219a55cf7422f",
+    "semantic_hash": ""
+  },
+  "app.py": {
+    "mtime": 1781331489.1285925,
+    "ast_hash": "c8c2dcc9c1b9e8e7d7ccfed75907fc2a",
+    "semantic_hash": ""
+  },
+  "bar.py": {
+    "mtime": 1780789593.7278981,
+    "ast_hash": "969e0e6f7645012fe41697504e7fbc0a",
+    "semantic_hash": ""
+  },
+  "debug_dl_seg.py": {
+    "mtime": 1780863865.3832734,
+    "ast_hash": "fbfbc07164f04e3bdc2a843aa93b4d58",
+    "semantic_hash": ""
+  },
+  "download_model.py": {
+    "mtime": 1779052697.4078703,
+    "ast_hash": "deb37c9eb2de78c407fe4c483901fe2b",
+    "semantic_hash": ""
+  },
+  "eval_out/135_lb_bench_RPE_RPE_6.5.mp4.json": {
+    "mtime": 1780799835.246264,
+    "ast_hash": "c2c7cfa7d69961ffd98dec4764d29071",
+    "semantic_hash": ""
+  },
+  "eval_out/150_kg_bench_RPE_9.mp4.json": {
+    "mtime": 1780718435.0306597,
+    "ast_hash": "d62a5bcf7091857897b78d0084e5dbf4",
+    "semantic_hash": ""
+  },
+  "eval_out/150lb_bench_RPE_6.mp4.json": {
+    "mtime": 1780799797.3491986,
+    "ast_hash": "9057370a33313555f7ad822985f01c65",
+    "semantic_hash": ""
+  },
+  "eval_out/160_kg_bench_RPE_9.mp4.json": {
+    "mtime": 1780799590.2382574,
+    "ast_hash": "1224b4acfc4aa667e44cb57e9c5d7567",
+    "semantic_hash": ""
+  },
+  "eval_out/310_lb_bench_RPE_7.mp4.json": {
+    "mtime": 1780799634.6277273,
+    "ast_hash": "a5371d38f2e3fd78688b7ed50ce06290",
+    "semantic_hash": ""
+  },
+  "eval_rtm/summary.json": {
+    "mtime": 1781265459.6880069,
+    "ast_hash": "3296fe90d7d386bc5c956e048a90748c",
+    "semantic_hash": ""
+  },
+  "eval_rtm_deadlift/summary.json": {
+    "mtime": 1781265593.7086785,
+    "ast_hash": "71480650ca70101fa30f886747e6a301",
+    "semantic_hash": ""
+  },
+  "eval_rtm_squat/summary.json": {
+    "mtime": 1781265549.3493457,
+    "ast_hash": "b22f06e3da7dc923daeb4b8aa1a2c9b4",
+    "semantic_hash": ""
+  },
+  "eval_samples.py": {
+    "mtime": 1780717237.5739331,
+    "ast_hash": "3b62ffc2f6d145dee203cc920ed3fe40",
+    "semantic_hash": ""
+  },
+  "eval_visual/summary.json": {
+    "mtime": 1780804115.0273955,
+    "ast_hash": "cebaf706fbee79a68753f240d2e3486c",
+    "semantic_hash": ""
+  },
+  "eval_yolo/summary.json": {
+    "mtime": 1780810869.8221788,
+    "ast_hash": "46a6ced90dd0010b6b589ccc38ff94b8",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/summary.json": {
+    "mtime": 1781067207.6525064,
+    "ast_hash": "f9b2e08cd6921b4b30120ea1b6c53cb6",
+    "semantic_hash": ""
+  },
+  "eval_yolo_squat/summary.json": {
+    "mtime": 1781247298.330426,
+    "ast_hash": "fc23a18e549bc2bf1e44fa08de71362a",
+    "semantic_hash": ""
+  },
+  "modal_app.py": {
+    "mtime": 1781338424.2768762,
+    "ast_hash": "1e053c01a116726e5b5c9afdeefe397b",
+    "semantic_hash": ""
+  },
+  "pose.py": {
+    "mtime": 1781258791.473272,
+    "ast_hash": "3e9375f06baab0bcc68e27f3fff4dedc",
+    "semantic_hash": ""
+  },
+  "pose_rtm.py": {
+    "mtime": 1781262890.8392575,
+    "ast_hash": "47dcf41e68be592c0e333abc856f4a0a",
+    "semantic_hash": ""
+  },
+  "pose_yolo.py": {
+    "mtime": 1781338416.3825424,
+    "ast_hash": "5b5675dd7c385abd421c01a377e12bfa",
+    "semantic_hash": ""
+  },
+  "research/advice/bench__1jzn2i2.mp4.json": {
+    "mtime": 1781258327.126953,
+    "ast_hash": "951bfc804f6b298ae228fae321c427da",
+    "semantic_hash": ""
+  },
+  "research/advice/bench__1k74bhj.mp4.json": {
+    "mtime": 1781258327.2338214,
+    "ast_hash": "652d5f5e70ee2f6424e129e4ef07cc8a",
+    "semantic_hash": ""
+  },
+  "research/advice/bench__1kp9loz.mp4.json": {
+    "mtime": 1781258327.3094945,
+    "ast_hash": "f6f81da3ed028940d01eb6c188fdfa61",
+    "semantic_hash": ""
+  },
+  "research/advice/bench_close__c8v58n.mp4.json": {
+    "mtime": 1781258327.7213414,
+    "ast_hash": "108fd26c2499f3e3924a5564b516a3b0",
+    "semantic_hash": ""
+  },
+  "research/advice/bench_wide__bl06xu.mp4.json": {
+    "mtime": 1781258327.9264617,
+    "ast_hash": "ae3a0e7a3b9f0da7b3f16a957b9beba6",
+    "semantic_hash": ""
+  },
+  "research/advice/deadlift_conv__1kk370m.mp4.json": {
+    "mtime": 1781258328.3302362,
+    "ast_hash": "684c9403e9bf3b3ec9ab24e4a5a65309",
+    "semantic_hash": ""
+  },
+  "research/advice/deadlift_conv__1koke0d.mp4.json": {
+    "mtime": 1781258328.4578261,
+    "ast_hash": "1d4bbe41be0bf93153ea9d9d4381deb8",
+    "semantic_hash": ""
+  },
+  "research/advice/deadlift_sumo__1jd0wuf.mp4.json": {
+    "mtime": 1781258328.8715227,
+    "ast_hash": "30ca055b4001b2bebcc87b8d94694545",
+    "semantic_hash": ""
+  },
+  "research/advice/deadlift_sumo__1kj0keq.mp4.json": {
+    "mtime": 1781258329.2979836,
+    "ast_hash": "8eb80835f4c731224691388af30060e2",
+    "semantic_hash": ""
+  },
+  "research/advice/squat_highbar__1kaqgmw.mp4.json": {
+    "mtime": 1781258334.606716,
+    "ast_hash": "c2958bf9c6d6a9fa6f2269450f0c517a",
+    "semantic_hash": ""
+  },
+  "research/advice/squat_highbar__1kovzbg.mp4.json": {
+    "mtime": 1781258371.6045508,
+    "ast_hash": "01d2ed94a08da2335c1ee8f01ae896aa",
+    "semantic_hash": ""
+  },
+  "research/advice/squat_lowbar__1gkk44z.mp4.json": {
+    "mtime": 1781258458.4172356,
+    "ast_hash": "867a41ef863846537ed5b9c355618dae",
+    "semantic_hash": ""
+  },
+  "research/advice/squat_lowbar__1kn0yi5.mp4.json": {
+    "mtime": 1781258498.4272952,
+    "ast_hash": "93f950771f00564e8ddb7ef305687cff",
+    "semantic_hash": ""
+  },
+  "research/advice_dump.py": {
+    "mtime": 1781258823.564648,
+    "ast_hash": "23156ccb856fb8e5e5acbea70a01dbf1",
+    "semantic_hash": ""
+  },
+  "research/bakeoff.json": {
+    "mtime": 1781258695.5473845,
+    "ast_hash": "90dde647c2fa868494ca0cb3e59834f8",
+    "semantic_hash": ""
+  },
+  "research/bakeoff.py": {
+    "mtime": 1781258633.2079506,
+    "ast_hash": "5b9c33411aabe768e949eccc9600a175",
+    "semantic_hash": ""
+  },
+  "research/eval_all.py": {
+    "mtime": 1781258823.564648,
+    "ast_hash": "1a8aedb937df24833de410c766d754f7",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/summary.json": {
+    "mtime": 1781250905.1374612,
+    "ast_hash": "1ab46fa7f71a1a3d1954888a776a451a",
+    "semantic_hash": ""
+  },
+  "research/eval_deadlift/summary.json": {
+    "mtime": 1781250081.4861448,
+    "ast_hash": "27b692b7d5d8e09c1100e715a46597ca",
+    "semantic_hash": ""
+  },
+  "research/eval_squat/summary.json": {
+    "mtime": 1781251274.3848498,
+    "ast_hash": "8ffe6976c2d3b672932da5c92af35b0d",
+    "semantic_hash": ""
+  },
+  "research/expectations.json": {
+    "mtime": 1781257757.0746138,
+    "ast_hash": "bfb04bc640d90950a6aa52c269e6d2ab",
+    "semantic_hash": ""
+  },
+  "research/fetch_reddit.py": {
+    "mtime": 1781244874.3789592,
+    "ast_hash": "bb95776035c4cebe5935dc4b54644886",
+    "semantic_hash": ""
+  },
+  "research/fill_gaps.py": {
+    "mtime": 1781245085.1146781,
+    "ast_hash": "adfbc02d2b0c6b6aa4199075ea5f5aac",
+    "semantic_hash": ""
+  },
+  "research/grade.py": {
+    "mtime": 1781245966.048822,
+    "ast_hash": "49eb6831bc00252eed00bbc0dd419faf",
+    "semantic_hash": ""
+  },
+  "research/manifest.json": {
+    "mtime": 1781245206.0966773,
+    "ast_hash": "74b28eb505df68f313878f0f11614013",
+    "semantic_hash": ""
+  },
+  "research/pp_c1.json": {
+    "mtime": 1781244797.7773328,
+    "ast_hash": "804b15ef21cae640a783a16f06190543",
+    "semantic_hash": ""
+  },
+  "research/pp_c2.json": {
+    "mtime": 1781244814.732489,
+    "ast_hash": "394ead3872a671096e163193cc9e1b9c",
+    "semantic_hash": ""
+  },
+  "research/pp_test.json": {
+    "mtime": 1781244781.9755254,
+    "ast_hash": "2447b1e5ed37347be80ee10fa9651cfb",
+    "semantic_hash": ""
+  },
+  "research/scoreboard.json": {
+    "mtime": 1781258322.931835,
+    "ast_hash": "cf1ee86a20c0ac22ffa51b0efca980fd",
+    "semantic_hash": ""
+  },
+  "research/scoreboard_rtm.json": {
+    "mtime": 1781265347.8758614,
+    "ast_hash": "6bac798e470ba3767e0de2a204e08b9e",
+    "semantic_hash": ""
+  },
+  "visual_eval.py": {
+    "mtime": 1781258823.5731528,
+    "ast_hash": "a5abddfafa291ebc59c3d2bc6177db22",
+    "semantic_hash": ""
+  },
+  "yolo_probe.py": {
+    "mtime": 1780807542.0937748,
+    "ast_hash": "4864eb104910616008b85f015dfa8188",
+    "semantic_hash": ""
+  },
+  "MODAL_DEPLOY.md": {
+    "mtime": 1781338439.9603448,
+    "ast_hash": "87e944a0b55661e7020cc12fdfb53d69",
+    "semantic_hash": ""
+  },
+  "NEXT_SESSION_PROMPT.md": {
+    "mtime": 1780803294.2726338,
+    "ast_hash": "c32c582f2c3ef172f2ae6295e50bb6e0",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1779053761.3887427,
+    "ast_hash": "63e16f5d22b659938ef04984f1b59789",
+    "semantic_hash": ""
+  },
+  "requirements.txt": {
+    "mtime": 1779052704.6737263,
+    "ast_hash": "acc37657c27ac1f744e826fa0a37e76e",
+    "semantic_hash": ""
+  },
+  "research/ANALYSIS.md": {
+    "mtime": 1781265459.203575,
+    "ast_hash": "b5505bd92a05ab709af4a1ae964d7771",
+    "semantic_hash": ""
+  },
+  "research/consensus.md": {
+    "mtime": 1781245434.985742,
+    "ast_hash": "817ad37b8fb33f2d6cfbdaa349bbeca0",
+    "semantic_hash": ""
+  },
+  "research/grading.md": {
+    "mtime": 1781258499.4373965,
+    "ast_hash": "325136d92ea92f26c6a7d58ad5ea9167",
+    "semantic_hash": ""
+  },
+  "eval_out/135_lb_bench_RPE_RPE_6.5.mp4.overlay.png": {
+    "mtime": 1780799835.2417502,
+    "ast_hash": "291f4d6fab75ead829328bf5f61cf6c2",
+    "semantic_hash": ""
+  },
+  "eval_out/150_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1780718435.0275917,
+    "ast_hash": "efffb34feb29c48d58284f3f2b201ea5",
+    "semantic_hash": ""
+  },
+  "eval_out/150lb_bench_RPE_6.mp4.overlay.png": {
+    "mtime": 1780799797.3471985,
+    "ast_hash": "c11e80ae299b1353a8f1307331a73adf",
+    "semantic_hash": ""
+  },
+  "eval_out/160_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1780799590.2357435,
+    "ast_hash": "f7e7d12721ef3f15ded47316ee18d950",
+    "semantic_hash": ""
+  },
+  "eval_out/310_lb_bench_RPE_7.mp4.overlay.png": {
+    "mtime": 1780799634.6247265,
+    "ast_hash": "a4e0754507b1b2f9944348728371287b",
+    "semantic_hash": ""
+  },
+  "eval_out/debug_overlay.png": {
+    "mtime": 1780793538.2204938,
+    "ast_hash": "861d330d02fb766c692e67b74fae78d4",
+    "semantic_hash": ""
+  },
+  "eval_rtm/150_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1781265459.6664977,
+    "ast_hash": "8fc41d61262e2d44c842f4693fc2815c",
+    "semantic_hash": ""
+  },
+  "eval_rtm_deadlift/deadlift_sumo__1jd0wuf.mp4.overlay.png": {
+    "mtime": 1781265593.6228032,
+    "ast_hash": "de7986ea83dc23ed0218ff61984e7637",
+    "semantic_hash": ""
+  },
+  "eval_rtm_squat/315_lb_squat.mp4.overlay.png": {
+    "mtime": 1781265549.2844517,
+    "ast_hash": "b23c6e404cf7073ba363933bc113802d",
+    "semantic_hash": ""
+  },
+  "eval_visual/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p0.png": {
+    "mtime": 1780807049.8236744,
+    "ast_hash": "4d3af6cbaf72b704f1046d4195260366",
+    "semantic_hash": ""
+  },
+  "eval_visual/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p1.png": {
+    "mtime": 1780807049.8377101,
+    "ast_hash": "f18750f23115fbc1d57ac4131c3e2834",
+    "semantic_hash": ""
+  },
+  "eval_visual/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p2.png": {
+    "mtime": 1780807049.8522267,
+    "ast_hash": "920cc8d233633074ec455622202fac82",
+    "semantic_hash": ""
+  },
+  "eval_visual/135_lb_bench_RPE_RPE_6.5.mp4.overlay.png": {
+    "mtime": 1780803918.4142995,
+    "ast_hash": "2613066db755682d8dc7e82bbee8b907",
+    "semantic_hash": ""
+  },
+  "eval_visual/150lb_bench_RPE_6.mp4.overlay.p0.png": {
+    "mtime": 1780807049.9043097,
+    "ast_hash": "3eb4d6d8e21c820b1e272c0b80978fa9",
+    "semantic_hash": ""
+  },
+  "eval_visual/150lb_bench_RPE_6.mp4.overlay.p1.png": {
+    "mtime": 1780807049.9368305,
+    "ast_hash": "5376d077f9cc0dc3db3cc518bee3266a",
+    "semantic_hash": ""
+  },
+  "eval_visual/150lb_bench_RPE_6.mp4.overlay.p2.png": {
+    "mtime": 1780807049.9680998,
+    "ast_hash": "37833d9b8d4166dd2b307381c00a7f8d",
+    "semantic_hash": ""
+  },
+  "eval_visual/150lb_bench_RPE_6.mp4.overlay.png": {
+    "mtime": 1780804038.95218,
+    "ast_hash": "6db6ed221858e58cb2fc5f1bde553088",
+    "semantic_hash": ""
+  },
+  "eval_visual/160_kg_bench_RPE_9.mp4.overlay.p0.png": {
+    "mtime": 1780807049.9846117,
+    "ast_hash": "946f3521ef897910eef6aa38b248ef90",
+    "semantic_hash": ""
+  },
+  "eval_visual/160_kg_bench_RPE_9.mp4.overlay.p1.png": {
+    "mtime": 1780807049.9941456,
+    "ast_hash": "3eadf3b27cccf3867dbf1088c24c8e3d",
+    "semantic_hash": ""
+  },
+  "eval_visual/160_kg_bench_RPE_9.mp4.overlay.p2.png": {
+    "mtime": 1780807050.003154,
+    "ast_hash": "82255f59cdf32b421af9299518470e36",
+    "semantic_hash": ""
+  },
+  "eval_visual/160_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1780804072.0336237,
+    "ast_hash": "2067075c4bccdfff36b57c67041f52d3",
+    "semantic_hash": ""
+  },
+  "eval_visual/310_lb_bench_RPE_7.mp4.overlay.p0.png": {
+    "mtime": 1780807050.0202425,
+    "ast_hash": "8a55c77f7dbb6190ef0421fff787b6d7",
+    "semantic_hash": ""
+  },
+  "eval_visual/310_lb_bench_RPE_7.mp4.overlay.p1.png": {
+    "mtime": 1780807050.0297496,
+    "ast_hash": "64da07cd1fa0dff84d62c2b719e751e7",
+    "semantic_hash": ""
+  },
+  "eval_visual/310_lb_bench_RPE_7.mp4.overlay.p2.png": {
+    "mtime": 1780807050.039793,
+    "ast_hash": "d28bebb582370bbccbf2970dd206ad7f",
+    "semantic_hash": ""
+  },
+  "eval_visual/310_lb_bench_RPE_7.mp4.overlay.png": {
+    "mtime": 1780804115.0123985,
+    "ast_hash": "357df3e0954ae9914d57492cae7c84fc",
+    "semantic_hash": ""
+  },
+  "eval_yolo/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p0.png": {
+    "mtime": 1780809578.7449343,
+    "ast_hash": "bcd73d84cae92c7ccb435009e26be602",
+    "semantic_hash": ""
+  },
+  "eval_yolo/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p1.png": {
+    "mtime": 1780809578.7594962,
+    "ast_hash": "d95bc59b4f891e989930863975424d6b",
+    "semantic_hash": ""
+  },
+  "eval_yolo/135_lb_bench_RPE_RPE_6.5.mp4.overlay.p2.png": {
+    "mtime": 1780809578.7736392,
+    "ast_hash": "9614d65fd9f37e92e24c209773e7aadc",
+    "semantic_hash": ""
+  },
+  "eval_yolo/135_lb_bench_RPE_RPE_6.5.mp4.overlay.png": {
+    "mtime": 1780809980.9985595,
+    "ast_hash": "32f1c51d44433fa9c3f8700fc106cc7f",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150_kg_bench_RPE_9.mp4.overlay.p0.png": {
+    "mtime": 1780809578.793528,
+    "ast_hash": "4c10e34808bd79c24925ccd8164929d8",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150_kg_bench_RPE_9.mp4.overlay.p1.png": {
+    "mtime": 1780809578.803034,
+    "ast_hash": "4ed18834bcf4e274dc935cda6890450c",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150_kg_bench_RPE_9.mp4.overlay.p2.png": {
+    "mtime": 1780809578.8132424,
+    "ast_hash": "e6309fdb4dfbed7f58bc2e945887e819",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1780810174.093215,
+    "ast_hash": "18960ee0013ed18dd6dd4461f6b3f58d",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150lb_bench_RPE_6.mp4.overlay.p0.png": {
+    "mtime": 1780809578.8699229,
+    "ast_hash": "2a77d6552739a73c3ab9a2492b9d1d79",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150lb_bench_RPE_6.mp4.overlay.p1.png": {
+    "mtime": 1780809578.9006336,
+    "ast_hash": "cfbc4666b2c9d2243ac7f14c19306926",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150lb_bench_RPE_6.mp4.overlay.p2.png": {
+    "mtime": 1780809578.932834,
+    "ast_hash": "493a1dd078c0f64b652ae55655e635c0",
+    "semantic_hash": ""
+  },
+  "eval_yolo/150lb_bench_RPE_6.mp4.overlay.png": {
+    "mtime": 1780810531.090098,
+    "ast_hash": "91036190504779aee6c8b901ed8faffd",
+    "semantic_hash": ""
+  },
+  "eval_yolo/160_kg_bench_RPE_9.mp4.overlay.p0.png": {
+    "mtime": 1780809578.9558554,
+    "ast_hash": "2417e6e273693ce15aa11482a79632d4",
+    "semantic_hash": ""
+  },
+  "eval_yolo/160_kg_bench_RPE_9.mp4.overlay.p1.png": {
+    "mtime": 1780809578.9653604,
+    "ast_hash": "41833fde4ea379111120d111ea524a2d",
+    "semantic_hash": ""
+  },
+  "eval_yolo/160_kg_bench_RPE_9.mp4.overlay.p2.png": {
+    "mtime": 1780809578.975866,
+    "ast_hash": "178109ad3cf9aa3e824cf3dbde9d8ec1",
+    "semantic_hash": ""
+  },
+  "eval_yolo/160_kg_bench_RPE_9.mp4.overlay.png": {
+    "mtime": 1780810732.888155,
+    "ast_hash": "59214f65d839956b7b53646bb644645b",
+    "semantic_hash": ""
+  },
+  "eval_yolo/310_lb_bench_RPE_7.mp4.overlay.p0.png": {
+    "mtime": 1780809578.996881,
+    "ast_hash": "179a237c7afd188bf8a1ebc538491fc1",
+    "semantic_hash": ""
+  },
+  "eval_yolo/310_lb_bench_RPE_7.mp4.overlay.p1.png": {
+    "mtime": 1780809579.0069597,
+    "ast_hash": "bad07f108776e9a5993036f55a8caacc",
+    "semantic_hash": ""
+  },
+  "eval_yolo/310_lb_bench_RPE_7.mp4.overlay.p2.png": {
+    "mtime": 1780809579.0172398,
+    "ast_hash": "3f0707e659eb106eef39ff2ae86256e3",
+    "semantic_hash": ""
+  },
+  "eval_yolo/310_lb_bench_RPE_7.mp4.overlay.png": {
+    "mtime": 1780810869.8071768,
+    "ast_hash": "82624b9f6454501ba14fdd202d281070",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/155_lb_deadlift.mp4.overlay.png": {
+    "mtime": 1781067207.617537,
+    "ast_hash": "3276768140e09e757506f51e5d79caa0",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/225_lb_deadlift.mp4.overlay.png": {
+    "mtime": 1781067207.624538,
+    "ast_hash": "65cbdaba26d4512429f6246f82b06ea2",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/255 lb deadlift.mp4.DEBUG.overlay.png": {
+    "mtime": 1781067207.628632,
+    "ast_hash": "ec1a8db31d2aa28bc0e6260bc501c01d",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/255_lb_deadlift.mp4.overlay.png": {
+    "mtime": 1781067207.6385057,
+    "ast_hash": "2e8846dd05e66e27fa8f8966df36357f",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/290 lb deadlift.mp4.DEBUG.overlay.png": {
+    "mtime": 1781067207.6415062,
+    "ast_hash": "a0d32d13e993d98e477d581c32756ee5",
+    "semantic_hash": ""
+  },
+  "eval_yolo_deadlift/290_lb_deadlift.mp4.overlay.png": {
+    "mtime": 1781067207.6525064,
+    "ast_hash": "d50c70f134175ca6b6b5e3ef8d1ea88e",
+    "semantic_hash": ""
+  },
+  "eval_yolo_squat/145_lb_squat.mp4.overlay.png": {
+    "mtime": 1781246612.032825,
+    "ast_hash": "73dea41ef0f7be7a90710e62cfd2b645",
+    "semantic_hash": ""
+  },
+  "eval_yolo_squat/315_lb_squat.mp4.overlay.png": {
+    "mtime": 1781247298.177029,
+    "ast_hash": "6a0ffe7d5373a5c5f2277752b7004d32",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/bench__1jzn2i2.mp4.overlay.png": {
+    "mtime": 1781245979.6486747,
+    "ast_hash": "9d291218c6e330f7bc2a5a3b94c2210c",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/bench__1k74bhj.mp4.overlay.png": {
+    "mtime": 1781246706.780452,
+    "ast_hash": "d06766b89c64bf8ae101d263b9bccda3",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/bench__1kp9loz.mp4.overlay.png": {
+    "mtime": 1781247312.8573446,
+    "ast_hash": "d1457c8e684ea903934b56f0ed8bc0a4",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/bench_close__c8v58n.mp4.overlay.png": {
+    "mtime": 1781249231.4101727,
+    "ast_hash": "99f28d4702d9e22a512c2d0a409144dd",
+    "semantic_hash": ""
+  },
+  "research/eval_bench/bench_wide__bl06xu.mp4.overlay.png": {
+    "mtime": 1781250905.0817819,
+    "ast_hash": "b59f8fecb2b1aa6d313131556ab34bab",
+    "semantic_hash": ""
+  },
+  "research/eval_deadlift/deadlift_conv__1kk370m.mp4.overlay.png": {
+    "mtime": 1781247321.20229,
+    "ast_hash": "56e048fd2a04faa6cf76da30639963ba",
+    "semantic_hash": ""
+  },
+  "research/eval_deadlift/deadlift_conv__1koke0d.mp4.overlay.png": {
+    "mtime": 1781248142.7967453,
+    "ast_hash": "369dd07f041ca8f05cc02797ab700654",
+    "semantic_hash": ""
+  },
+  "research/eval_deadlift/deadlift_sumo__1jd0wuf.mp4.overlay.png": {
+    "mtime": 1781249714.1712105,
+    "ast_hash": "6db01b1248ee9dd8fe0d5b1960171e2e",
+    "semantic_hash": ""
+  },
+  "research/eval_deadlift/deadlift_sumo__1kj0keq.mp4.overlay.png": {
+    "mtime": 1781250081.4088683,
+    "ast_hash": "fd8a9ed78715cf47cb4d0f903b813c5a",
+    "semantic_hash": ""
+  },
+  "research/eval_squat/squat_highbar__1kaqgmw.mp4.overlay.png": {
+    "mtime": 1781247322.5196989,
+    "ast_hash": "1b628237d3106d9fb676816b21227a92",
+    "semantic_hash": ""
+  },
+  "research/eval_squat/squat_highbar__1kovzbg.mp4.overlay.png": {
+    "mtime": 1781249371.4018679,
+    "ast_hash": "c5fc1f56a233b3fbde22bc5f861c6ed2",
+    "semantic_hash": ""
+  },
+  "research/eval_squat/squat_lowbar__1gkk44z.mp4.overlay.png": {
+    "mtime": 1781250251.0532622,
+    "ast_hash": "2ca6453c02ad16e69d72671d68b3ddf7",
+    "semantic_hash": ""
+  },
+  "research/eval_squat/squat_lowbar__1kn0yi5.mp4.overlay.png": {
+    "mtime": 1781251274.3225763,
+    "ast_hash": "ae8030ae9ad361b4be05c4a5f1f51415",
+    "semantic_hash": ""
+  },
+  "research/sheets/bench__1jzn2i2.png": {
+    "mtime": 1781245249.0242696,
+    "ast_hash": "2705828ad3ee15b7fd833f77bef949da",
+    "semantic_hash": ""
+  },
+  "research/sheets/bench__1k74bhj.png": {
+    "mtime": 1781245249.5232904,
+    "ast_hash": "a81034945532b19eb8574ada586fe0a6",
+    "semantic_hash": ""
+  },
+  "research/sheets/bench__1kp9loz.png": {
+    "mtime": 1781245250.215722,
+    "ast_hash": "41b239a525beb0a76b38aea6d23d7387",
+    "semantic_hash": ""
+  },
+  "research/sheets/bench_close__c8v58n.png": {
+    "mtime": 1781245251.6078403,
+    "ast_hash": "c058a8c97bc7ef0d7414b074a5ed38d1",
+    "semantic_hash": ""
+  },
+  "research/sheets/bench_wide__bl06xu.png": {
+    "mtime": 1781245252.4029756,
+    "ast_hash": "3abb2aabf3c8d86aca78c0c43b80c97e",
+    "semantic_hash": ""
+  },
+  "research/sheets/deadlift_conv__1kk370m.png": {
+    "mtime": 1781245253.8468747,
+    "ast_hash": "ca649ecd7c5ffca2f0e3907828ad721d",
+    "semantic_hash": ""
+  },
+  "research/sheets/deadlift_conv__1koke0d.png": {
+    "mtime": 1781245254.403712,
+    "ast_hash": "f6d139675fa9036f29bdbafefade860b",
+    "semantic_hash": ""
+  },
+  "research/sheets/deadlift_sumo__1jd0wuf.png": {
+    "mtime": 1781245255.3004377,
+    "ast_hash": "5cfd866b3dc608836ffdb7fc5a6a6186",
+    "semantic_hash": ""
+  },
+  "research/sheets/deadlift_sumo__1kj0keq.png": {
+    "mtime": 1781245256.0761518,
+    "ast_hash": "0ba81388bd706bcfdc49712a539ad862",
+    "semantic_hash": ""
+  },
+  "research/sheets/squat_highbar__1kaqgmw.png": {
+    "mtime": 1781245256.950266,
+    "ast_hash": "aba06c1029e96db17e0ac5693d53f41b",
+    "semantic_hash": ""
+  },
+  "research/sheets/squat_highbar__1kovzbg.png": {
+    "mtime": 1781245257.5367947,
+    "ast_hash": "e41017201de7994f30051834709a8651",
+    "semantic_hash": ""
+  },
+  "research/sheets/squat_lowbar__1gkk44z.png": {
+    "mtime": 1781245258.2887473,
+    "ast_hash": "80ff6f68f0fc28de9dcad6696504f8e0",
+    "semantic_hash": ""
+  },
+  "research/sheets/squat_lowbar__1kn0yi5.png": {
+    "mtime": 1781245258.9716425,
+    "ast_hash": "bb046eec4d569ca00a2f591328bf2b06",
+    "semantic_hash": ""
+  },
+  "research/sheets_local/145 lb squat.png": {
+    "mtime": 1781245934.8077843,
+    "ast_hash": "3b4139aa3fa23a38d79077a71fdb0eb3",
+    "semantic_hash": ""
+  },
+  "research/sheets_local/315 lb squat.png": {
+    "mtime": 1781245935.6073651,
+    "ast_hash": "5de90efc7f2e999a3b860c84a91f3ae0",
+    "semantic_hash": ""
+  },
+  "yolo_probe/135 lb bench RPE RPE 6.5.mp4.p0.png": {
+    "mtime": 1780807615.530724,
+    "ast_hash": "dfee6e67db3bd4c5d3febeca29d618d2",
+    "semantic_hash": ""
+  },
+  "yolo_probe/135 lb bench RPE RPE 6.5.mp4.p1.png": {
+    "mtime": 1780807615.5462277,
+    "ast_hash": "207bd52296e28ee7093973059e3259fb",
+    "semantic_hash": ""
+  },
+  "yolo_probe/135 lb bench RPE RPE 6.5.mp4.p2.png": {
+    "mtime": 1780807615.5632474,
+    "ast_hash": "9eceabb4a51fcdd278085d6367a90c49",
+    "semantic_hash": ""
+  },
+  "yolo_probe/135 lb bench RPE RPE 6.5.mp4.png": {
+    "mtime": 1780807580.3353863,
+    "ast_hash": "7a5bae294804e815506a7a1a2f487026",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150 kg bench RPE 9.mp4.p0.png": {
+    "mtime": 1780807615.5802572,
+    "ast_hash": "2d5744966bd80028efc2762faba08627",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150 kg bench RPE 9.mp4.p1.png": {
+    "mtime": 1780807615.5917635,
+    "ast_hash": "32566b7e53122a475d3c49e32b38f1fe",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150 kg bench RPE 9.mp4.p2.png": {
+    "mtime": 1780807615.601109,
+    "ast_hash": "985ea37dab06f3f5b4d04e7c639f7f34",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150 kg bench RPE 9.mp4.png": {
+    "mtime": 1780807581.3679912,
+    "ast_hash": "0672a2b127a10025758d8bfb77d7a3a8",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150lb bench RPE 6.mp4.p0.png": {
+    "mtime": 1780807615.6626122,
+    "ast_hash": "3c72457f71d0edfa0114d6eeb9d3ea24",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150lb bench RPE 6.mp4.p1.png": {
+    "mtime": 1780807615.6986377,
+    "ast_hash": "4911156acfbef0d21f39522b5217cb8c",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150lb bench RPE 6.mp4.p2.png": {
+    "mtime": 1780807615.734734,
+    "ast_hash": "c367e99b5ab1b654ee1fc1add8284e83",
+    "semantic_hash": ""
+  },
+  "yolo_probe/150lb bench RPE 6.mp4.png": {
+    "mtime": 1780807582.5553863,
+    "ast_hash": "c5a2f3a32e9f44adc5caf77c72309fa0",
+    "semantic_hash": ""
+  },
+  "yolo_probe/160 kg bench RPE 9.mp4.p0.png": {
+    "mtime": 1780807615.753163,
+    "ast_hash": "cd659e535e45c0eaa1d2d0a8477c7f85",
+    "semantic_hash": ""
+  },
+  "yolo_probe/160 kg bench RPE 9.mp4.p1.png": {
+    "mtime": 1780807615.76512,
+    "ast_hash": "5e85fb05a005e60a7168c2c144591ece",
+    "semantic_hash": ""
+  },
+  "yolo_probe/160 kg bench RPE 9.mp4.p2.png": {
+    "mtime": 1780807615.7773275,
+    "ast_hash": "cb5a0666a73df5bb363beab73b722d2d",
+    "semantic_hash": ""
+  },
+  "yolo_probe/160 kg bench RPE 9.mp4.png": {
+    "mtime": 1780807583.551039,
+    "ast_hash": "c080094246cad6830702fe7316b748af",
+    "semantic_hash": ""
+  },
+  "yolo_probe/310 lb bench RPE 7.mp4.p0.png": {
+    "mtime": 1780807615.7998047,
+    "ast_hash": "514ef68d03216048e5b92246aed6e2de",
+    "semantic_hash": ""
+  },
+  "yolo_probe/310 lb bench RPE 7.mp4.p1.png": {
+    "mtime": 1780807615.810312,
+    "ast_hash": "491270166522a2ad7b7a8358ba27d212",
+    "semantic_hash": ""
+  },
+  "yolo_probe/310 lb bench RPE 7.mp4.p2.png": {
+    "mtime": 1780807615.822546,
+    "ast_hash": "0e5661ba1a421c3cbfbf166e0e9a034c",
+    "semantic_hash": ""
+  },
+  "yolo_probe/310 lb bench RPE 7.mp4.png": {
+    "mtime": 1780807584.4721825,
+    "ast_hash": "adb9a562d64b0c433c60ff846155734e",
+    "semantic_hash": ""
+  },
+  "research/clips/bench__1jzn2i2.mp4": {
+    "mtime": 1781244905.8445346,
+    "ast_hash": "0798a9fa0aeecde121632541899811c1",
+    "semantic_hash": ""
+  },
+  "research/clips/bench__1k74bhj.mp4": {
+    "mtime": 1781244887.8350644,
+    "ast_hash": "bad37df262263e6e5cb13ecb055b898a",
+    "semantic_hash": ""
+  },
+  "research/clips/bench__1kp9loz.mp4": {
+    "mtime": 1781244891.1914473,
+    "ast_hash": "98776e6a63867c7b7babebd159238c98",
+    "semantic_hash": ""
+  },
+  "research/clips/bench_close__c8v58n.mp4": {
+    "mtime": 1781244926.1069584,
+    "ast_hash": "6e039b4eff6798bfdf1db758db59429e",
+    "semantic_hash": ""
+  },
+  "research/clips/bench_wide__bl06xu.mp4": {
+    "mtime": 1781244943.8821418,
+    "ast_hash": "f8c2089573370cf6b350e4414e7837d8",
+    "semantic_hash": ""
+  },
+  "research/clips/deadlift_conv__1kk370m.mp4": {
+    "mtime": 1781245015.728026,
+    "ast_hash": "025a7639803ee2547b3af6078642c8bc",
+    "semantic_hash": ""
+  },
+  "research/clips/deadlift_conv__1koke0d.mp4": {
+    "mtime": 1781245154.0972037,
+    "ast_hash": "eb8abbfd097f29482d15461b0bf0a6b8",
+    "semantic_hash": ""
+  },
+  "research/clips/deadlift_sumo__1jd0wuf.mp4": {
+    "mtime": 1781245169.0628765,
+    "ast_hash": "1f770d0d7c9bd3e648c7e2bd4fe3ecd3",
+    "semantic_hash": ""
+  },
+  "research/clips/deadlift_sumo__1kj0keq.mp4": {
+    "mtime": 1781245028.0624487,
+    "ast_hash": "56d350690fffcbbe00663c4b8c54c1db",
+    "semantic_hash": ""
+  },
+  "research/clips/squat_highbar__1kaqgmw.mp4": {
+    "mtime": 1781244961.7409408,
+    "ast_hash": "9d72caaede3ad6b7c2b214ad15c91755",
+    "semantic_hash": ""
+  },
+  "research/clips/squat_highbar__1kovzbg.mp4": {
+    "mtime": 1781244969.2594874,
+    "ast_hash": "7eeb52cbf76b140972e8cdb860c6e476",
+    "semantic_hash": ""
+  },
+  "research/clips/squat_lowbar__1gkk44z.mp4": {
+    "mtime": 1781245130.4275098,
+    "ast_hash": "b7d12ba2aca219c10975b4e8961456e0",
+    "semantic_hash": ""
+  },
+  "research/clips/squat_lowbar__1kn0yi5.mp4": {
+    "mtime": 1781244981.7474627,
+    "ast_hash": "bb0d8997dd17fdd69f0817e71a8ea2ec",
+    "semantic_hash": ""
+  },
+  "research/dl_test.mp4": {
+    "mtime": 1781244816.248818,
+    "ast_hash": "3aaf69d182194aa2e17f68ca7bdb44a8",
+    "semantic_hash": ""
+  }
+}

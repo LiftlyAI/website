@@ -569,7 +569,13 @@ function UploadModal({
       try {
         cvRes = await fetch(`${cvBase}/analyze`, { method: 'POST', body: cvFd });
       } catch {
-        throw new Error('Bar-path service is unreachable. Try again later.');
+        // A rejected cross-origin fetch is indistinguishable from a network
+        // drop here, but in practice it's usually the analyzer running out of
+        // memory on a big clip: the worker dies before it can send CORS headers,
+        // so the browser blames CORS. Steer the lifter toward a lighter clip.
+        throw new Error(
+          'Could not reach the bar-path analyzer, or it ran out of memory on this clip. Try a shorter clip (~1 min or less) filmed at 1080p or lower.',
+        );
       }
       const cvData = await cvRes.json().catch(() => null);
       if (!cvRes.ok || !cvData || typeof cvData !== 'object') {

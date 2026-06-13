@@ -34,6 +34,14 @@ DEFAULT_MODEL = os.path.join(os.path.dirname(__file__), "yolov8x-pose.pt")
 IMGSZ = 960
 CONF = 0.15
 
+# Longest-side cap applied while decoding frames into memory. We hold up to
+# max_frames decoded frames in RAM at once; at full phone resolution that OOM-
+# kills the memory-limited Modal worker mid-request (Modal then returns an infra
+# error with NO CORS header, which the browser misreports as a CORS / "service
+# unreachable" failure). 960 matches IMGSZ and the crop re-pass upscales to 720,
+# so capping the long side costs no pose accuracy while cutting frame RAM 4-25x.
+FRAME_LONG_SIDE_CAP = 960
+
 # COCO-17 keypoint index -> BlazePose-33 index. Only the 12 joints the bench
 # analysis uses (wrist/elbow/shoulder/hip/knee/ankle); YOLO returns a plausible
 # coordinate for every keypoint (even low-confidence ones), so no NaN handling
@@ -59,6 +67,11 @@ def _read_strided(video_path: str, max_frames: int):
     # high-fps phone clips aren't needlessly slow, and bar/analysis stay aligned.
     stride = max(1, round(raw_fps / 24.0))
     fps = raw_fps / stride
+    # Downscale on read so a full-res clip can't OOM the worker (see
+    # FRAME_LONG_SIDE_CAP). Keep w/h in sync with the stored frames: downstream
+    # normalisation divides keypoint pixels by w/h, and uniform scaling preserves
+    # aspect, so results are unchanged.
+    ds = min(1.0, FRAME_LONG_SIDE_CAP / max(1, max(w, h)))
     frames: list[np.ndarray] = []
     idx = 0
     while len(frames) < max_frames:
@@ -66,9 +79,13 @@ def _read_strided(video_path: str, max_frames: int):
         if not ok:
             break
         if idx % stride == 0:
+            if ds < 1.0:
+                fr = cv2.resize(fr, None, fx=ds, fy=ds, interpolation=cv2.INTER_AREA)
             frames.append(fr)
         idx += 1
     cap.release()
+    if frames:
+        h, w = frames[0].shape[:2]
     return frames, fps, stride, w, h
 
 

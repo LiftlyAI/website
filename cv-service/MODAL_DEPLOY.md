@@ -38,15 +38,21 @@ curl https://<your-username>--iron-ledger-cv-fastapi-app.modal.run/health
 
 ## Point Vercel at it
 
-`src/lib/cvService.ts` reads `process.env.CV_SERVICE_URL` (defaulting to
-`http://127.0.0.1:8000`). In Vercel:
+In production the **browser** uploads straight to Modal (this dodges Vercel's
+4.5 MB body limit and 60s timeout), so the client reads a **`NEXT_PUBLIC_`-
+prefixed**, build-time variable. In Vercel:
 
 1. Project -> Settings -> Environment Variables
-2. Add `CV_SERVICE_URL` = the Modal URL above, for Production (and
-   Preview if you want it there too)
-3. Redeploy the site (or trigger a new deploy)
+2. Add `NEXT_PUBLIC_CV_SERVICE_URL` = the Modal URL above — `https`, **no
+   trailing slash** — for Production (and Preview if you want it there too)
+3. **Redeploy** the site. `NEXT_PUBLIC_` vars are inlined at *build* time, so a
+   value added without a fresh build does nothing.
 
-That's it — `/analyze` now goes to Modal.
+That's it — the browser's `/analyze` call now goes to Modal.
+
+> The server-side `CV_SERVICE_URL` (read by `src/lib/cvService.ts`) is only the
+> local-dev fallback, used when an API route calls the CV service itself. The
+> deployed browser path does **not** use it — don't confuse the two.
 
 ## Notes
 
