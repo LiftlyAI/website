@@ -105,7 +105,12 @@ ESCALATE_BELOW = 0.60
 
 
 def track_pose(
-    video_path: str, lift: str = "bench", max_frames: int = 1200, model=None,
+    # 450 frames (~19s at the 24fps detection cap) covers a form-check set of a
+    # few reps. The old 1200 (~50s) × up to 3 CPU pose passes could run past
+    # Modal's ~150s web-endpoint limit, which makes Modal return a 303 (no CORS
+    # header) that the browser misreports as a CORS failure. Bounding frames
+    # keeps worst-case analysis time under that wall.
+    video_path: str, lift: str = "bench", max_frames: int = 450, model=None,
 ) -> P.PoseTrack:
     frames, fps, stride, w, h = _read_strided(video_path, max_frames)
     if len(frames) < 6:

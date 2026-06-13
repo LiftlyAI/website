@@ -45,6 +45,22 @@ def _get_pose_model():
     return _pose_model
 
 
+@app.on_event("startup")
+def _warm_models() -> None:
+    """Build the ONNX pose sessions at container boot, not lazily on the first
+    request. A cold first request that ALSO has to construct the big escalation
+    models can run past Modal's ~150s web-endpoint window — Modal then answers
+    with a 303 redirect that carries no CORS header, which the browser reports
+    as a bogus CORS / "service unreachable" failure. Pre-warming both tiers (the
+    weights are already baked into the image) keeps every request well under the
+    limit. Failures here are non-fatal: the lazy path still works."""
+    try:
+        _get_pose_model()                   # balanced: RTMPose-m + YOLOX
+        pose_rtm.make_model("performance")  # escalation tier, so it never has
+    except Exception:                       # to load mid-request
+        pass
+
+
 @app.get("/health")
 def health() -> dict:
     return {"ok": True, "service": "iron-ledger-cv", "lifts": sorted(SUPPORTED_LIFTS)}

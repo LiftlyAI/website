@@ -570,11 +570,11 @@ function UploadModal({
         cvRes = await fetch(`${cvBase}/analyze`, { method: 'POST', body: cvFd });
       } catch {
         // A rejected cross-origin fetch is indistinguishable from a network
-        // drop here, but in practice it's usually the analyzer running out of
-        // memory on a big clip: the worker dies before it can send CORS headers,
-        // so the browser blames CORS. Steer the lifter toward a lighter clip.
+        // drop here, but in practice it's the analyzer taking too long on a
+        // long clip (Modal 303s past ~150s) or briefly busy — either way it
+        // answers without CORS headers, so the browser blames CORS.
         throw new Error(
-          'Could not reach the bar-path analyzer, or it ran out of memory on this clip. Try a shorter clip (~1 min or less) filmed at 1080p or lower.',
+          "Couldn't reach the bar-path analyzer, or it took too long on this clip. Use a short clip — just the working set, a few reps — and try again in a moment.",
         );
       }
       const cvData = await cvRes.json().catch(() => null);
