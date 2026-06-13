@@ -73,26 +73,9 @@ app = modal.App(APP_NAME, image=image)
     cpu=4.0,
     memory=4096,
     timeout=600,
-    # Keep one container always warm so the Vercel app never hits a cold
-    # start. Bump if you expect concurrent uploads from multiple users.
     min_containers=1,
 )
-@modal.concurrent(max_inputs=4)
 @modal.asgi_app()
 def fastapi_app():
-    # Import inside the function so it only runs in the container, not at
-    # local `modal deploy` parse time.
-    from fastapi.middleware.cors import CORSMiddleware
-
     from app import app as fastapi
-
-    # The Vercel site calls this server-side (src/lib/cvService.ts is used
-    # from API routes), so CORS isn't strictly required — but allow it in
-    # case anything ever calls /analyze from the browser.
-    fastapi.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
     return fastapi

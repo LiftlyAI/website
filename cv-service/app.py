@@ -14,12 +14,19 @@ import tempfile
 
 import numpy as np
 from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 import pose_rtm
 from analysis import analyze_lift
 
-app = FastAPI(title="IRON LEDGER CV", version="0.5.0")
+app = FastAPI(title="IRON LEDGER CV", version="0.5.0", redirect_slashes=False)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 MAX_BYTES = 80 * 1024 * 1024
 SUPPORTED_LIFTS = {"bench", "squat", "deadlift"}
