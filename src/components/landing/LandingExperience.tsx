@@ -623,17 +623,22 @@ export function LandingExperience() {
 
       {/* ============================= FOOTER ============================= */}
       <footer className="border-t border-iron-800 px-6 py-10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-8 gap-y-4">
-          <Link href="/" className="text-chalk-dim transition-colors hover:text-chalk">
-            <LiftlyLogo size={22} />
-          </Link>
-          <div className="flex items-center gap-6 font-mono text-xs tracking-[0.15em] text-chalk-mute">
-            <Link href="/blog" className="transition-colors hover:text-chalk-dim">GUIDES</Link>
-            <span>NO FLUFF · NO PUSH NOTIFICATIONS · BUILT FOR THE PLATFORM</span>
+        <div className="mx-auto max-w-6xl space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+            <Link href="/" className="text-chalk-dim transition-colors hover:text-chalk">
+              <LiftlyLogo size={22} />
+            </Link>
+            <nav className="flex items-center gap-6 font-mono text-xs tracking-[0.15em] text-chalk-mute">
+              <Link href="/blog" className="transition-colors hover:text-chalk-dim">GUIDES</Link>
+              <Link href="/privacy" className="transition-colors hover:text-chalk-dim">PRIVACY</Link>
+            </nav>
+            <span className="font-mono text-xs text-chalk-mute">
+              Powered by Anthropic Claude
+            </span>
           </div>
-          <span className="font-mono text-xs text-chalk-mute">
-            Powered by Anthropic Claude
-          </span>
+          <p className="font-mono text-[10px] tracking-[0.2em] text-iron-600">
+            NO FLUFF · NO PUSH NOTIFICATIONS · BUILT FOR THE PLATFORM
+          </p>
         </div>
       </footer>
     </div>
