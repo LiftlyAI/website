@@ -540,6 +540,7 @@ function UploadModal({
   const [context, setContext] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<'cv' | 'ai' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -548,11 +549,38 @@ function UploadModal({
       setError('Pick a video file first.');
       return;
     }
+
+    const cvBase = (process.env.NEXT_PUBLIC_CV_SERVICE_URL ?? '').trim();
+    if (!cvBase) {
+      setError('Bar-path analysis is not configured on this deployment.');
+      return;
+    }
+
     setSubmitting(true);
+    setPhase('cv');
     setError(null);
     try {
+      // Step 1: upload video directly to Modal — never touches Vercel's 4.5 MB limit.
+      const cvFd = new FormData();
+      cvFd.append('video', file, file.name);
+      cvFd.append('lift', lift);
+
+      let cvRes: Response;
+      try {
+        cvRes = await fetch(`${cvBase}/analyze`, { method: 'POST', body: cvFd });
+      } catch {
+        throw new Error('Bar-path service is unreachable. Try again later.');
+      }
+      const cvData = await cvRes.json().catch(() => null);
+      if (!cvRes.ok || !cvData || typeof cvData !== 'object') {
+        const d = (cvData as Record<string, unknown> | null)?.detail;
+        throw new Error(typeof d === 'string' ? d : `CV analysis failed (${cvRes.status})`);
+      }
+
+      // Step 2: send the (small) CV JSON to Vercel for AI coaching + DB save.
+      setPhase('ai');
       const fd = new FormData();
-      fd.append('video', file, file.name);
+      fd.append('cv_json', JSON.stringify(cvData));
       fd.append('lift', lift);
       if (lift === 'deadlift') fd.append('stance', stance);
       if (load) {
@@ -568,6 +596,7 @@ function UploadModal({
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'failed');
       setSubmitting(false);
+      setPhase(null);
     }
   }
 
@@ -587,9 +616,13 @@ function UploadModal({
         <div className="p-5 space-y-4">
           {submitting ? (
             <div className="flex flex-col items-center py-8">
-              <PlateSpinner label={`Analysing ${lift}…`} />
+              <PlateSpinner
+                label={phase === 'ai' ? 'Generating coaching…' : `Tracking bar path…`}
+              />
               <p className="text-xs text-chalk-mute font-mono mt-2">
-                Find the lifter, track the plate, time reps & read form. 20–90s.
+                {phase === 'ai'
+                  ? 'Reading form, writing coaching cues.'
+                  : 'Find the lifter, track the bar, time reps. 20–90s.'}
               </p>
             </div>
           ) : (

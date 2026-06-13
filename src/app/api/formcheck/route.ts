@@ -22,10 +22,7 @@ export async function POST(req: NextRequest) {
   }
 
   const form = await req.formData().catch(() => null);
-  const video = form?.get('video');
-  if (!form || !(video instanceof Blob) || video.size === 0) {
-    return NextResponse.json({ error: 'attach a video file' }, { status: 400 });
-  }
+  if (!form) return NextResponse.json({ error: 'invalid form data' }, { status: 400 });
 
   const liftRaw = String(form.get('lift') ?? 'bench');
   if (!CV_LIFTS.includes(liftRaw as CvLift)) {
@@ -50,18 +47,36 @@ export async function POST(req: NextRequest) {
   const userContext = String(form.get('userContext') ?? '');
 
   // 1. Pose-tracked bar path + form ---------------------------------------
+  // Production: client calls Modal directly and sends cv_json here (avoids
+  // Vercel's 4.5 MB body limit and 60s timeout for video uploads).
+  // Local dev fallback: send video blob and we call the CV service server-side.
   let cv: CvAnalysis;
-  try {
-    cv = await analyzeVideo({
-      video,
-      filename: (video as File).name ?? 'clip.mp4',
-      lift,
-    });
-  } catch (err) {
-    if (err instanceof CvServiceError) {
-      return NextResponse.json({ error: err.message }, { status: err.status });
+  const cvJsonRaw = form.get('cv_json');
+  if (cvJsonRaw) {
+    try {
+      const parsed = JSON.parse(String(cvJsonRaw));
+      if (!parsed || typeof parsed !== 'object') throw new Error();
+      cv = parsed as CvAnalysis;
+    } catch {
+      return NextResponse.json({ error: 'invalid cv_json' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'bar-path analysis failed' }, { status: 500 });
+  } else {
+    const video = form.get('video');
+    if (!(video instanceof Blob) || video.size === 0) {
+      return NextResponse.json({ error: 'attach a video file or provide cv_json' }, { status: 400 });
+    }
+    try {
+      cv = await analyzeVideo({
+        video,
+        filename: (video as File).name ?? 'clip.mp4',
+        lift,
+      });
+    } catch (err) {
+      if (err instanceof CvServiceError) {
+        return NextResponse.json({ error: err.message }, { status: err.status });
+      }
+      return NextResponse.json({ error: 'bar-path analysis failed' }, { status: 500 });
+    }
   }
 
   // 2. RPE from rep-time slowdown, calibrated to the lifter ----------------
