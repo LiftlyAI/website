@@ -5,6 +5,7 @@ import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { CoachLogoutButton } from './LogoutButton';
 import { CoachNav } from './CoachNav';
+import { UpgradeNavButton } from '@/components/nav/UpgradeNavButton';
 
 export default async function CoachConsoleLayout({
   children,
@@ -26,6 +27,7 @@ export default async function CoachConsoleLayout({
           </Link>
           <CoachNav />
           <div className="ml-auto flex items-center gap-3">
+            <UpgradeNavButton account="coach" className="hidden sm:inline-flex" />
             <span className="hidden font-mono text-xs text-chalk-mute md:inline">
               {coach.email}
             </span>

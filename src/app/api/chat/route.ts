@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { execute, query, queryOne, uuid } from '@/lib/db';
 import { aiStream, isAiKeyError } from '@/lib/ai';
+import { assertAiQuota, recordAiCall, QuotaError } from '@/lib/limits';
 import { buildChatSystemPrompt, type ChatSessionSummary } from '@/lib/prompts/chat';
 import { assessReadinessLog } from '@/lib/readiness';
 import type {
@@ -25,6 +26,22 @@ export async function POST(req: NextRequest) {
       status: 401,
       headers: { 'content-type': 'application/json' },
     });
+  }
+
+  // Meter the "Gemini API key uses" against the athlete's plan.
+  try {
+    await assertAiQuota('athlete', session.id);
+  } catch (err) {
+    if (err instanceof QuotaError) {
+      return new Response(
+        JSON.stringify({
+          error: 'You’ve reached your AI message limit for this period. Upgrade for more.',
+          quota: err.info,
+        }),
+        { status: 402, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    throw err;
   }
 
   const data = await req.json().catch(() => null);
@@ -206,6 +223,8 @@ export async function POST(req: NextRequest) {
             'INSERT INTO chat_messages (id, athlete_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)',
             [uuid(), session.id, 'assistant', acc, Date.now()],
           );
+          // Count one AI use per successful exchange.
+          await recordAiCall('athlete', session.id, 'chat');
         }
         controller.close();
       }

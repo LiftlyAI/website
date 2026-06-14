@@ -321,6 +321,7 @@ export function LandingExperience() {
             <a href="#how" className="nav-link">HOW IT WORKS</a>
             <a href="#coaches" className="nav-link">FOR COACHES</a>
             <Link href="/blog" className="nav-link">GUIDES</Link>
+            <Link href="/pricing" className="nav-link">PRICING</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link

@@ -4,6 +4,7 @@ import { requireCoach } from '@/lib/coach-auth';
 import { getOrCreateAthleteByEmail } from '@/lib/auth';
 import { execute } from '@/lib/db';
 import { listRoster } from '@/lib/coach-data';
+import { syncCoachSeats } from '@/lib/stripe';
 
 // Bulk-friendly on purpose: a coach migrating off TrainHeroic pastes their
 // whole client list (CSV parsed client-side) in one call.
@@ -39,6 +40,9 @@ export async function POST(req: NextRequest) {
     await execute('UPDATE athletes SET coached_by = ? WHERE id = ?', [coach.id, athlete.id]);
     added++;
   }
+
+  // Per-seat billing: keep the coach's Stripe quantity in step with the roster.
+  await syncCoachSeats(coach.id);
 
   return NextResponse.json({ ok: true, added, roster: await listRoster(coach.id) });
 }

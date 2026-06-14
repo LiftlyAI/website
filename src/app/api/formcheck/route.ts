@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
 import { execute, query, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
+import { assertFormCheckQuota, QuotaError } from '@/lib/limits';
 import { buildFormCheckPrompt, systemPromptFor } from '@/lib/prompts/formcheck';
 import { analyzeVideo, CvServiceError } from '@/lib/cvService';
 import { estimateRpe, type CalibrationPoint } from '@/lib/velocity';
@@ -19,6 +20,24 @@ export async function POST(req: NextRequest) {
     session = await requireSession();
   } catch {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  // Quota gate. The client also pre-flights /api/usage before the (expensive)
+  // Modal upload; this is the authoritative server-side backstop.
+  try {
+    await assertFormCheckQuota(session.id);
+  } catch (err) {
+    if (err instanceof QuotaError) {
+      return NextResponse.json(
+        {
+          error:
+            "You've used all your form checks for this period. Upgrade your plan for more.",
+          quota: err.info,
+        },
+        { status: 402 },
+      );
+    }
+    throw err;
   }
 
   const form = await req.formData().catch(() => null);

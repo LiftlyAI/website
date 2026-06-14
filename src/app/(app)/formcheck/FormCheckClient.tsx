@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Upload, X, AlertTriangle, Check, ChevronRight, ChevronDown } from 'lucide-react';
@@ -21,6 +21,19 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [checks, setChecks] = useState(initialChecks);
+  const [remaining, setRemaining] = useState<number | null | undefined>(undefined);
+
+  // Show how many form checks remain this period (null = unlimited on a coached
+  // or coach plan). Re-fetched after each new clip is saved.
+  useEffect(() => {
+    fetch('/api/usage')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const fc = d?.athlete?.formChecks;
+        setRemaining(fc ? (fc.limit == null ? null : fc.remaining) : undefined);
+      })
+      .catch(() => {});
+  }, [checks]);
 
   return (
     <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
@@ -36,7 +49,16 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
             slow vs the first.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)}>+ Submit a clip</Button>
+        <div className="flex items-center gap-3">
+          {typeof remaining === 'number' && (
+            <span
+              className={`text-xs font-mono ${remaining <= 0 ? 'text-rpe-max' : 'text-chalk-mute'}`}
+            >
+              {remaining} left this week
+            </span>
+          )}
+          <Button onClick={() => setOpen(true)}>+ Submit a clip</Button>
+        </div>
       </div>
 
       {checks.length === 0 ? (
@@ -184,6 +206,8 @@ function FormCheckCard({
         {deep ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         {deep ? 'Hide deep analysis' : 'Deep analysis'}
       </button>
+
+      <FormCheckDisclaimer />
 
       {/* ---------- DEEP ANALYSIS (collapsible) ---------- */}
       {deep && (
@@ -482,6 +506,23 @@ function CalibrateControl({
   );
 }
 
+// Persistent liability footer rendered on every form-check analysis output.
+// AI coaching is not medical advice — this stays visible whether or not the
+// deep-analysis panel is open so it can't be missed.
+function FormCheckDisclaimer() {
+  return (
+    <div className="mt-4 pt-3 border-t border-iron-800 flex gap-2 text-[10px] font-mono text-chalk-mute leading-relaxed">
+      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-chalk-mute" />
+      <span>
+        <span className="text-chalk">AI guidance, not medical advice.</span> Form-check
+        feedback is informational — it can&apos;t see pain, prior injury, or your full
+        medical context. If something hurts, stop and consult a qualified coach or
+        clinician before your next set.
+      </span>
+    </div>
+  );
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="stencil-heading text-xs tracking-widest mb-2 text-chalk-mute">
@@ -547,6 +588,19 @@ function UploadModal({
   async function submit() {
     if (!file) {
       setError('Pick a video file first.');
+      return;
+    }
+
+    // Pre-flight the quota BEFORE the (expensive, GPU-backed) Modal upload, so an
+    // over-limit user never burns compute. /api/formcheck re-checks server-side.
+    const usage = await fetch('/api/usage')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    const fc = usage?.athlete?.formChecks;
+    if (fc && fc.limit != null && fc.remaining <= 0) {
+      setError(
+        `You've used all ${fc.limit} form checks this ${fc.window}. Upgrade your plan for more.`,
+      );
       return;
     }
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getCoachSession } from '@/lib/coach-auth';
 import { triageForCoach } from '@/lib/coach-data';
 import { Card } from '@/components/ui/Card';
+import { CoachBilling } from '@/components/billing/BillingPanel';
 import type { DecisionSeverity } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -29,6 +30,8 @@ export default async function TriagePage() {
           Nothing here changes a client&apos;s program. Open a client to review and approve.
         </p>
       </div>
+
+      <CoachBilling />
 
       {items.length === 0 ? (
         <Card>
