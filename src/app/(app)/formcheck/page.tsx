@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
 import { requireSession } from '@/lib/auth';
-import { query } from '@/lib/db';
+import { query, queryOne } from '@/lib/db';
+import { feedbackForAthlete, sharedFormCheckIds } from '@/lib/form-review-data';
 import { FormCheckClient } from './FormCheckClient';
+import { FormCheckCoachPanel, type CoachPanelItem } from './FormCheckCoachPanel';
 import type { FormCheckResult } from '@/lib/types';
 
 export default async function FormCheckPage() {
@@ -41,8 +43,32 @@ export default async function FormCheckPage() {
     createdAt: r.created_at,
   }));
 
+  // Coach panel: only when this athlete has a coach. Lets them share clips and
+  // see the human feedback their coach left.
+  const coachRow = await queryOne<{ name: string | null; profile_json: string | null }>(
+    `SELECT c.name, c.profile_json FROM athletes a JOIN coaches c ON c.id = a.coached_by WHERE a.id = ?`,
+    [session.id],
+  );
+  let coachPanelItems: CoachPanelItem[] = [];
+  let coachName = '';
+  if (coachRow) {
+    const [shared, feedback] = await Promise.all([
+      sharedFormCheckIds(session.id),
+      feedbackForAthlete(session.id),
+    ]);
+    coachName = coachRow.name ?? 'your coach';
+    coachPanelItems = formChecks.slice(0, 10).map((fc) => ({
+      id: fc.id,
+      lift: fc.liftType,
+      createdAt: fc.createdAt,
+      shared: shared.has(fc.id),
+      feedback: feedback[fc.id]?.feedback ?? null,
+    }));
+  }
+
   return (
     <Suspense fallback={<div className="px-4 sm:px-6 lg:px-8 py-6 lg:py-10 text-chalk-mute">Loading…</div>}>
+      {coachRow && <FormCheckCoachPanel coachName={coachName} items={coachPanelItems} />}
       <FormCheckClient initialChecks={formChecks} />
     </Suspense>
   );
