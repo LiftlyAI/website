@@ -79,9 +79,12 @@ const MARQUEE_WORDS = [
   'BLOCKS', 'OPENERS', 'CHALK UP', 'PR DAY',
 ];
 
-export function LandingExperience() {
+export function LandingExperience({ dashboardHref }: { dashboardHref?: string }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
+  // When a logged-in lifter views the marketing page, every "Start Lifting" CTA
+  // takes them into the app instead of bouncing through /login.
+  const startHref = dashboardHref ?? '/login';
 
   useEffect(() => {
     const root = rootRef.current;
@@ -325,13 +328,13 @@ export function LandingExperience() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              href="/login"
+              href={dashboardHref ?? '/login'}
               className="hidden font-mono text-sm tracking-[0.15em] text-chalk-dim transition-colors hover:text-chalk sm:block"
             >
-              SIGN IN
+              {dashboardHref ? 'GO TO DASHBOARD' : 'SIGN IN'}
             </Link>
             <Magnetic strength={0.25}>
-              <Link href="/login" className="btn-primary !min-h-[44px] !px-5 !py-2.5 !text-sm">
+              <Link href={startHref} className="btn-primary !min-h-[44px] !px-5 !py-2.5 !text-sm">
                 Start Lifting
               </Link>
             </Magnetic>
@@ -377,7 +380,7 @@ export function LandingExperience() {
 
           <div className="flex flex-wrap items-center gap-4">
             <Magnetic className="hero-cta">
-              <Link href="/login" className="btn-primary !px-7 !py-3.5 text-base">
+              <Link href={startHref} className="btn-primary !px-7 !py-3.5 text-base">
                 Start Lifting →
               </Link>
             </Magnetic>
@@ -612,7 +615,7 @@ export function LandingExperience() {
             ))}
           </h2>
           <Magnetic>
-            <Link href="/login" className="btn-primary !px-9 !py-4 !text-base">
+            <Link href={startHref} className="btn-primary !px-9 !py-4 !text-base">
               Start Lifting →
             </Link>
           </Magnetic>

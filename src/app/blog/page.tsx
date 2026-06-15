@@ -20,8 +20,8 @@ const ARTICLES = [
     category: 'PROGRAM DESIGN',
     title: 'What Is Block Periodization for Powerlifting?',
     description:
-      'How the three-phase system — accumulation, intensification, realization — builds strength for meet day.',
-    date: 'June 2025',
+      'How the three-phase system (accumulation, intensification, realization) builds strength for meet day.',
+    date: 'June 2026',
     readTime: '8 min',
   },
   {
@@ -30,16 +30,16 @@ const ARTICLES = [
     title: 'RPE in Powerlifting: The Complete Guide',
     description:
       'The full RPE scale, Tuchscherer percentages, calibration tips, and why autoregulation beats fixed loading.',
-    date: 'June 2025',
+    date: 'June 2026',
     readTime: '6 min',
   },
   {
     slug: 'ai-powerlifting-coach-apps',
     category: 'GEAR & APPS',
-    title: 'Best AI Powerlifting Coach Apps (2025)',
+    title: 'Best AI Powerlifting Coach Apps (2026)',
     description:
-      'A sport-specific comparison of AI coaching apps for competitive powerlifters — programming, form check, and autoregulation.',
-    date: 'June 2025',
+      'A sport-specific comparison of AI coaching apps for competitive powerlifters: programming, form check, and autoregulation.',
+    date: 'June 2026',
     readTime: '5 min',
   },
   {
@@ -47,8 +47,8 @@ const ARTICLES = [
     category: 'TECHNIQUE',
     title: 'Powerlifting Form Check: What Coaches Look For',
     description:
-      'A lift-by-lift breakdown of squat, bench press, and deadlift — bar path, brace, knee tracking, and lockout.',
-    date: 'June 2025',
+      'A lift-by-lift breakdown of squat, bench press, and deadlift: bar path, brace, knee tracking, and lockout.',
+    date: 'June 2026',
     readTime: '7 min',
   },
   {
@@ -56,8 +56,8 @@ const ARTICLES = [
     category: 'NUTRITION',
     title: 'Powerlifting Nutrition: How to Eat for Strength and a Meet',
     description:
-      'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol — all grounded in the research.',
-    date: 'June 2025',
+      'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol, all grounded in the research.',
+    date: 'June 2026',
     readTime: '7 min',
   },
 ];

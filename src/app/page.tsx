@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { LandingExperience } from '@/components/landing/LandingExperience';
 
@@ -22,7 +21,7 @@ const jsonLd = {
       featureList: [
         'Block periodization program generation calibrated to 1RMs',
         'AI video form check for squat, bench press, and deadlift',
-        'RPE-based autoregulation — program adjusts every logged set',
+        'RPE-based autoregulation: the program adjusts on every logged set',
         'Nutrition planning with training-day calorie cycling',
         'Protein targets per kg of lean body mass',
         'Coach roster management console with AI-drafted adjustments',
@@ -45,9 +44,14 @@ const jsonLd = {
 
 export default async function Landing() {
   const session = await getSession();
-  if (session) {
-    redirect(session.hasProfile ? '/dashboard' : '/onboarding');
-  }
+  // Logged-in lifters still get the marketing page. We only hand the client the
+  // right place to land them, so the nav can offer "Go to dashboard" instead of
+  // sign-in and every Start Lifting CTA routes them in rather than to /login.
+  const dashboardHref = session
+    ? session.hasProfile
+      ? '/dashboard'
+      : '/onboarding'
+    : undefined;
 
   return (
     <>
@@ -55,7 +59,7 @@ export default async function Landing() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <LandingExperience />
+      <LandingExperience dashboardHref={dashboardHref} />
     </>
   );
 }
