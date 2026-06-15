@@ -152,6 +152,153 @@ create index if not exists idx_coach_suggestions_coach
 create index if not exists idx_coach_suggestions_athlete
   on coach_suggestions(athlete_id, status, created_at);
 
+-- Coaches Network (public marketplace layer). A coach becomes publicly listed by
+-- claiming a `username`, filling in `profile_json` (bio/specialties/etc.) and
+-- flipping `listed`. Athletes discover listed coaches, apply (coach_applications),
+-- and on accept get linked through the SAME coach_athletes roster + coached_by
+-- routing the console already uses. Reviews require a real coach<->athlete link.
+alter table coaches add column if not exists username     text unique;
+alter table coaches add column if not exists profile_json text;
+alter table coaches add column if not exists listed       boolean not null default false;
+alter table coaches add column if not exists featured     boolean not null default false;
+
+-- Athlete -> coach intake. One open application per (coach, athlete); on accept
+-- the roster link is created and status flips to 'accepted'.
+create table if not exists coach_applications (
+  id           text primary key,
+  coach_id     text not null references coaches(id) on delete cascade,
+  athlete_id   text not null references athletes(id) on delete cascade,
+  status       text not null default 'pending', -- pending | accepted | rejected | waitlisted
+  payload_json text not null,
+  coach_note   text,
+  created_at   bigint not null,
+  resolved_at  bigint,
+  unique (coach_id, athlete_id)
+);
+create index if not exists idx_coach_applications_coach
+  on coach_applications(coach_id, status, created_at);
+
+-- Verified-athlete reviews: only an athlete with a current/past roster link to
+-- the coach may post, one review per (coach, athlete).
+create table if not exists coach_reviews (
+  id             text primary key,
+  coach_id       text not null references coaches(id) on delete cascade,
+  athlete_id     text not null references athletes(id) on delete cascade,
+  rating         integer not null, -- overall 1-5
+  communication  integer,
+  programming    integer,
+  meet_prep      integer,
+  responsiveness integer,
+  body           text,
+  created_at     bigint not null,
+  unique (coach_id, athlete_id)
+);
+create index if not exists idx_coach_reviews_coach
+  on coach_reviews(coach_id, created_at);
+
+-- Athlete "Save Coach" favourites.
+create table if not exists coach_saves (
+  athlete_id text not null references athletes(id) on delete cascade,
+  coach_id   text not null references coaches(id) on delete cascade,
+  created_at bigint not null,
+  primary key (athlete_id, coach_id)
+);
+
+-- Coaches Network — trust, content, services and moderation layer.
+-- Trust: admins (env ADMIN_EMAILS allowlist) flip coaches.verified and approve
+-- individual credential submissions. banned hides a coach from discovery.
+alter table coaches add column if not exists verified    boolean not null default false;
+alter table coaches add column if not exists verified_at  bigint;
+alter table coaches add column if not exists banned       boolean not null default false;
+alter table coach_reviews add column if not exists hidden  boolean not null default false;
+-- A coached athlete can share a form check with their coach for human feedback.
+alter table form_checks add column if not exists shared_with_coach boolean not null default false;
+
+-- Uploaded/claimed credentials, verified one-by-one by an admin.
+create table if not exists coach_credentials (
+  id           text primary key,
+  coach_id     text not null references coaches(id) on delete cascade,
+  title        text not null,
+  issuer       text,
+  document_url text,
+  status       text not null default 'pending', -- pending | approved | rejected
+  created_at   bigint not null,
+  reviewed_at  bigint
+);
+create index if not exists idx_coach_credentials_coach on coach_credentials(coach_id, status);
+
+-- Display-only service listings (no checkout). price is per `cadence`.
+create table if not exists coach_services (
+  id            text primary key,
+  coach_id      text not null references coaches(id) on delete cascade,
+  name          text not null,
+  description   text,
+  price         double precision,
+  cadence       text not null default 'month', -- month | one-time | session
+  features_json text,                           -- string[]
+  sort_order    integer not null default 0,
+  created_at    bigint not null
+);
+create index if not exists idx_coach_services_coach on coach_services(coach_id, sort_order);
+
+-- Coach-authored showcase blocks: type 'result' (before/after, comp, record)
+-- or 'athlete' (a coached lifter's stats). Shape lives in data_json per type.
+create table if not exists coach_showcase (
+  id         text primary key,
+  coach_id   text not null references coaches(id) on delete cascade,
+  type       text not null, -- result | athlete
+  data_json  text not null,
+  sort_order integer not null default 0,
+  created_at bigint not null
+);
+create index if not exists idx_coach_showcase_coach on coach_showcase(coach_id, type, sort_order);
+
+-- Coach content posts (training advice, meet recaps, spotlights).
+create table if not exists coach_posts (
+  id         text primary key,
+  coach_id   text not null references coaches(id) on delete cascade,
+  title      text not null,
+  body       text not null,
+  image_url  text,
+  created_at bigint not null
+);
+create index if not exists idx_coach_posts_coach on coach_posts(coach_id, created_at);
+
+-- Athlete -> coach content follow (separate from coach_saves bookmarks). Powers
+-- the athlete feed, follower counts, and the "Rising Coaches" rail.
+create table if not exists coach_follows (
+  athlete_id text not null references athletes(id) on delete cascade,
+  coach_id   text not null references coaches(id) on delete cascade,
+  created_at bigint not null,
+  primary key (athlete_id, coach_id)
+);
+create index if not exists idx_coach_follows_coach on coach_follows(coach_id, created_at);
+
+-- Human form-review feedback a coach leaves on a shared form check.
+create table if not exists coach_form_feedback (
+  id            text primary key,
+  form_check_id text not null references form_checks(id) on delete cascade,
+  coach_id      text not null references coaches(id) on delete cascade,
+  athlete_id    text not null references athletes(id) on delete cascade,
+  feedback      text not null,
+  created_at    bigint not null,
+  unique (form_check_id)
+);
+
+-- Reports against a coach or a review; resolved in the admin console.
+create table if not exists reports (
+  id            text primary key,
+  reporter_id   text,
+  reporter_role text not null,           -- athlete | coach
+  target_type   text not null,           -- coach | review
+  target_id     text not null,
+  reason        text not null,
+  status        text not null default 'open', -- open | resolved | dismissed
+  created_at    bigint not null,
+  resolved_at   bigint
+);
+create index if not exists idx_reports_status on reports(status, created_at);
+
 -- Billing + metering. One subscription row per billing account (athlete OR
 -- coach); absence of a row == free. Form checks are counted from the
 -- form_checks table directly (already the source of truth); usage_events meters

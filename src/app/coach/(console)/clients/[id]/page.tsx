@@ -6,6 +6,7 @@ import { computeWeeklyReview } from '@/lib/review-data';
 import { Card, CardHeader } from '@/components/ui/Card';
 import type { AthleteProfile, DecisionSeverity } from '@/lib/types';
 import { SuggestionQueue } from './SuggestionQueue';
+import { ClientTools } from './ClientTools';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,8 @@ export default async function ClientPage({ params }: { params: { id: string } })
           </ul>
         </Card>
       )}
+
+      <ClientTools athleteId={params.id} hasProfile={!!profile} />
 
       <SuggestionQueue athleteId={params.id} suggestions={suggestions} />
     </div>

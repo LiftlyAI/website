@@ -407,3 +407,218 @@ export interface TriageItem {
   daysSinceLastSession: number | null;
   pendingSuggestions: number;
 }
+
+// ---------- Coaches Network (public marketplace layer) ----------
+
+export type CoachAvailability = 'accepting' | 'waitlist' | 'full';
+export type ApplicationStatus = 'pending' | 'accepted' | 'rejected' | 'waitlisted';
+
+// The flexible JSON blob stored on coaches.profile_json. Everything here is
+// coach-authored and optional so a freshly-created coach renders gracefully.
+export interface CoachProfile {
+  displayName?: string; // public name override (falls back to coaches.name)
+  tagline?: string; // one-line hook under the name
+  bio?: string;
+  location?: string;
+  specialties?: string[]; // e.g. ['meet-prep', 'raw', 'womens']
+  federations?: string[]; // e.g. ['USAPL', 'IPF']
+  credentials?: string[]; // e.g. ['CSCS', 'Exercise Science Degree']
+  experienceYears?: number;
+  online?: boolean;
+  inPerson?: boolean;
+  availability?: CoachAvailability;
+  responseTime?: string; // free text e.g. 'within 24h'
+  photoUrl?: string;
+  bannerUrl?: string;
+}
+
+// Aggregates derived from coach_reviews / coach_athletes, attached to views.
+export interface CoachStats {
+  rating: number | null; // average overall, null if no reviews
+  reviewCount: number;
+  activeClients: number;
+  followerCount: number;
+}
+
+// Discovery-hub list card.
+export interface CoachCard extends CoachStats {
+  id: string;
+  username: string;
+  name: string; // resolved display name
+  profile: CoachProfile;
+  featured: boolean;
+  verified: boolean;
+  priceFrom: number | null; // cheapest service price, for the pricing filter/badge
+}
+
+export interface CoachReview {
+  id: string;
+  coachId: string;
+  athleteId: string;
+  athleteName: string | null;
+  rating: number;
+  communication: number | null;
+  programming: number | null;
+  meetPrep: number | null;
+  responsiveness: number | null;
+  body: string | null;
+  createdAt: number;
+}
+
+// Full public profile view-model.
+export interface CoachPublic extends CoachStats {
+  id: string;
+  username: string;
+  name: string;
+  profile: CoachProfile;
+  featured: boolean;
+  verified: boolean;
+  priceFrom: number | null;
+  reviews: CoachReview[];
+  credentials: CoachCredential[]; // approved only
+  services: CoachService[];
+  showcase: CoachShowcase[];
+  posts: CoachPost[];
+}
+
+// Athlete-authored intake captured on "Apply for Coaching".
+export interface CoachApplicationPayload {
+  age?: number;
+  sex?: Sex;
+  experience?: Experience;
+  bodyweight?: number;
+  unit?: Unit;
+  bestSquat?: number;
+  bestBench?: number;
+  bestDeadlift?: number;
+  meetHistory?: string;
+  goals?: string;
+  timeline?: string;
+  injuries?: string;
+  availability?: string;
+}
+
+export interface CoachApplication {
+  id: string;
+  coachId: string;
+  athleteId: string;
+  athleteName: string | null;
+  athleteEmail: string;
+  status: ApplicationStatus;
+  payload: CoachApplicationPayload;
+  coachNote: string | null;
+  createdAt: number;
+  resolvedAt: number | null;
+}
+
+export type CoachSort = 'top-rated' | 'rising' | 'recent';
+
+export type PriceBucket = 'under-100' | '100-200' | '200-300' | '300-plus';
+
+export interface CoachSearchFilters {
+  q?: string;
+  specialty?: string;
+  federation?: string;
+  experience?: Experience;
+  delivery?: 'online' | 'in-person';
+  availability?: CoachAvailability;
+  verifiedOnly?: boolean;
+  price?: PriceBucket;
+  sort?: CoachSort;
+}
+
+// ---------- Trust / content / services records ----------
+
+export type CredentialStatus = 'pending' | 'approved' | 'rejected';
+
+export interface CoachCredential {
+  id: string;
+  coachId: string;
+  title: string;
+  issuer: string | null;
+  documentUrl: string | null;
+  status: CredentialStatus;
+  createdAt: number;
+  reviewedAt: number | null;
+}
+
+export type ServiceCadence = 'month' | 'one-time' | 'session';
+
+export interface CoachService {
+  id: string;
+  coachId: string;
+  name: string;
+  description: string | null;
+  price: number | null;
+  cadence: ServiceCadence;
+  features: string[];
+  sortOrder: number;
+}
+
+// Coach-authored showcase. Two shapes behind a discriminated `type`.
+export interface ShowcaseResultData {
+  title: string;
+  athleteName?: string;
+  lift?: string;
+  beforeValue?: number;
+  afterValue?: number;
+  unit?: Unit;
+  timeframe?: string;
+  detail?: string;
+}
+
+export interface ShowcaseAthleteData {
+  name: string;
+  weightClass?: string;
+  bestSquat?: number;
+  bestBench?: number;
+  bestDeadlift?: number;
+  unit?: Unit;
+  meetResult?: string;
+  photoUrl?: string;
+}
+
+export interface CoachShowcaseResult {
+  id: string;
+  type: 'result';
+  sortOrder: number;
+  data: ShowcaseResultData;
+}
+
+export interface CoachShowcaseAthlete {
+  id: string;
+  type: 'athlete';
+  sortOrder: number;
+  data: ShowcaseAthleteData;
+}
+
+export type CoachShowcase = CoachShowcaseResult | CoachShowcaseAthlete;
+
+export interface CoachPost {
+  id: string;
+  coachId: string;
+  coachName?: string;
+  coachUsername?: string | null;
+  title: string;
+  body: string;
+  imageUrl: string | null;
+  createdAt: number;
+}
+
+// ---------- Reports / admin ----------
+
+export type ReportStatus = 'open' | 'resolved' | 'dismissed';
+
+export interface Report {
+  id: string;
+  reporterId: string | null;
+  reporterRole: 'athlete' | 'coach';
+  targetType: 'coach' | 'review';
+  targetId: string;
+  reason: string;
+  status: ReportStatus;
+  createdAt: number;
+  resolvedAt: number | null;
+  // Hydrated for the admin queue:
+  targetLabel?: string;
+}

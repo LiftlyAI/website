@@ -6,7 +6,11 @@ import { cn } from '@/lib/utils';
 const links = [
   { href: '/coach', label: 'Triage', exact: true },
   { href: '/coach/roster', label: 'Roster' },
+  { href: '/coach/applications', label: 'Applications' },
+  { href: '/coach/reviews', label: 'Form reviews' },
   { href: '/coach/bulk', label: 'Bulk block' },
+  { href: '/coach/posts', label: 'Posts' },
+  { href: '/coach/profile', label: 'Profile' },
 ];
 
 export function CoachNav() {

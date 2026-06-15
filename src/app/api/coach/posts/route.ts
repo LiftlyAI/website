@@ -1,0 +1,36 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { requireCoach } from '@/lib/coach-auth';
+import { createPost, deletePost } from '@/lib/network-data';
+
+const Body = z.object({
+  title: z.string().min(1).max(140),
+  body: z.string().min(1).max(8000),
+  imageUrl: z.string().url().max(500).optional().or(z.literal('')),
+});
+
+export async function POST(req: NextRequest) {
+  let coach;
+  try {
+    coach = await requireCoach();
+  } catch {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+  const parsed = Body.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 });
+  await createPost(coach.id, parsed.data.title, parsed.data.body, parsed.data.imageUrl || undefined);
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  let coach;
+  try {
+    coach = await requireCoach();
+  } catch {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+  const parsed = z.object({ id: z.string().min(1) }).safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 });
+  await deletePost(coach.id, parsed.data.id);
+  return NextResponse.json({ ok: true });
+}

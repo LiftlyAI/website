@@ -27,6 +27,8 @@ const FEATURES = [
     body: 'Hypertrophy → Strength → Peak. Block periodization tuned to your maxes, your schedule, your weak points. It recalculates every time you log a set.',
     tag: 'PROGRAM ENGINE',
     points: ['1RM-driven loading', 'RPE autoregulation', 'Weak-point targeting'],
+    image: '/landing/program.jpg',
+    imageAlt: 'Block periodization stages rising from Hypertrophy to Strength to Peak',
   },
   {
     num: '02',
@@ -34,6 +36,8 @@ const FEATURES = [
     body: 'Film a set on your phone. Get frame-aware cues on bar path, brace, knee tracking, and lockout, the way a coach reads you from the side.',
     tag: 'VIDEO ANALYSIS',
     points: ['Bar path tracking', 'Brace & setup cues', 'Lockout diagnostics'],
+    image: '/landing/form-check.jpg',
+    imageAlt: 'Phone recording a squat with joint-angle analysis and lift diagnostics',
   },
   {
     num: '03',
@@ -41,27 +45,33 @@ const FEATURES = [
     body: 'BMR-based targets, training-day calorie cycling, protein per kilogram of lean mass. Numbers built for the platform, not the beach.',
     tag: 'FUEL PROTOCOL',
     points: ['Training-day cycling', 'Protein per kg LBM', 'Meet-week strategy'],
+    image: '/landing/nutrition.png',
+    imageAlt: 'Daily nutrition targets ring showing calories and protein, carb, fat macros',
   },
 ];
 
 const STEPS = [
   {
     num: '01',
+    verb: 'CALIBRATE',
     title: 'Tell it how you lift',
     body: 'Your maxes, your schedule, your federation, your weak points. Ninety seconds of onboarding, zero filler questions.',
   },
   {
     num: '02',
+    verb: 'PROGRAM',
     title: 'Get your block',
     body: 'A periodized program lands the moment you finish onboarding. Every set, every percentage, every rest day accounted for.',
   },
   {
     num: '03',
+    verb: 'ADAPT',
     title: 'Log and adapt',
     body: 'Rate your sets with RPE. The program reads your readiness and adjusts load before fatigue becomes a missed lift.',
   },
   {
     num: '04',
+    verb: 'COMPETE',
     title: 'Peak on the platform',
     body: 'Taper timed to meet day. Openers picked from data, not vibes. Show up strong, go nine for nine.',
   },
@@ -70,7 +80,7 @@ const STEPS = [
 const STATS = [
   { value: 3, suffix: '', label: 'lifts that matter' },
   { value: 100, suffix: '%', label: 'tailored to your numbers' },
-  { value: 10, suffix: '', label: 'RPE-capped autoregulation' },
+  { value: 10, suffix: '', label: 'RPE scale, calibrated every session' },
   { value: 0, suffix: '', label: 'fluff, ever' },
 ];
 
@@ -125,7 +135,6 @@ export function LandingExperience() {
           )
           .from('.hero-sub', { y: 28, autoAlpha: 0, duration: 0.7 }, '-=0.5')
           .from('.hero-cta', { y: 24, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, '-=0.45')
-          .from('.hero-scroll-hint', { autoAlpha: 0, duration: 0.8 }, '-=0.2')
           .from('.hero-canvas', { autoAlpha: 0, duration: 1.4, ease: 'power2.inOut' }, 0.2);
 
         // ---- Nav: hide on scroll down, return on scroll up -------------------
@@ -386,19 +395,7 @@ export function LandingExperience() {
                 For Coaches
               </Link>
             </Magnetic>
-            <Magnetic className="hero-cta" strength={0.25}>
-              <a href="#features" className="btn-ghost">
-                Explore ↓
-              </a>
-            </Magnetic>
           </div>
-        </div>
-
-        <div className="hero-scroll-hint absolute bottom-7 left-1/2 z-10 -translate-x-1/2 text-center">
-          <div className="mx-auto mb-2 h-9 w-[1.5px] overflow-hidden rounded bg-iron-700">
-            <div className="scroll-hint-bead h-3 w-full rounded bg-blood" />
-          </div>
-          <span className="font-mono text-[10px] tracking-[0.3em] text-chalk-mute">SCROLL</span>
         </div>
       </section>
 
@@ -434,14 +431,14 @@ export function LandingExperience() {
             </h2>
           </div>
 
-          <div className="relative md:h-[380px]">
+          <div className="relative md:h-[460px]">
             {FEATURES.map((feature, i) => (
               <div
                 key={feature.num}
                 className={`feature-panel mb-8 md:absolute md:inset-0 md:mb-0 ${i > 0 ? 'md:opacity-0' : ''}`}
               >
-                <TiltCard className="chalk-card relative grid h-full grid-cols-1 gap-8 overflow-hidden p-8 md:grid-cols-[auto_1fr_auto] md:items-center md:p-12">
-                  <div className="stencil-heading select-none text-[5rem] leading-none text-iron-700 md:text-[9rem]">
+                <TiltCard className="chalk-card relative grid h-full grid-cols-1 gap-8 overflow-hidden p-8 md:grid-cols-[auto_1fr_1.05fr] md:items-center md:gap-10 md:p-12">
+                  <div className="stencil-heading select-none text-[5rem] leading-none text-iron-700 md:text-[8rem]">
                     {feature.num}
                   </div>
                   <div>
@@ -452,15 +449,24 @@ export function LandingExperience() {
                       {feature.title}
                     </h3>
                     <p className="max-w-lg text-base text-chalk-dim">{feature.body}</p>
+                    <ul className="mt-6 space-y-3 font-mono text-sm text-chalk-mute">
+                      {feature.points.map((point) => (
+                        <li key={point} className="flex items-center gap-2.5">
+                          <span className="h-1 w-4 rounded bg-blood" />
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-3 font-mono text-sm text-chalk-mute">
-                    {feature.points.map((point) => (
-                      <li key={point} className="flex items-center gap-2.5">
-                        <span className="h-1 w-4 rounded bg-blood" />
-                        {point}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-iron-700/80 bg-iron-950 shadow-card md:aspect-auto md:h-full">
+                    <img
+                      src={feature.image}
+                      alt={feature.imageAlt}
+                      loading="lazy"
+                      className="h-full w-full object-contain"
+                    />
+                    <span className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-inset ring-chalk/5" />
+                  </div>
                 </TiltCard>
               </div>
             ))}
@@ -504,7 +510,7 @@ export function LandingExperience() {
                     <span className="absolute h-3 w-3 animate-ping rounded-full bg-blood/60" />
                   </span>
                   <p className="mb-2 font-mono text-sm tracking-[0.25em] text-blood">
-                    STEP {step.num}
+                    {step.verb}
                   </p>
                   <h3 className="stencil-heading mb-3 text-2xl text-chalk md:text-3xl">
                     {step.title}
@@ -544,9 +550,6 @@ export function LandingExperience() {
       <section id="coaches" className="py-28 md:py-36">
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 md:grid-cols-2">
           <div data-reveal>
-            <p className="mb-3 font-mono text-sm tracking-[0.35em] text-blood">
-              <ScrambleText text="// FOR COACHES" />
-            </p>
             <h2 className="stencil-heading mb-6 text-4xl text-chalk md:text-5xl">
               Your whole roster,
               <br />
@@ -632,6 +635,7 @@ export function LandingExperience() {
             <nav className="flex items-center gap-6 font-mono text-xs tracking-[0.15em] text-chalk-mute">
               <Link href="/blog" className="transition-colors hover:text-chalk-dim">GUIDES</Link>
               <Link href="/privacy" className="transition-colors hover:text-chalk-dim">PRIVACY</Link>
+              <Link href="/terms" className="transition-colors hover:text-chalk-dim">TERMS</Link>
             </nav>
             <span className="font-mono text-xs text-chalk-mute">
               Powered by Anthropic Claude

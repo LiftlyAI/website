@@ -11,6 +11,7 @@ import {
   User,
   Info,
   LogOut,
+  UserSearch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
@@ -23,6 +24,7 @@ const links = [
   { href: '/nutrition', label: 'Nutrition', icon: Apple },
   { href: '/progress', label: 'Progress', icon: TrendingUp },
   { href: '/chat', label: 'Coach', icon: MessageSquare },
+  { href: '/coaching', label: 'Find a Coach', icon: UserSearch },
   { href: '/profile', label: 'Profile', icon: User },
   { href: '/about', label: 'About', icon: Info },
 ];
