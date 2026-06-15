@@ -1,0 +1,28 @@
+{
+  "lift": "squat",
+  "fps": 30.0,
+  "barSource": "plate",
+  "pose": {
+    "detectedFrames": 1166,
+    "totalFrames": 1166,
+    "coverage": 1.0,
+    "quality": "good"
+  },
+  "reps": [],
+  "summary": {
+    "repCount": 0,
+    "rir": null,
+    "rpe": null,
+    "rpeBand": null,
+    "rpeConfidence": "rough",
+    "velocityLossPct": null,
+    "barPathNote": "No reps segmented.",
+    "formNotes": [],
+    "cameraView": "side",
+    "cameraViewRatio": 0.175
+  },
+  "warnings": [
+    "The bar's vertical travel is too small/noisy to read reps \u2014 film from the side with the whole body and the full lift visible.",
+    "Tracked the lifter but couldn't isolate distinct reps \u2014 make sure the whole squat is in frame."
+  ]
+}

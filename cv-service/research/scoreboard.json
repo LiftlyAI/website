@@ -1,0 +1,131 @@
+{
+  "rows": [
+    {
+      "file": "bench__1jzn2i2.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 3,
+      "rpe": 5.0,
+      "sec": 0.3
+    },
+    {
+      "file": "bench__1k74bhj.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 5,
+      "rpe": 7.0,
+      "sec": 0.1
+    },
+    {
+      "file": "bench__1kp9loz.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.1
+    },
+    {
+      "file": "bench_close__c8v58n.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.572,
+      "reps": 4,
+      "rpe": 5.0,
+      "sec": 0.4
+    },
+    {
+      "file": "bench_wide__bl06xu.mp4",
+      "lift": "bench",
+      "status": "HOLD",
+      "fails": []
+    },
+    {
+      "file": "squat_highbar__1kaqgmw.mp4",
+      "lift": "squat",
+      "status": "HOLD",
+      "fails": []
+    },
+    {
+      "file": "squat_highbar__1kovzbg.mp4",
+      "lift": "squat",
+      "status": "PART",
+      "fails": [
+        "coverage 41% < 50%"
+      ],
+      "coverage": 0.411,
+      "reps": 3,
+      "rpe": 6.0,
+      "sec": 0.1
+    },
+    {
+      "file": "squat_lowbar__1gkk44z.mp4",
+      "lift": "squat",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.961,
+      "reps": 1,
+      "rpe": 7.0,
+      "sec": 0.3
+    },
+    {
+      "file": "squat_lowbar__1kn0yi5.mp4",
+      "lift": "squat",
+      "status": "PART",
+      "fails": [
+        "no reps segmented"
+      ],
+      "coverage": 1.0,
+      "reps": 0,
+      "rpe": null,
+      "sec": 0.2
+    },
+    {
+      "file": "deadlift_conv__1kk370m.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 4,
+      "rpe": 7.0,
+      "sec": 0.4
+    },
+    {
+      "file": "deadlift_conv__1koke0d.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.824,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.1
+    },
+    {
+      "file": "deadlift_sumo__1kj0keq.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 2,
+      "rpe": 7.0,
+      "sec": 0.4
+    },
+    {
+      "file": "deadlift_sumo__1jd0wuf.mp4",
+      "lift": "deadlift",
+      "status": "HOLD",
+      "fails": []
+    }
+  ],
+  "counts": {
+    "PASS": 8,
+    "HOLD": 3,
+    "PART": 2
+  }
+}

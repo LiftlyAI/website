@@ -1,0 +1,200 @@
+{
+  "lift": "bench",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 585,
+    "totalFrames": 1023,
+    "coverage": 0.572,
+    "quality": "fair"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.133,
+      "pauseS": 0.0,
+      "concentricS": 0.8,
+      "romTorso": 1.024,
+      "concRiseTorso": 0.907,
+      "barDriftTorso": 0.543,
+      "towardShoulderTorso": -0.101,
+      "curveRatio": 0.626,
+      "touchOnTorso": 0.223,
+      "elbowAngleBottom": 173.3,
+      "elbowAngleLockout": 149.0,
+      "elbowFlareDeg": 15.5,
+      "wristAheadOfElbowTorso": -1.051,
+      "depthHipMinusKneeTorso": -0.54,
+      "kneeVsAnkleTorso": -0.253,
+      "barOverMidfootTorso": 2.087,
+      "lockoutHipKneeAnkleDeg": 170.5,
+      "hipLeadAtStartTorso": 0.136,
+      "phases": {
+        "descent": [
+          4.633,
+          4.8
+        ],
+        "pause": [
+          4.8,
+          4.8
+        ],
+        "press": [
+          4.8,
+          5.6
+        ],
+        "lockout": [
+          5.6,
+          5.6
+        ]
+      },
+      "slowdownVsFastestPct": 8.4
+    },
+    {
+      "index": 2,
+      "touchAndGo": false,
+      "descentS": 0.167,
+      "pauseS": 0.9,
+      "concentricS": 0.933,
+      "romTorso": 1.446,
+      "concRiseTorso": 1.049,
+      "barDriftTorso": 0.145,
+      "towardShoulderTorso": -0.215,
+      "curveRatio": 0.398,
+      "touchOnTorso": 3.007,
+      "elbowAngleBottom": 15.0,
+      "elbowAngleLockout": 146.9,
+      "elbowFlareDeg": 67.0,
+      "wristAheadOfElbowTorso": 0.061,
+      "depthHipMinusKneeTorso": -0.53,
+      "kneeVsAnkleTorso": -0.041,
+      "barOverMidfootTorso": 2.531,
+      "lockoutHipKneeAnkleDeg": 139.3,
+      "hipLeadAtStartTorso": 0.176,
+      "phases": {
+        "descent": [
+          8.733,
+          10.733
+        ],
+        "pause": [
+          10.733,
+          11.633
+        ],
+        "press": [
+          11.633,
+          12.567
+        ],
+        "lockout": [
+          12.567,
+          12.7
+        ]
+      },
+      "slowdownVsFastestPct": 21.4
+    },
+    {
+      "index": 3,
+      "touchAndGo": true,
+      "descentS": 0.1,
+      "pauseS": 0.467,
+      "concentricS": 0.867,
+      "romTorso": 1.449,
+      "concRiseTorso": 0.978,
+      "barDriftTorso": 0.142,
+      "towardShoulderTorso": 0.24,
+      "curveRatio": 0.8,
+      "touchOnTorso": 3.944,
+      "elbowAngleBottom": 18.7,
+      "elbowAngleLockout": 139.3,
+      "elbowFlareDeg": 65.8,
+      "wristAheadOfElbowTorso": 0.029,
+      "depthHipMinusKneeTorso": -0.493,
+      "kneeVsAnkleTorso": 0.051,
+      "barOverMidfootTorso": 2.532,
+      "lockoutHipKneeAnkleDeg": 111.9,
+      "hipLeadAtStartTorso": 0.03,
+      "phases": {
+        "descent": [
+          14.567,
+          16.367
+        ],
+        "pause": [
+          16.367,
+          16.833
+        ],
+        "press": [
+          16.833,
+          17.7
+        ],
+        "lockout": [
+          17.7,
+          18.0
+        ]
+      },
+      "slowdownVsFastestPct": 15.5
+    },
+    {
+      "index": 4,
+      "touchAndGo": true,
+      "descentS": 0.067,
+      "pauseS": 0.8,
+      "concentricS": 0.733,
+      "romTorso": 1.099,
+      "concRiseTorso": 1.012,
+      "barDriftTorso": 0.038,
+      "towardShoulderTorso": -3.527,
+      "curveRatio": 0.228,
+      "touchOnTorso": 3.4,
+      "elbowAngleBottom": 95.4,
+      "elbowAngleLockout": 42.0,
+      "elbowFlareDeg": 64.5,
+      "wristAheadOfElbowTorso": -0.017,
+      "depthHipMinusKneeTorso": -0.472,
+      "kneeVsAnkleTorso": -0.097,
+      "barOverMidfootTorso": 2.411,
+      "lockoutHipKneeAnkleDeg": null,
+      "hipLeadAtStartTorso": -0.039,
+      "phases": {
+        "descent": [
+          21.0,
+          21.6
+        ],
+        "pause": [
+          21.6,
+          22.4
+        ],
+        "press": [
+          22.4,
+          23.133
+        ],
+        "lockout": [
+          23.133,
+          23.133
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 4,
+    "firstRepConcentricS": 0.8,
+    "fastestRepConcentricS": 0.733,
+    "lastRepConcentricS": 0.733,
+    "rpeBand": null,
+    "velocityLossPct": 0.0,
+    "wallRepIndex": null,
+    "rir": 5.0,
+    "rpe": 5.0,
+    "rpeConfidence": "rough",
+    "barPathNote": "Bench bar path is a clear curve (horizontal travel ~0.22 torso on the press).",
+    "shoulderStabilityTorso": 1.467,
+    "hipStabilityTorso": 1.527,
+    "footMovementTorso": 2.583,
+    "formNotes": [
+      "Elbow tuck ~53 deg from torso \u2014 in the healthy 45-75 deg range.",
+      "Touch-and-go \u2014 no visible pause on the chest. If you compete, practice a motionless pause; meets require one."
+    ],
+    "cameraView": "side",
+    "cameraViewRatio": 0.874
+  },
+  "warnings": []
+}

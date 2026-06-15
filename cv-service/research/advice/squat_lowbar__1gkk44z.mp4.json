@@ -1,0 +1,80 @@
+{
+  "lift": "squat",
+  "fps": 30.0,
+  "barSource": "plate",
+  "pose": {
+    "detectedFrames": 694,
+    "totalFrames": 722,
+    "coverage": 0.961,
+    "quality": "good"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": false,
+      "descentS": 1.333,
+      "pauseS": 1.267,
+      "concentricS": 3.033,
+      "romTorso": 1.828,
+      "concRiseTorso": 1.352,
+      "barDriftTorso": -0.05,
+      "towardShoulderTorso": -0.11,
+      "curveRatio": 1.075,
+      "touchOnTorso": 0.195,
+      "elbowAngleBottom": 81.8,
+      "elbowAngleLockout": 3.3,
+      "elbowFlareDeg": 34.7,
+      "wristAheadOfElbowTorso": -0.644,
+      "depthHipMinusKneeTorso": 0.136,
+      "kneeVsAnkleTorso": -0.262,
+      "barOverMidfootTorso": 0.861,
+      "lockoutHipKneeAnkleDeg": 168.2,
+      "hipLeadAtStartTorso": 0.029,
+      "phases": {
+        "descent": [
+          8.167,
+          15.7
+        ],
+        "pause": [
+          15.7,
+          16.967
+        ],
+        "press": [
+          16.967,
+          20.0
+        ],
+        "lockout": [
+          20.0,
+          24.033
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 1,
+    "firstRepConcentricS": 3.033,
+    "fastestRepConcentricS": 3.033,
+    "lastRepConcentricS": 3.033,
+    "rpeBand": [
+      8.5,
+      10.0
+    ],
+    "velocityLossPct": null,
+    "wallRepIndex": null,
+    "rir": 1.0,
+    "rpe": 9.0,
+    "rpeConfidence": "rough",
+    "barPathNote": "Squat ROM ~1.83 torso.",
+    "shoulderStabilityTorso": 0.42,
+    "hipStabilityTorso": 0.534,
+    "footMovementTorso": 1.282,
+    "formNotes": [
+      "Knees collapse inward at the bottom (~0.26 torso inside the ankle) \u2014 drive knees out in the direction of the toes.",
+      "Some checks were skipped \u2014 they need a side-on camera. Film from the side for the full read."
+    ],
+    "cameraView": "nonside",
+    "cameraViewRatio": 0.597
+  },
+  "warnings": []
+}

@@ -1,0 +1,46 @@
+# Liftly
+
+> AI-powered powerlifting coaching app at liftly.tech. Covers the full coaching loop: periodized programming, AI video form check, and nutrition calibrated for powerlifting performance.
+
+## What Liftly does
+
+Liftly is an AI powerlifting coach built for competitive and serious recreational powerlifters. It generates periodized training blocks (hypertrophy → strength → peak) calibrated to the lifter's actual 1RMs, analyzes lifting form from phone video, and calculates nutrition targets tuned for the sport — not generic fitness.
+
+It also provides a coach console for strength coaches: AI-drafted program adjustments, readiness flags, and coach sign-off before anything reaches athletes.
+
+Powered by Anthropic Claude.
+
+## Key features
+
+- **Periodized Program Engine** — Block periodization (hypertrophy → strength → peak). 1RM-driven loading, RPE autoregulation, weak-point targeting. Recalculates on every logged set.
+- **AI Form Check** — Upload a training video from your phone. Get frame-level cues on bar path, brace, knee tracking, and lockout. Squat, bench press, and deadlift supported.
+- **Nutrition Protocol** — BMR-based calorie targets with training-day cycling. Protein targets per kg of lean body mass. Meet-week strategy included.
+- **Coach Console** — Roster triage dashboard. AI drafts program adjustments and flags at-risk athletes; the coach approves every change before it reaches the athlete. Nothing ships without sign-off.
+
+## Who Liftly is for
+
+- Competitive powerlifters (IPF, USAPL, RPS, and other federations)
+- Serious recreational lifters focused on squat, bench press, and deadlift
+- Strength coaches managing multiple athletes who need AI-assisted triage at scale
+
+## What Liftly is not
+
+- Not a general fitness app (no running, cycling, or HIIT)
+- Not a nutrition tracker (macros are calculated, not logged manually)
+- Not an autonomous coach — the coach console requires human approval for every program change
+
+## Pricing
+
+Free to start. No push notifications. No fluff.
+
+## Key pages
+
+- https://liftly.tech — Product overview
+- https://liftly.tech/login — Sign up or sign in (athlete)
+- https://liftly.tech/coach/login — Coach console access
+
+## Technical
+
+- Built with Next.js, App Router
+- AI layer powered by Anthropic Claude
+- Domain: liftly.tech

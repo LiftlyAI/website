@@ -1,0 +1,27 @@
+{
+  "lift": "deadlift",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 292,
+    "totalFrames": 713,
+    "coverage": 0.41,
+    "quality": "low"
+  },
+  "reps": [],
+  "summary": {
+    "repCount": 0,
+    "rir": null,
+    "rpe": null,
+    "rpeBand": null,
+    "rpeConfidence": "rough",
+    "velocityLossPct": null,
+    "barPathNote": "No reps segmented.",
+    "formNotes": [],
+    "cameraView": "nonside",
+    "cameraViewRatio": 0.467
+  },
+  "warnings": [
+    "Couldn't read clean reps \u2014 the lifter was only tracked in 41% of frames. Best results: film from the side with the whole body and the full pull (floor to lockout) in frame, well lit and steady."
+  ]
+}

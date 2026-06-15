@@ -298,3 +298,36 @@ create table if not exists reports (
   resolved_at   bigint
 );
 create index if not exists idx_reports_status on reports(status, created_at);
+
+-- Billing + metering. One subscription row per billing account (athlete OR
+-- coach); absence of a row == free. Form checks are counted from the
+-- form_checks table directly (already the source of truth); usage_events meters
+-- the "Gemini API key uses" (chat, program, nutrition generations). Plans:
+-- 'free' (default, all features, metered), 'pro' ($12/mo or $99/yr), 'coach'
+-- (a paying coach's active clients get the coach tier; coach billed per seat).
+create table if not exists subscriptions (
+  id                     text primary key,
+  account_type           text not null,                 -- 'athlete' | 'coach'
+  account_id             text not null,
+  stripe_customer_id     text,
+  stripe_subscription_id text,
+  plan                   text not null default 'free',   -- 'free' | 'pro' | 'coach'
+  status                 text not null default 'inactive',
+  quantity               integer not null default 1,     -- coach per-seat client count
+  current_period_end     bigint,
+  created_at             bigint not null,
+  updated_at             bigint not null,
+  unique(account_type, account_id)
+);
+create index if not exists idx_subscriptions_customer on subscriptions(stripe_customer_id);
+
+create table if not exists usage_events (
+  id           text primary key,
+  account_type text not null,   -- 'athlete' | 'coach'
+  account_id   text not null,
+  kind         text not null,   -- 'ai_call'
+  feature      text,            -- 'chat' | 'nutrition' | 'program' | 'onboarding'
+  created_at   bigint not null
+);
+create index if not exists idx_usage_events_lookup
+  on usage_events(account_type, account_id, kind, created_at);

@@ -168,82 +168,14 @@ class _Body:
         return np.where(use_l, a, b)
 
 
-def analyze_lift(
-    track: P.PoseTrack,
-    lift: str = "bench",
-    bar_px: np.ndarray | None = None,
-    plate_r: float = 0.0,
-) -> dict:
-    fps = track.fps
-    n = track.total_frames
-    t = np.arange(n) / fps
-    w, h = track.frame_size
-    aspect = w / h
-    B = _Body(track)
-
-    # Vertical analysis (reps, RPE, timing) uses the plate when the tracker
-    # validated it (moves with the wrist, near the hands, smooth); else the
-    # wrist line. The plate's VERTICAL signal is the cleanest rep cue. Its
-    # horizontal position jitters between plate/collar/sleeve, so the OVERLAY
-    # and J-curve are drawn from the wrist instead (see _bench_render_path).
-    if bar_px is not None and np.isfinite(bar_px).all():
-        bar = np.column_stack([(bar_px[:n, 0] / w) * aspect, bar_px[:n, 1] / h])
-        bar_source = "plate"
-    else:
-        bar = B.best(P.L_WR, P.R_WR)
-        bar_source = "wrist"
-    # A single NaN propagates through hampel/savgol and corrupts the whole
-    # signal (and the JSON response). Interpolate any non-finite samples.
-    bar = _finite_fill(bar)
-    shoulder = B.mid(P.L_SH, P.R_SH)
-    hip = B.mid(P.L_HIP, P.R_HIP)
-    elbow = B.best(P.L_EL, P.R_EL)
-    ankle = B.mid(P.L_AN, P.R_AN)
-    knee = B.mid(P.L_KN, P.R_KN)
-
-    torso = float(np.nanmedian(np.linalg.norm(shoulder - hip, axis=1))) or 0.2
-
-    # Hampel despike (kills teleport spikes) then smooth — this is what makes
-    # the signal usable even when plate/wrist tracking is imperfect.
-    barX = _clean_signal(bar[:, 0], fps)
-    up = _clean_signal(-bar[:, 1], fps)      # +up
-    vy = np.gradient(up, t)
-    # Robust ROM (percentile) so a residual spike can't blow up thresholds.
-    rom = float(np.percentile(up, 97) - np.percentile(up, 3))
-
-    # A real bench press travels a large fraction of the frame vertically;
-    # tracking noise barely moves. Below this the signal isn't a lift — bail
-    # rather than carve fake reps out of jitter.
-    ROM_MIN = 0.08
-    warnings: list[str] = []
-    if rom < ROM_MIN:
-        warnings.append(
-            "The bar's vertical travel is too small/noisy to read reps — film "
-            "from the side / foot of the bench with the full press visible."
-        )
-        bottoms = np.array([], dtype=int)
-        tops = np.array([], dtype=int)
-    else:
-        # Per-lift segmentation: bench reps are short and fast, squat / DL are
-        # slow and long. Using bench thresholds on a squat creates 5 hallucinated
-        # micro-reps where there's actually one slow rep.
-        seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
-        prom = max(0.02, rom * seg["prom_frac"])
-        gap = max(1, int(fps * seg["min_gap_s"]))
-        bottoms, _ = find_peaks(-up, prominence=prom, distance=gap)
-        tops, _ = find_peaks(up, prominence=prom, distance=gap)
-        if os.environ.get("SEG_DEBUG"):
-            print(f"[seg] lift={lift} rom={rom:.3f} prom={prom:.3f} gap={gap} "
-                  f"bottoms={list(bottoms)} tops={list(tops)} fps={fps:.1f} n={n}")
-    if os.environ.get("SEG_DEBUG") and rom < ROM_MIN:
-        print(f"[seg] REJECT-ALL rom={rom:.3f} < ROM_MIN={ROM_MIN}")
-
-    seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
-    CONC_MIN, CONC_MAX = seg["conc_min"], seg["conc_max"]
-    DESC_MIN, DESC_MAX = seg["desc_min"], seg["desc_max"]
-
+def _segment_reps(bottoms, tops, *, up, vy, t, fps, n, rom, barX, shoulder,
+                  hip, elbow, ankle, knee, torso, bar, real_frames,
+                  conc_rng, desc_max, desc_min) -> list[dict]:
+    """Carve rep candidates out of one (bottoms, tops) peak set and gate them.
+    Pure so the caller can try denser peaks and keep whichever yields more
+    valid reps (rep-merge recovery, F8a)."""
+    CONC_MIN, CONC_MAX = conc_rng
     reps: list[dict] = []
-    rep_no = 0
     for b0 in bottoms:
         prior = tops[tops < b0]
         start = int(prior[-1]) if len(prior) else 0
@@ -266,19 +198,11 @@ def analyze_lift(
         pe = b
         while pe < end and abs(vy[pe + 1]) < thr:
             pe += 1
-        # Descent = the controlled lowering INTO the chest. Walk back from the
-        # pause while the bar is genuinely moving down, so the unrack and the
-        # lockout hold before it aren't counted (that's the rep-1 "7s descent"
-        # bug — the unrack lowering was being swallowed in).
+        # Descent = the controlled lowering INTO the chest.
         descent_start = ps
         while descent_start > start and vy[descent_start - 1] <= -thr:
             descent_start -= 1
-        # Concentric ENDS at lockout = the end of the FIRST upward drive: the
-        # bar has risen most of the way AND its velocity has dropped back to
-        # ~0. Whatever happens after that — a hold, then the re-rack UP to the
-        # hooks (which sit ABOVE lockout) — is not part of the rep. Taking the
-        # global highest point instead is what let the re-rack inflate the
-        # last rep's concentric time (and wreck the RPE).
+        # Concentric ENDS at lockout = end of the FIRST upward drive.
         press_top = pe + int(np.argmax(up[pe : end + 1]))
         press_rise = float(up[press_top] - up[pe]) or 1e-6
         ls = press_top
@@ -287,36 +211,40 @@ def analyze_lift(
                 ls = f
                 break
 
-        concentric_s = (ls - pe) / fps                 # chest -> arms locked
-        descent_s = (ps - descent_start) / fps          # starts moving down -> chest
+        concentric_s = (ls - pe) / fps
+        descent_s = (ps - descent_start) / fps
         pause_s = max(0.0, (pe - ps) / fps)
         rise = float(up[ls] - up[b])
 
-        # Reject implausible segments instead of reporting garbage.
         if os.environ.get("SEG_DEBUG"):
             print(f"[seg] cand b={b} conc={concentric_s:.2f}s desc={descent_s:.2f}s "
-                  f"rise={rise:.3f} rom={rom:.3f} rise/rom={rise / max(rom, 1e-6):.2f} "
-                  f"(CONC[{CONC_MIN},{CONC_MAX}] DESC[{DESC_MIN},{DESC_MAX}] "
-                  f"riseMin={0.45 * rom:.3f})")
+                  f"rise={rise:.3f} rom={rom:.3f} rise/rom={rise / max(rom, 1e-6):.2f}")
+        # A candidate built mostly from INTERPOLATED frames is synthetic
+        # motion, not a rep (F1b).
+        real_frac = float(np.mean(real_frames[start:end + 1]))
+        if real_frac < 0.55:
+            if os.environ.get("SEG_DEBUG"):
+                print(f"[seg] drop b={b}: real_frac={real_frac:.2f} (interpolated)")
+            continue
         if not (CONC_MIN <= concentric_s <= CONC_MAX):
             continue
-        if not (DESC_MIN <= descent_s <= DESC_MAX):
+        if descent_s > desc_max:
             continue
         if rise < 0.45 * rom:
             continue
+        # REPORT, don't reject (F10): a too-fast descent on a real rep is a
+        # coaching fault (touch-and-go), not segmentation noise.
+        touch_and_go = bool(descent_s < max(0.15, desc_min) or pause_s < 0.10)
 
-        rep_no += 1
         rep_rom = float(up[start : end + 1].max() - up[start : end + 1].min())
 
         # --- bar-path / J-curve (body-relative) ---
-        drift = float(barX[ls] - barX[b])                 # +/- horizontal travel on press
-        bar_off_touch = float(barX[b] - shoulder[b, 0])   # bar vs shoulder, signed
+        drift = float(barX[ls] - barX[b])
+        bar_off_touch = float(barX[b] - shoulder[b, 0])
         bar_off_lock = float(barX[ls] - shoulder[ls, 0])
-        # Did the bar move back toward stacking over the shoulder? (the J-curve)
         toward_shoulder = abs(bar_off_touch) - abs(bar_off_lock)
         horiz_excursion = float(barX[start : end + 1].max() - barX[start : end + 1].min())
-        curve_ratio = horiz_excursion / max(1e-6, rep_rom)  # 0 = pure vertical
-        # Touch height between shoulder(0) and hip(1) lines.
+        curve_ratio = horiz_excursion / max(1e-6, rep_rom)
         sh_up, hip_up = -shoulder[b, 1], -hip[b, 1]
         denom = (sh_up - hip_up) or 1e-6
         touch_on_torso = float((sh_up - up[b]) / denom)
@@ -325,28 +253,18 @@ def analyze_lift(
         elbow_bottom = _angle(shoulder[b], elbow[b], bar[b])
         elbow_lockout = _angle(shoulder[ls], elbow[ls], bar[ls])
         upper_arm = elbow[b] - shoulder[b]
-        flare = _angle(elbow[b] + upper_arm, shoulder[b], hip[b])  # upper-arm vs torso
+        flare = _angle(elbow[b] + upper_arm, shoulder[b], hip[b])
         wrist_stack = float((bar[b, 0] - elbow[b, 0]) / max(1e-6, torso))
 
-        # --- squat extras: depth (hip vs knee) + knee tracking (valgus) at b ---
-        # iso y: larger = lower in the image = physically lower; hip below
-        # knee at the bottom = at/below parallel (good depth).
+        # --- squat extras ---
         depth_hip_minus_knee = float((hip[b, 1] - knee[b, 1]) / torso)
-        # knee inside ankle (toward midline) at the bottom = valgus.
         knee_vs_ankle = float((knee[b, 0] - ankle[b, 0]) / max(1e-6, torso))
 
-        # --- deadlift extras: bar over midfoot AT LIFT-OFF + lockout angle ---
-        # Measured at the bottom (when the bar leaves the floor) rather than
-        # averaged over the whole pull — at lockout the wrist sits forward of
-        # the ankle which used to inflate this number even on clean pulls.
+        # --- deadlift extras ---
         bar_over_midfoot = float(abs(barX[b] - ankle[b, 0]) / max(1e-6, torso))
         lockout_hka = _angle(hip[ls], knee[ls], ankle[ls])
 
         # --- hip vs shoulder rise-sync at the start of the concentric ---
-        # If the hips rise faster than the shoulders right out of the bottom,
-        # the chest gets dumped forward (the classic "hips shoot up" fault on
-        # squat / deadlift). +ve = hip leads; ~0 = simultaneous; -ve = shoulders
-        # leading the hips.
         win = max(2, int(fps * 0.3))
         i0 = pe
         i1 = min(ls, pe + win)
@@ -359,7 +277,8 @@ def analyze_lift(
 
         reps.append(
             {
-                "index": rep_no,
+                "index": len(reps) + 1,
+                "touchAndGo": touch_and_go,
                 "descentS": round(descent_s, 3),
                 "pauseS": round(pause_s, 3),
                 "concentricS": round(concentric_s, 3),
@@ -386,11 +305,168 @@ def analyze_lift(
                 },
             }
         )
+    return reps
+
+
+def analyze_lift(
+    track: P.PoseTrack,
+    lift: str = "bench",
+    bar_px: np.ndarray | None = None,
+    plate_r: float = 0.0,
+) -> dict:
+    fps = track.fps
+    n = track.total_frames
+    t = np.arange(n) / fps
+    w, h = track.frame_size
+    aspect = w / h
+    B = _Body(track)
+
+    # Vertical analysis (reps, RPE, timing) uses the plate when the tracker
+    # validated it (moves with the wrist, near the hands, smooth); else the
+    # wrist line. The plate's VERTICAL signal is the cleanest rep cue. Its
+    # horizontal position jitters between plate/collar/sleeve, so the OVERLAY
+    # and J-curve are drawn from the wrist instead (see _bench_render_path).
+    if bar_px is not None and np.isfinite(bar_px).all():
+        bar = np.column_stack([(bar_px[:n, 0] / w) * aspect, bar_px[:n, 1] / h])
+        bar_source = "plate"
+    elif lift == "squat":
+        # The bar rides ON the shoulders — the shoulder midpoint IS the bar
+        # height (± neck thickness), and shoulders are the most reliably
+        # detected keypoints (no hand occlusion by plates/rack). The CSRT
+        # plate tracker is the confirmed F7 defect (locks stationary rack
+        # plates → flat signal → 0 reps at 98% coverage); wrist is second
+        # choice but wobbles when hands re-grip.
+        bar = B.mid(P.L_SH, P.R_SH)
+        bar_source = "shoulder"
+    else:
+        # ONE wrist for the WHOLE clip, chosen by majority visibility. The
+        # per-frame best-of pick teleports when L/R identity flips frame to
+        # frame (RTMPose swaps sides on lying bodies); the vis-weighted
+        # midpoint breaks the opposite way (the occluded far wrist is
+        # hallucinated on clean side views). A single consistent side is
+        # immune to both: the camera-side wrist wins the vote on side views,
+        # and flip noise can't alternate the signal mid-clip.
+        side = P.L_WR if float(np.mean(B.vis[:, P.L_WR])) >= float(np.mean(B.vis[:, P.R_WR])) else P.R_WR
+        bar = B.j(side)
+        bar_source = "wrist"
+    # A single NaN propagates through hampel/savgol and corrupts the whole
+    # signal (and the JSON response). Interpolate any non-finite samples.
+    bar = _finite_fill(bar)
+    shoulder = B.mid(P.L_SH, P.R_SH)
+    hip = B.mid(P.L_HIP, P.R_HIP)
+    elbow = B.best(P.L_EL, P.R_EL)
+    ankle = B.mid(P.L_AN, P.R_AN)
+    knee = B.mid(P.L_KN, P.R_KN)
+
+    torso = float(np.nanmedian(np.linalg.norm(shoulder - hip, axis=1))) or 0.2
+
+    # Hampel despike (kills teleport spikes) then smooth — this is what makes
+    # the signal usable even when plate/wrist tracking is imperfect.
+    barX = _clean_signal(bar[:, 0], fps)
+    up = _clean_signal(-bar[:, 1], fps)      # +up
+    vy = np.gradient(up, t)
+    # Robust ROM (percentile) so a residual spike can't blow up thresholds.
+    # Measured over REAL frames only: interpolated gap spans sweep across the
+    # frame and inflate rom, which then makes genuine reps fail the
+    # rise/rom gate (squat_lowbar__1kn0yi5: real 1.8-2.3s reps rejected at
+    # rise/rom=0.36 because junk doubled the denominator).
+    _rf = track.vis[:, P.KEYPOINTS].sum(axis=1) > 0
+    _up_real = up[_rf] if _rf.sum() >= 10 else up
+    rom = float(np.percentile(_up_real, 97) - np.percentile(_up_real, 3))
+
+    # A real lift travels a large fraction of a TORSO vertically; tracking
+    # noise barely moves. Torso-relative (NOT frame-relative — a distant
+    # lifter shrinks frame-fraction travel while torso units are invariant;
+    # frame-relative 0.08 rejected genuine lifts, see ANALYSIS.md F8b).
+    ROM_MIN = 0.45 * torso
+    # Frames where the lifter was actually DETECTED (vis carries through the
+    # selector; interpolated gap frames have vis=0). Linear interpolation over
+    # gaps manufactures teleport "reps" (F1b) — segmentation must know which
+    # samples are real.
+    real_frames = track.vis[:, P.KEYPOINTS].sum(axis=1) > 0
+    warnings: list[str] = []
+    if rom < ROM_MIN:
+        warnings.append(
+            "The bar's vertical travel is too small/noisy to read reps — film "
+            "from the side with the whole body and the full lift visible."
+        )
+        bottoms = np.array([], dtype=int)
+        tops = np.array([], dtype=int)
+    else:
+        # Per-lift segmentation: bench reps are short and fast, squat / DL are
+        # slow and long. Using bench thresholds on a squat creates 5 hallucinated
+        # micro-reps where there's actually one slow rep.
+        seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
+        prom = max(0.02, rom * seg["prom_frac"])
+        gap = max(1, int(fps * seg["min_gap_s"]))
+        bottoms, _ = find_peaks(-up, prominence=prom, distance=gap)
+        tops, _ = find_peaks(up, prominence=prom, distance=gap)
+        if os.environ.get("SEG_DEBUG"):
+            print(f"[seg] lift={lift} rom={rom:.3f} torso={torso:.3f} prom={prom:.3f} gap={gap} "
+                  f"bottoms={list(bottoms)} tops={list(tops)} fps={fps:.1f} n={n}")
+    if os.environ.get("SEG_DEBUG") and rom < ROM_MIN:
+        print(f"[seg] REJECT-ALL rom={rom:.3f} < ROM_MIN={ROM_MIN:.3f} (0.45*torso)")
+
+    seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
+    CONC_MIN, CONC_MAX = seg["conc_min"], seg["conc_max"]
+    DESC_MIN, DESC_MAX = seg["desc_min"], seg["desc_max"]
+
+    def _build_reps(bottoms, tops) -> list[dict]:
+        return _segment_reps(
+            bottoms, tops, up=up, vy=vy, t=t, fps=fps, n=n, rom=rom,
+            barX=barX, shoulder=shoulder, hip=hip, elbow=elbow, ankle=ankle,
+            knee=knee, torso=torso, bar=bar, real_frames=real_frames,
+            conc_rng=(CONC_MIN, CONC_MAX), desc_max=DESC_MAX, desc_min=DESC_MIN,
+        )
+
+    reps = _build_reps(bottoms, tops)
+    # Rep-merge recovery (F8a), OUTCOME-validated: when brief lockouts merge
+    # several pulls under one prominence peak, the mega-candidate dies at
+    # CONC_MAX (deadlift_conv__1koke0d: 3 pulls -> 1 bottom -> 0 reps). Retry
+    # with denser peaks and keep the retry ONLY if it yields more valid reps —
+    # an unvalidated retry injected noise peaks into healthy clips and broke
+    # them, so the gate is "did real reps increase", nothing weaker.
+    if rom >= ROM_MIN and len(reps) < max(len(bottoms), len(tops), 1):
+        seg = _SEG_PARAMS.get(lift, _SEG_PARAMS["bench"])
+        prom2 = max(0.02, rom * seg["prom_frac"] / 2)
+        gap2 = max(1, int(fps * seg["min_gap_s"]) // 2)
+        b2, _ = find_peaks(-up, prominence=prom2, distance=gap2)
+        t2, _ = find_peaks(up, prominence=prom2, distance=gap2)
+        reps2 = _build_reps(b2, t2)
+        if len(reps2) > len(reps):
+            if os.environ.get("SEG_DEBUG"):
+                print(f"[seg] retry adopted: {len(reps)} -> {len(reps2)} reps")
+            reps = reps2
+
+    # Deadlift top-driven fallback: between pulls the lifter often RELEASES
+    # the bar and stands (chalk, breathe, re-grip), so the wrist signal never
+    # returns to floor level and bottom peaks simply don't exist in the
+    # signal — but each LOCKOUT is a clear top. Carve the spans between
+    # consecutive tops and take each span's minimum as its bottom
+    # (deadlift_conv__1koke0d: tops at the two lockouts, one wrist bottom ->
+    # 0 reps bottoms-driven, recoverable tops-driven).
+    if lift == "deadlift" and not reps and rom >= ROM_MIN and len(tops) >= 1:
+        edges = [0, *map(int, tops), n - 1]
+        synth = []
+        for a, bnd in zip(edges, edges[1:]):
+            if bnd - a < int(fps * 1.0):
+                continue
+            synth.append(a + int(np.argmin(up[a:bnd + 1])))
+        if synth:
+            reps3 = _build_reps(np.array(sorted(set(synth)), dtype=int), tops)
+            if len(reps3) > 0:
+                if os.environ.get("SEG_DEBUG"):
+                    print(f"[seg] top-driven fallback adopted: {len(reps3)} reps")
+                reps = reps3
 
     reps = _drop_bogus_reps(reps, lift)
     for i, r in enumerate(reps, 1):
         r["index"] = i
-    summary = _effort_and_form(reps, B, torso, up, barX, fps, lift, coverage=track.coverage)
+    view, view_ratio = _classify_view(B, real_frames, lift)
+    summary = _effort_and_form(reps, B, torso, up, barX, fps, lift,
+                               coverage=track.coverage, view=view)
+    summary["cameraView"] = view
+    summary["cameraViewRatio"] = view_ratio
 
     # Overlay path. For BENCH and DEADLIFT the hands grip the bar rigidly, so
     # the wrist midpoint is a clean, deterministic bar path — render that. The
@@ -494,75 +570,145 @@ def analyze_lift(
     }
 
 
-def _bench_notes(reps, hip_stab, shoulder_stab, foot_mv) -> tuple[list[str], str]:
+def _classify_view(B: "_Body", real_frames: np.ndarray, lift: str = "bench") -> tuple[str, float]:
+    """side vs nonside camera. Lateral-geometry checks (bar drift, wrist
+    stacking, bar-over-midfoot, depth) are only trustworthy side-on — running
+    them anyway produced confidently WRONG advice (ANALYSIS.md F9). Front vs
+    rear needs face keypoints the current track doesn't carry — P2.
+
+    BENCH: shoulder separation is degenerate (keypoints scrunch on a
+    foreshortened lying body), but the torso AXIS tells the story: a side
+    camera sees the lying torso horizontal in the image; a head-on/foot
+    camera sees it pointing into the lens (near-vertical, short projection).
+    SQUAT/DEADLIFT (standing): side cameras stack the shoulders (small
+    separation vs torso); front/rear show full shoulder width."""
+    sh = (B.xy[:, P.L_SH, :] + B.xy[:, P.R_SH, :]) / 2.0
+    hp = (B.xy[:, P.L_HIP, :] + B.xy[:, P.R_HIP, :]) / 2.0
+    vis_ok = ((B.vis[:, P.L_SH] > 0.2) & (B.vis[:, P.R_SH] > 0.2)
+              & real_frames[: B.n])
+    if vis_ok.sum() < 4:
+        return "unknown", float("nan")
+    torso = float(np.nanmedian(np.linalg.norm(sh - hp, axis=1))) or 0.2
+    if lift == "bench":
+        dx = np.abs(sh[:, 0] - hp[:, 0])
+        dy = np.abs(sh[:, 1] - hp[:, 1])
+        horiz = dx / (dx + dy + 1e-6)
+        ratio = float(np.median(horiz[vis_ok]))
+        return ("side" if ratio >= 0.45 else "nonside"), round(ratio, 3)
+    sep = np.linalg.norm(B.xy[:, P.L_SH, :] - B.xy[:, P.R_SH, :], axis=1)
+    ratio = float(np.median(sep[vis_ok])) / torso
+    return ("side" if ratio < 0.35 else "nonside"), round(ratio, 3)
+
+
+ABSTAIN_NOTE = ("Some checks were skipped — they need a side-on camera. "
+                "Film from the side for the full read.")
+
+
+def _bench_notes(reps, hip_stab, shoulder_stab, foot_mv, view="side", coverage=1.0) -> tuple[list[str], str]:
     notes: list[str] = []
     flares = [r["elbowFlareDeg"] for r in reps if r["elbowFlareDeg"] is not None]
     if flares:
         mf = float(np.mean(flares))
         if mf > 80:
             notes.append(f"Elbows flaring (~{mf:.0f} deg from torso) — tuck toward 45-75 deg.")
-        elif mf < 30:
+        elif mf < 40:
             notes.append(f"Elbows very tucked (~{mf:.0f} deg) — watch the bar drifting low to the belly.")
         else:
             notes.append(f"Elbow tuck ~{mf:.0f} deg from torso — in the healthy 45-75 deg range.")
-    mw = float(np.mean([r["wristAheadOfElbowTorso"] for r in reps]))
-    if abs(mw) > 0.15:
-        where = "ahead of (toward the feet)" if mw > 0 else "behind"
+    # Touch-and-go / pause read (F10): pauseS is measured every rep; surface
+    # it. The most-upvoted advice on the meet-prep clip was exactly this.
+    tng = [r for r in reps if r.get("touchAndGo")]
+    if len(tng) >= max(1, len(reps) // 2):
         notes.append(
-            f"Bar/wrist sits {where} the elbow at the chest (~{abs(mw):.2f} torso) — "
-            "stack wrist over elbow or it becomes a front-delt raise."
+            "Touch-and-go — no visible pause on the chest. If you compete, "
+            "practice a motionless pause; meets require one."
+        )
+    fast_desc = [r for r in reps if r["descentS"] < 0.3 and not r.get("touchAndGo")]
+    if len(fast_desc) >= max(1, len(reps) // 2):
+        notes.append("Descent is fast — control the bar down; don't bounce it off the chest.")
+
+    if view == "side":
+        # Lateral FAULT calls need solid tracking: at <70% coverage the
+        # x-geometry wobble is the tracker's, not the lifter's (invented
+        # wrist/leverage faults on a praise clip at 57% cov). Positive reads
+        # are kept — a false "good" is far cheaper than a false fault.
+        mw = float(np.mean([r["wristAheadOfElbowTorso"] for r in reps]))
+        if abs(mw) > 0.15 and coverage >= 0.7:
+            where = "ahead of (toward the feet)" if mw > 0 else "behind"
+            notes.append(
+                f"Bar/wrist sits {where} the elbow at the chest (~{abs(mw):.2f} torso) — "
+                "stack wrist over elbow or it becomes a front-delt raise."
+            )
+        elif abs(mw) <= 0.15:
+            notes.append("Wrist stays stacked over the elbow at the chest — good.")
+        toward = float(np.mean([r["towardShoulderTorso"] for r in reps]))
+        if toward > 0.04:
+            notes.append("Bar curves back over the shoulders on the press — J-curve, good leverage.")
+        elif toward < -0.04 and coverage >= 0.7:
+            notes.append("Bar drifts AWAY from the shoulders on the press — poor leverage.")
+        elif -0.04 <= toward <= 0.04:
+            notes.append("Bar presses nearly straight up — little J-curve; expect a harder lockout.")
+    # Stability notes need trustworthy tracking: at low coverage the wobble is
+    # the TRACKER's, not the lifter's (they invented 3 faults on a praise clip
+    # at 57% cov — ANALYSIS.md). Only emit when the pose is solid.
+    # Hip/shoulder/foot "stability" from pose keypoints is noise-dominated on
+    # bench: a consensus-praised clip measured foot=0.47 torso while a clip
+    # whose coaches flagged real foot-shuffling measured 0.09 — the metric
+    # ordering is inverted by ankle/hip keypoint wobble at bench camera
+    # angles. Same conclusion squat/DL reached long ago. The raw numbers stay
+    # in the summary as data; the coach voice does NOT claim them.
+    if view == "side":
+        drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
+        curve = float(np.mean([r["curveRatio"] for r in reps]))
+        bar_note = (
+            f"Bench bar path is {'a clear curve' if curve > 0.15 else 'nearly straight'} "
+            f"(horizontal travel ~{drift:.2f} torso on the press)."
         )
     else:
-        notes.append("Wrist stays stacked over the elbow at the chest — good.")
-    toward = float(np.mean([r["towardShoulderTorso"] for r in reps]))
-    if toward > 0.04:
-        notes.append("Bar curves back over the shoulders on the press — J-curve, good leverage.")
-    elif toward < -0.04:
-        notes.append("Bar drifts AWAY from the shoulders on the press — poor leverage.")
-    else:
-        notes.append("Bar presses nearly straight up — little J-curve; expect a harder lockout.")
-    if hip_stab > 0.06:
-        notes.append("Hips move a lot — arch breaking down; reset leg drive.")
-    if shoulder_stab > 0.05:
-        notes.append("Shoulders travel during the press — keep blades pinned and down.")
-    if foot_mv > 0.08:
-        notes.append("Feet shifting — losing leg drive; plant and drive toward your head.")
-    drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
-    curve = float(np.mean([r["curveRatio"] for r in reps]))
-    bar_note = (
-        f"Bench bar path is {'a clear curve' if curve > 0.15 else 'nearly straight'} "
-        f"(horizontal travel ~{drift:.2f} torso on the press)."
-    )
+        bar_note = "Bar path read needs a side-on camera."
+        notes.append(ABSTAIN_NOTE)
     return notes, bar_note
 
 
-def _squat_notes(reps, hip_stab, foot_mv) -> tuple[list[str], str]:
+def _squat_notes(reps, hip_stab, foot_mv, view="side", coverage=1.0) -> tuple[list[str], str]:
     notes: list[str] = []
-    depths = [r["depthHipMinusKneeTorso"] for r in reps]
-    md = float(np.mean(depths))
-    if md > 0.03:
-        notes.append(f"Depth is below parallel ({md:+.2f} torso hip-below-knee) — good.")
-    elif md > -0.03:
-        notes.append("Hitting roughly parallel — borderline for comp depth.")
+    abstained = False
+    # Depth (hip-below-knee) is a SIDE-view read: from the rear the hip
+    # keypoint sits at sacrum height and parallax hides true depth — the
+    # engine confidently praised depth on a rear-view clip whose consensus
+    # was a depth FAIL (F9). Say nothing rather than the wrong thing.
+    if view == "side":
+        depths = [r["depthHipMinusKneeTorso"] for r in reps]
+        md = float(np.mean(depths))
+        if md > 0.03:
+            notes.append(f"Depth is below parallel ({md:+.2f} torso hip-below-knee) — good.")
+        elif md > -0.03:
+            notes.append("Hitting roughly parallel — borderline for comp depth.")
+        else:
+            notes.append(f"Squat is high — hip stays above the knee ({md:+.2f} torso). Drop deeper.")
     else:
-        notes.append(f"Squat is high — hip stays above the knee ({md:+.2f} torso). Drop deeper.")
-    knees = [r["kneeVsAnkleTorso"] for r in reps]
-    mk = float(np.mean(knees))
-    # Convention: positive = knee outboard of ankle = tracking out; negative = inside = valgus.
-    if mk < -0.05:
-        notes.append(
-            f"Knees collapse inward at the bottom (~{abs(mk):.2f} torso inside the ankle) — "
-            "drive knees out in the direction of the toes."
-        )
-    elif mk > 0.18:
-        notes.append("Knees track well outboard of the ankles — good.")
-    else:
-        notes.append("Knees track in line with the toes — good.")
-    drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
-    if drift > 0.12:
-        notes.append(f"Bar drifts ~{drift:.2f} torso horizontally — keep it stacked over mid-foot.")
-    else:
-        notes.append("Bar path is nearly vertical over mid-foot — good.")
+        abstained = True
+    # Knee tracking (valgus) is the OPPOSITE: it lives in the frontal plane,
+    # so it's only readable from a front/rear camera — a side view stacks
+    # knee and ankle in depth and the x-difference is noise.
+    if view == "nonside":
+        knees = [r["kneeVsAnkleTorso"] for r in reps]
+        mk = float(np.mean(knees))
+        if mk < -0.05:
+            notes.append(
+                f"Knees collapse inward at the bottom (~{abs(mk):.2f} torso inside the ankle) — "
+                "drive knees out in the direction of the toes."
+            )
+        elif mk > 0.18:
+            notes.append("Knees track well outboard of the ankles — good.")
+        else:
+            notes.append("Knees track in line with the toes — good.")
+    if view == "side":
+        drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
+        if drift > 0.12:
+            notes.append(f"Bar drifts ~{drift:.2f} torso horizontally — keep it stacked over mid-foot.")
+        else:
+            notes.append("Bar path is nearly vertical over mid-foot — good.")
     # Hip-shoots-up fault at the start of the drive — the real squat fault.
     hip_lead = float(np.mean([r.get("hipLeadAtStartTorso", 0.0) for r in reps]))
     if hip_lead > 0.05:
@@ -573,22 +719,30 @@ def _squat_notes(reps, hip_stab, foot_mv) -> tuple[list[str], str]:
     # Note: 'feet shift' is unreliable from pose (ankle landmarks wobble even
     # when the lifter is rock-steady), so we don't emit that line.
     rom = float(np.mean([r["romTorso"] for r in reps]))
-    bar_note = f"Squat bar path: ~{drift:.2f} torso horizontal drift, ROM ~{rom:.2f} torso."
+    if abstained:
+        notes.append(ABSTAIN_NOTE)
+    bar_note = (f"Squat ROM ~{rom:.2f} torso." if view != "side"
+                else f"Squat bar path: ~{float(np.mean([abs(r['barDriftTorso']) for r in reps])):.2f} "
+                     f"torso horizontal drift, ROM ~{rom:.2f} torso.")
     return notes, bar_note
 
 
-def _deadlift_notes(reps, hip_stab, foot_mv) -> tuple[list[str], str]:
+def _deadlift_notes(reps, hip_stab, foot_mv, view="side", coverage=1.0) -> tuple[list[str], str]:
     notes: list[str] = []
-    # Measured at lift-off (bottom of the rep) — averaging across the whole
-    # pull used to inflate this number even on clean lifts.
-    mid = float(np.mean([r["barOverMidfootTorso"] for r in reps]))
-    if mid < 0.15:
-        notes.append(f"Bar over the mid-foot at lift-off (~{mid:.2f} torso) — good.")
-    elif mid > 0.30:
-        notes.append(
-            f"Bar sets up well forward of the mid-foot (~{mid:.2f} torso) — "
-            "set the shins ~½\" behind the bar so the bar sits over the mid-foot."
-        )
+    # Bar-over-midfoot is sagittal-plane geometry — side view only. Running
+    # it from a rear camera invented a setup fault on a clip whose consensus
+    # was "perfect form" (F9).
+    if view == "side":
+        # Measured at lift-off (bottom of the rep) — averaging across the whole
+        # pull used to inflate this number even on clean lifts.
+        mid = float(np.mean([r["barOverMidfootTorso"] for r in reps]))
+        if mid < 0.15:
+            notes.append(f"Bar over the mid-foot at lift-off (~{mid:.2f} torso) — good.")
+        elif mid > 0.30:
+            notes.append(
+                f"Bar sets up well forward of the mid-foot (~{mid:.2f} torso) — "
+                "set the shins ~½\" behind the bar so the bar sits over the mid-foot."
+            )
     # Hip-shoots-up: the most common DL fault and the one actually worth naming.
     hip_lead = float(np.mean([r.get("hipLeadAtStartTorso", 0.0) for r in reps]))
     if hip_lead > 0.05:
@@ -602,23 +756,30 @@ def _deadlift_notes(reps, hip_stab, foot_mv) -> tuple[list[str], str]:
             f"Shoulders rise faster than the hips at lift-off ({hip_lead:.2f} torso) — "
             "load the hamstrings; don't let the hips drop into a squat-the-DL."
         )
-    drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
-    if drift > 0.20:
-        notes.append(
-            f"Bar swings ~{drift:.2f} torso horizontally on the pull — should be straight up "
-            "the legs, dragging the shins."
-        )
-    locks = [r["lockoutHipKneeAnkleDeg"] for r in reps if r["lockoutHipKneeAnkleDeg"] is not None]
-    if locks:
-        ml = float(np.mean(locks))
-        if ml < 160:
-            notes.append(f"Lockout hip/knee not fully extended (~{ml:.0f} deg) — squeeze glutes; stand tall.")
-        else:
-            notes.append(f"Strong lockout — hip/knee ~{ml:.0f} deg.")
+    if view == "side":
+        drift = float(np.mean([abs(r["barDriftTorso"]) for r in reps]))
+        if drift > 0.20:
+            notes.append(
+                f"Bar swings ~{drift:.2f} torso horizontally on the pull — should be straight up "
+                "the legs, dragging the shins."
+            )
+        # Hip-knee-ankle lockout angle is a sagittal read too — from the rear
+        # all three stack vertically and the angle is always ~180.
+        locks = [r["lockoutHipKneeAnkleDeg"] for r in reps if r["lockoutHipKneeAnkleDeg"] is not None]
+        if locks:
+            ml = float(np.mean(locks))
+            if ml < 160:
+                notes.append(f"Lockout hip/knee not fully extended (~{ml:.0f} deg) — squeeze glutes; stand tall.")
+            else:
+                notes.append(f"Strong lockout — hip/knee ~{ml:.0f} deg.")
+    else:
+        notes.append(ABSTAIN_NOTE)
     # 'feet shift' from pose is unreliable (ankle landmarks wobble even when
     # the lifter is rock-steady) — don't emit it.
     rom = float(np.mean([r["romTorso"] for r in reps]))
-    bar_note = f"Deadlift bar path: ~{drift:.2f} torso horizontal drift, ROM ~{rom:.2f} torso."
+    bar_note = (f"Deadlift ROM ~{rom:.2f} torso." if view != "side"
+                else f"Deadlift bar path: ~{float(np.mean([abs(r['barDriftTorso']) for r in reps])):.2f} "
+                     f"torso horizontal drift, ROM ~{rom:.2f} torso.")
     return notes, bar_note
 
 
@@ -652,12 +813,14 @@ def _drop_bogus_reps(reps: list[dict], lift: str) -> list[dict]:
     return kept
 
 
-def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift, coverage=1.0) -> dict:
+def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift, coverage=1.0,
+                     view="side") -> dict:
     if not reps:
         return {
             "repCount": 0,
             "rir": None,
             "rpe": None,
+            "rpeBand": None,
             "rpeConfidence": "rough",
             "velocityLossPct": None,
             "barPathNote": "No reps segmented.",
@@ -690,12 +853,33 @@ def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift, coverage=1.0) -
     # (no loss but high RPE), and bar speed alone can't tell them apart without
     # the load. Report no loss so the caller falls back to a wide, honest band
     # instead of confidently calling a grind "fresh".
+    rpe_band = None
     if len(reps) >= 3:
         loss = max(0.0, (1.0 - v_end / v_fresh) * 100.0)
         rir = _rir_from_loss(loss, lift)
         rpe = max(4.0, min(10.0, round((10.0 - rir) * 2) / 2))
         # A clean, well-covered set earns "estimated"; sparse pose stays "rough".
         conf = "estimated" if coverage >= 0.7 else "rough"
+    elif coverage >= 0.5:
+        # 1-2 rep set (F3): velocity LOSS is undefined, but concentric
+        # DURATION still separates a crisp opener from a grinder — a maximal
+        # bench single grinds for seconds, a fast single is several RIR. Wide
+        # honest band, never null on a set we actually tracked. Squat/DL
+        # concentrics run ~1.5x longer at the same proximity to failure.
+        loss = None
+        slowest = max(times) / (1.0 if lift == "bench" else 1.5)
+        # Band edges: a sub-0.8s bench single is crisp (several RIR); past
+        # ~1s of concentric on a single the bar is visibly grinding (the
+        # 135kg meet-prep single: 1.23s, called ~9.5 by an experienced
+        # commenter); multi-second singles are limit attempts.
+        for hi_t, band in ((0.8, (6.0, 8.0)), (2.0, (8.0, 9.5)),
+                           (4.0, (8.5, 10.0)), (float("inf"), (9.0, 10.0))):
+            if slowest <= hi_t:
+                rpe_band = list(band)
+                break
+        rpe = round((rpe_band[0] + rpe_band[1]) / 2 * 2) / 2 if rpe_band else None
+        rir = round(10.0 - rpe, 1) if rpe is not None else None
+        conf = "rough"
     else:
         loss = None
         rir = None
@@ -712,26 +896,38 @@ def _effort_and_form(reps, B: _Body, torso, up, barX, fps, lift, coverage=1.0) -
     for r in reps:
         r["slowdownVsFastestPct"] = round((1.0 - t_fast / r["concentricS"]) * 100.0, 1)
 
-    # Clip-level stability is meaningful for every lift.
+    # Stability is judged INSIDE the reps only: whole-clip std absorbs the
+    # setup, unrack, re-rack and rest shuffles and faulted praise clips.
     sh = B.mid(P.L_SH, P.R_SH)
     hip = B.mid(P.L_HIP, P.R_HIP)
     ank = B.mid(P.L_AN, P.R_AN)
-    shoulder_stability = float(np.std(-sh[:, 1]) / torso)
-    hip_stability = float(np.std(-hip[:, 1]) / torso)
-    foot_movement = float(np.std(ank[:, 0]) / torso + np.std(ank[:, 1]) / torso)
+    mask = np.zeros(B.n, dtype=bool)
+    for r in reps:
+        f0 = int(r["phases"]["descent"][0] * fps)
+        f1 = min(B.n - 1, int(r["phases"]["press"][1] * fps))
+        mask[max(0, f0):f1 + 1] = True
+    if mask.sum() < 8:
+        mask[:] = True
+    shoulder_stability = float(np.std(-sh[mask, 1]) / torso)
+    hip_stability = float(np.std(-hip[mask, 1]) / torso)
+    foot_movement = float(np.std(ank[mask, 0]) / torso + np.std(ank[mask, 1]) / torso)
 
     if lift == "bench":
-        notes, bar_note = _bench_notes(reps, hip_stability, shoulder_stability, foot_movement)
+        notes, bar_note = _bench_notes(reps, hip_stability, shoulder_stability,
+                                       foot_movement, view=view, coverage=coverage)
     elif lift == "squat":
-        notes, bar_note = _squat_notes(reps, hip_stability, foot_movement)
+        notes, bar_note = _squat_notes(reps, hip_stability, foot_movement,
+                                       view=view, coverage=coverage)
     else:  # deadlift
-        notes, bar_note = _deadlift_notes(reps, hip_stability, foot_movement)
+        notes, bar_note = _deadlift_notes(reps, hip_stability, foot_movement,
+                                          view=view, coverage=coverage)
 
     return {
         "repCount": len(reps),
         "firstRepConcentricS": round(times[0], 3),
         "fastestRepConcentricS": round(t_fast, 3),
         "lastRepConcentricS": round(times[-1], 3),
+        "rpeBand": rpe_band,
         "velocityLossPct": None if loss is None else round(loss, 1),
         "wallRepIndex": wall,
         "rir": rir,

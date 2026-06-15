@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
+import { UpgradeNavButton } from '@/components/nav/UpgradeNavButton';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -66,6 +67,10 @@ export function SideNav() {
           );
         })}
       </nav>
+
+      <div className="px-3 pb-2">
+        <UpgradeNavButton className="w-full" />
+      </div>
 
       <form action="/api/auth/logout" method="POST" className="border-t border-iron-800">
         <button

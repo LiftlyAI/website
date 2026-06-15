@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UpgradeNavButton } from '@/components/nav/UpgradeNavButton';
 
 // 4 thumb-reachable primaries + a "More" sheet for the rest
 // (bottom-nav max 5 items — Material/HIG).
@@ -60,6 +61,7 @@ export function MobileNav() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+            <UpgradeNavButton className="w-full mb-3" />
             <div className="grid grid-cols-3 gap-2">
               {secondary.map((l) => {
                 const Icon = l.icon;

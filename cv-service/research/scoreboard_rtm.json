@@ -1,0 +1,263 @@
+{
+  "rows": [
+    {
+      "file": "135 lb bench RPE RPE 6.5.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 3,
+      "rpe": 5.5,
+      "sec": 0.1
+    },
+    {
+      "file": "150lb bench RPE 6.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 6,
+      "rpe": 6.0,
+      "sec": 0.4
+    },
+    {
+      "file": "160 kg bench RPE 9.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.603,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.1
+    },
+    {
+      "file": "150 kg bench RPE 9.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.781,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.1
+    },
+    {
+      "file": "310 lb bench RPE 7.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.565,
+      "reps": 2,
+      "rpe": 7.0,
+      "sec": 0.1
+    },
+    {
+      "file": "155 lb deadlift.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 4,
+      "rpe": 5.0,
+      "sec": 0.4
+    },
+    {
+      "file": "225 lb deadlift.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 6,
+      "rpe": 6.5,
+      "sec": 133.1
+    },
+    {
+      "file": "255 lb deadlift.mp4",
+      "lift": "deadlift",
+      "status": "PART",
+      "fails": [
+        "coverage 50% < 60%"
+      ],
+      "coverage": 0.498,
+      "reps": 5,
+      "rpe": 5.0,
+      "sec": 0.2
+    },
+    {
+      "file": "290 lb deadlift.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 4,
+      "rpe": 6.5,
+      "sec": 0.1
+    },
+    {
+      "file": "145 lb squat.mp4",
+      "lift": "squat",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.99,
+      "reps": 5,
+      "rpe": 5.5,
+      "sec": 65.5
+    },
+    {
+      "file": "315 lb squat.mp4",
+      "lift": "squat",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.4
+    },
+    {
+      "file": "bench__1jzn2i2.mp4",
+      "lift": "bench",
+      "status": "PART",
+      "fails": [
+        "coverage 86% < 90%"
+      ],
+      "coverage": 0.857,
+      "reps": 3,
+      "rpe": 5.0,
+      "sec": 0.3
+    },
+    {
+      "file": "bench__1k74bhj.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 5,
+      "rpe": 7.0,
+      "sec": 0.1
+    },
+    {
+      "file": "bench__1kp9loz.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.1
+    },
+    {
+      "file": "bench_close__c8v58n.mp4",
+      "lift": "bench",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.996,
+      "reps": 5,
+      "rpe": 8.0,
+      "sec": 0.4
+    },
+    {
+      "file": "bench_wide__bl06xu.mp4",
+      "lift": "bench",
+      "status": "PART",
+      "fails": [
+        "invented fault(s) on praise clip: Elbows flaring (~143 deg from torso) \u2014 tuck toward 45-75 deg..."
+      ],
+      "coverage": 0.71,
+      "reps": 10,
+      "rpe": 8.5,
+      "sec": 318.2
+    },
+    {
+      "file": "squat_highbar__1kaqgmw.mp4",
+      "lift": "squat",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.4,
+      "reps": 1,
+      "rpe": null,
+      "sec": 184.7
+    },
+    {
+      "file": "squat_highbar__1kovzbg.mp4",
+      "lift": "squat",
+      "status": "FAIL",
+      "fails": [
+        "coverage 33% < 50%",
+        "no reps segmented"
+      ],
+      "coverage": 0.329,
+      "reps": 0,
+      "rpe": null,
+      "sec": 0.1
+    },
+    {
+      "file": "squat_lowbar__1gkk44z.mp4",
+      "lift": "squat",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.997,
+      "reps": 1,
+      "rpe": 9.0,
+      "sec": 0.2
+    },
+    {
+      "file": "squat_lowbar__1kn0yi5.mp4",
+      "lift": "squat",
+      "status": "PART",
+      "fails": [
+        "coverage 80% < 90%",
+        "no reps segmented"
+      ],
+      "coverage": 0.796,
+      "reps": 0,
+      "rpe": null,
+      "sec": 0.2
+    },
+    {
+      "file": "deadlift_conv__1kk370m.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 4,
+      "rpe": 6.5,
+      "sec": 0.4
+    },
+    {
+      "file": "deadlift_conv__1koke0d.mp4",
+      "lift": "deadlift",
+      "status": "PART",
+      "fails": [
+        "coverage 69% < 75%"
+      ],
+      "coverage": 0.689,
+      "reps": 1,
+      "rpe": 9.5,
+      "sec": 0.1
+    },
+    {
+      "file": "deadlift_sumo__1kj0keq.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 1.0,
+      "reps": 2,
+      "rpe": 7.0,
+      "sec": 0.4
+    },
+    {
+      "file": "deadlift_sumo__1jd0wuf.mp4",
+      "lift": "deadlift",
+      "status": "PASS",
+      "fails": [],
+      "coverage": 0.976,
+      "reps": 4,
+      "rpe": 5.0,
+      "sec": 41.7
+    }
+  ],
+  "counts": {
+    "PASS": 18,
+    "PART": 5,
+    "FAIL": 1
+  }
+}

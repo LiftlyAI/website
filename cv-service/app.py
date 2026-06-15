@@ -14,31 +14,51 @@ import tempfile
 
 import numpy as np
 from fastapi import FastAPI, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-import pose_yolo
+import pose_rtm
 from analysis import analyze_lift
-from bar import track_bar
 
-app = FastAPI(title="IRON LEDGER CV", version="0.4.0")
+app = FastAPI(title="IRON LEDGER CV", version="0.5.0", redirect_slashes=False)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 MAX_BYTES = 80 * 1024 * 1024
 SUPPORTED_LIFTS = {"bench", "squat", "deadlift"}
 
-# YOLOv8-pose replaces MediaPipe BlazePose: BlazePose under-detects a lifter who
-# is lying (bench) or bent over (deadlift) in a busy gym and renders a scribble;
-# YOLO detects them reliably (see memory: formcheck-cv-pipeline). The ~133 MB
-# model is loaded once on the first request and reused across requests.
+# RTMPose-m (rtmlib, ONNX) replaces YOLOv8x-pose: 20-50x faster on CPU AND
+# higher coverage on occluded/crowded clips (research/bakeoff.json). The ONNX
+# sessions are created once on first request; pose_rtm escalates to the big
+# model + crop re-pass automatically when the fast pass struggles.
 _pose_model = None
 
 
 def _get_pose_model():
     global _pose_model
     if _pose_model is None:
-        from ultralytics import YOLO
-
-        _pose_model = YOLO(pose_yolo.DEFAULT_MODEL)
+        _pose_model = pose_rtm.make_model()
     return _pose_model
+
+
+@app.on_event("startup")
+def _warm_models() -> None:
+    """Build the ONNX pose sessions at container boot, not lazily on the first
+    request. A cold first request that ALSO has to construct the big escalation
+    models can run past Modal's ~150s web-endpoint window — Modal then answers
+    with a 303 redirect that carries no CORS header, which the browser reports
+    as a bogus CORS / "service unreachable" failure. Pre-warming both tiers (the
+    weights are already baked into the image) keeps every request well under the
+    limit. Failures here are non-fatal: the lazy path still works."""
+    try:
+        _get_pose_model()                   # balanced: RTMPose-m + YOLOX
+        pose_rtm.make_model("performance")  # escalation tier, so it never has
+    except Exception:                       # to load mid-request
+        pass
 
 
 @app.get("/health")
@@ -66,18 +86,12 @@ async def analyze(video: UploadFile, lift: str = Form("bench")) -> JSONResponse:
     try:
         tmp.write(data)
         tmp.close()
-        track = pose_yolo.track_pose(tmp.name, lift=lift, model=_get_pose_model())
-        # Bench & deadlift: the hands grip the bar, so the wrist line IS the bar
-        # (unoccluded from the side) — no plate tracker, which only ever rendered
-        # a scribble. Squat: the bar rides on the back, off the hands, so track
-        # the plate directly (pose-constrained).
-        if lift == "squat":
-            bar = track_bar(tmp.name, track)
-            bar_px = bar.bar_px if bar.found else None
-            plate_r = bar.radius_px if bar.found else 0.0
-        else:
-            bar_px, plate_r = None, 0.0
-        result = analyze_lift(track, lift=lift, bar_px=bar_px, plate_r=plate_r)
+        track = pose_rtm.track_pose(tmp.name, lift=lift, model=_get_pose_model())
+        # Bench & deadlift: the wrist line IS the bar. Squat: the bar rides on
+        # the SHOULDERS, so the shoulder midpoint is the bar signal — the CSRT
+        # plate tracker is retired (it locked stationary rack plates and
+        # zeroed-out perfectly tracked sets; ANALYSIS.md F7).
+        result = analyze_lift(track, lift=lift)
     except RuntimeError as e:
         # Expected, actionable failures (bad angle, no lifter, missing model).
         raise HTTPException(status_code=422, detail=str(e))

@@ -1,0 +1,28 @@
+{
+  "lift": "bench",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 387,
+    "totalFrames": 905,
+    "coverage": 0.428,
+    "quality": "low"
+  },
+  "reps": [],
+  "summary": {
+    "repCount": 0,
+    "rir": null,
+    "rpe": null,
+    "rpeBand": null,
+    "rpeConfidence": "rough",
+    "velocityLossPct": null,
+    "barPathNote": "No reps segmented.",
+    "formNotes": [],
+    "cameraView": "side",
+    "cameraViewRatio": 0.886
+  },
+  "warnings": [
+    "The bar's vertical travel is too small/noisy to read reps \u2014 film from the side with the whole body and the full lift visible.",
+    "Couldn't read clean reps \u2014 the lifter was only tracked in 43% of frames. Best results: film from the side or foot of the bench with the whole body and the full press (unrack -> re-rack) in frame, well lit and steady."
+  ]
+}

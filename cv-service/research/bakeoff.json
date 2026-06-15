@@ -1,0 +1,56 @@
+[
+  {
+    "clip": "150 kg bench RPE 9.mp4",
+    "backend": "rtmpose",
+    "fps": 15.18,
+    "detPct": 1.0,
+    "cov": 1.0,
+    "move": 8.11,
+    "note": ""
+  },
+  {
+    "clip": "310 lb bench RPE 7.mp4",
+    "backend": "rtmpose",
+    "fps": 37.17,
+    "detPct": 1.0,
+    "cov": 1.0,
+    "move": 1.08,
+    "note": ""
+  },
+  {
+    "clip": "bench__1jzn2i2.mp4",
+    "backend": "rtmpose",
+    "fps": 35.53,
+    "detPct": 1.0,
+    "cov": 0.97,
+    "move": 1.87,
+    "note": ""
+  },
+  {
+    "clip": "squat_lowbar__1kn0yi5.mp4",
+    "backend": "rtmpose",
+    "fps": 19.62,
+    "detPct": 1.0,
+    "cov": 1.0,
+    "move": 1.21,
+    "note": ""
+  },
+  {
+    "clip": "squat_highbar__1kovzbg.mp4",
+    "backend": "rtmpose",
+    "fps": 29.43,
+    "detPct": 1.0,
+    "cov": 0.85,
+    "move": 0.4,
+    "note": ""
+  },
+  {
+    "clip": "deadlift_sumo__1jd0wuf.mp4",
+    "backend": "rtmpose",
+    "fps": 18.67,
+    "detPct": 1.0,
+    "cov": 0.97,
+    "move": 2.25,
+    "note": ""
+  }
+]

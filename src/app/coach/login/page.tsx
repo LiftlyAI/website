@@ -5,13 +5,35 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LiftlyLogo } from '@/components/ui/LiftlyLogo';
+import { GoogleIcon } from '@/components/ui/GoogleIcon';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function CoachLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function signInWithGoogle() {
+    setOauthLoading(true);
+    setError(null);
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        // A coach-specific callback verifies the Google identity, mints the coach
+        // session, and drops the Supabase session — see api/coach/auth/callback.
+        options: { redirectTo: `${window.location.origin}/api/coach/auth/callback` },
+      });
+      if (oauthError) throw new Error(oauthError.message);
+      // Success redirects the browser to Google; leave oauthLoading on.
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not start Google sign-in.');
+      setOauthLoading(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,6 +94,26 @@ export default function CoachLoginPage() {
           Enter your email to open the coach console. No password. Your email is your
           handle. Lifters sign in <Link href="/login" className="text-blood hover:text-blood-glow">here</Link>.
         </p>
+
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          disabled={oauthLoading || loading}
+          className="btn-sheen mb-5 inline-flex min-h-[44px] w-full items-center justify-center gap-3 rounded-lg bg-chalk px-5 py-3 font-body text-sm font-semibold text-iron-950 transition-all duration-150 hover:bg-white disabled:cursor-not-allowed disabled:bg-iron-700 disabled:text-iron-400"
+        >
+          {oauthLoading ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            <GoogleIcon className="h-5 w-5" />
+          )}
+          Continue with Google
+        </button>
+
+        <div className="mb-5 flex items-center gap-4">
+          <div className="h-px flex-1 bg-iron-800" />
+          <span className="font-mono text-[11px] tracking-[0.25em] text-chalk-mute">OR</span>
+          <div className="h-px flex-1 bg-iron-800" />
+        </div>
 
         <form onSubmit={submit} className="space-y-4">
           <Input

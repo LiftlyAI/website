@@ -1,0 +1,81 @@
+{
+  "lift": "deadlift",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 688,
+    "totalFrames": 835,
+    "coverage": 0.824,
+    "quality": "fair"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.1,
+      "pauseS": 0.2,
+      "concentricS": 2.6,
+      "romTorso": 1.558,
+      "concRiseTorso": 0.956,
+      "barDriftTorso": 0.062,
+      "towardShoulderTorso": 1.109,
+      "curveRatio": 0.286,
+      "touchOnTorso": 748001.038,
+      "elbowAngleBottom": 163.3,
+      "elbowAngleLockout": 165.6,
+      "elbowFlareDeg": null,
+      "wristAheadOfElbowTorso": 0.047,
+      "depthHipMinusKneeTorso": 0.0,
+      "kneeVsAnkleTorso": 0.0,
+      "barOverMidfootTorso": 1.187,
+      "lockoutHipKneeAnkleDeg": 162.0,
+      "hipLeadAtStartTorso": 0.071,
+      "phases": {
+        "descent": [
+          0.0,
+          6.933
+        ],
+        "pause": [
+          6.933,
+          7.133
+        ],
+        "press": [
+          7.133,
+          9.733
+        ],
+        "lockout": [
+          9.733,
+          11.033
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 1,
+    "firstRepConcentricS": 2.6,
+    "fastestRepConcentricS": 2.6,
+    "lastRepConcentricS": 2.6,
+    "rpeBand": [
+      8.0,
+      9.5
+    ],
+    "velocityLossPct": null,
+    "wallRepIndex": null,
+    "rir": 1.0,
+    "rpe": 9.0,
+    "rpeConfidence": "rough",
+    "barPathNote": "Deadlift bar path: ~0.06 torso horizontal drift, ROM ~1.56 torso.",
+    "shoulderStabilityTorso": 0.858,
+    "hipStabilityTorso": 0.915,
+    "footMovementTorso": 2.125,
+    "formNotes": [
+      "Bar sets up well forward of the mid-foot (~1.19 torso) \u2014 set the shins ~\u00bd\" behind the bar so the bar sits over the mid-foot.",
+      "Hips shoot up faster than the chest out of the floor (+0.07 torso lead) \u2014 set the hips a touch higher and stay tight on the hamstrings; chest and hips should rise together.",
+      "Strong lockout \u2014 hip/knee ~162 deg."
+    ],
+    "cameraView": "side",
+    "cameraViewRatio": 0.099
+  },
+  "warnings": []
+}

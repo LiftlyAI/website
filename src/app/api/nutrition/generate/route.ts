@@ -4,6 +4,7 @@ import { requireSession } from '@/lib/auth';
 import { execute, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
 import type { AiMessage } from '@/lib/ai';
+import { assertAiQuota, recordAiCall, QuotaError } from '@/lib/limits';
 import { NUTRITION_SYSTEM_PROMPT, buildNutritionUserPrompt } from '@/lib/prompts/nutrition';
 import { macroTargets } from '@/lib/calculations';
 import { planViolations, uniqueViolations, type Violation } from '@/lib/nutrition-safety';
@@ -19,6 +20,18 @@ export async function POST(req: NextRequest) {
     session = await requireSession();
   } catch {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  try {
+    await assertAiQuota('athlete', session.id);
+  } catch (err) {
+    if (err instanceof QuotaError) {
+      return NextResponse.json(
+        { error: 'You’ve reached your AI generation limit for this period. Upgrade for more.', quota: err.info },
+        { status: 402 },
+      );
+    }
+    throw err;
   }
 
   const raw = await req.json().catch(() => ({}));
@@ -108,6 +121,7 @@ export async function POST(req: NextRequest) {
     'INSERT INTO meal_plans (id, athlete_id, plan_json, targets_json, steer, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     [id, session.id, JSON.stringify(plan), JSON.stringify(targets), steer, createdAt],
   );
+  await recordAiCall('athlete', session.id, 'nutrition');
 
   return NextResponse.json({ ok: true, plan, id, createdAt, steer });
 }

@@ -1,0 +1,200 @@
+{
+  "lift": "deadlift",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 1200,
+    "totalFrames": 1200,
+    "coverage": 1.0,
+    "quality": "good"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.1,
+      "pauseS": 10.267,
+      "concentricS": 0.5,
+      "romTorso": 2.142,
+      "concRiseTorso": 1.934,
+      "barDriftTorso": -0.264,
+      "towardShoulderTorso": 0.275,
+      "curveRatio": 0.607,
+      "touchOnTorso": 39.755,
+      "elbowAngleBottom": 151.2,
+      "elbowAngleLockout": 172.2,
+      "elbowFlareDeg": 63.5,
+      "wristAheadOfElbowTorso": 0.082,
+      "depthHipMinusKneeTorso": -0.955,
+      "kneeVsAnkleTorso": -0.074,
+      "barOverMidfootTorso": 0.449,
+      "lockoutHipKneeAnkleDeg": 174.5,
+      "hipLeadAtStartTorso": -0.246,
+      "phases": {
+        "descent": [
+          0.0,
+          2.733
+        ],
+        "pause": [
+          2.733,
+          13.0
+        ],
+        "press": [
+          13.0,
+          13.5
+        ],
+        "lockout": [
+          13.5,
+          13.767
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    },
+    {
+      "index": 2,
+      "touchAndGo": false,
+      "descentS": 0.2,
+      "pauseS": 3.667,
+      "concentricS": 0.8,
+      "romTorso": 2.116,
+      "concRiseTorso": 2.078,
+      "barDriftTorso": 0.268,
+      "towardShoulderTorso": 0.001,
+      "curveRatio": 0.561,
+      "touchOnTorso": 7.282,
+      "elbowAngleBottom": 151.2,
+      "elbowAngleLockout": 171.3,
+      "elbowFlareDeg": 48.9,
+      "wristAheadOfElbowTorso": 0.051,
+      "depthHipMinusKneeTorso": -0.651,
+      "kneeVsAnkleTorso": 0.067,
+      "barOverMidfootTorso": 0.358,
+      "lockoutHipKneeAnkleDeg": 169.7,
+      "hipLeadAtStartTorso": -0.044,
+      "phases": {
+        "descent": [
+          13.767,
+          17.167
+        ],
+        "pause": [
+          17.167,
+          20.833
+        ],
+        "press": [
+          20.833,
+          21.633
+        ],
+        "lockout": [
+          21.633,
+          21.833
+        ]
+      },
+      "slowdownVsFastestPct": 37.5
+    },
+    {
+      "index": 3,
+      "touchAndGo": true,
+      "descentS": 0.133,
+      "pauseS": 0.767,
+      "concentricS": 3.733,
+      "romTorso": 2.236,
+      "concRiseTorso": 1.935,
+      "barDriftTorso": -0.004,
+      "towardShoulderTorso": 0.522,
+      "curveRatio": 0.683,
+      "touchOnTorso": 9.352,
+      "elbowAngleBottom": 69.7,
+      "elbowAngleLockout": 124.9,
+      "elbowFlareDeg": 51.2,
+      "wristAheadOfElbowTorso": 0.903,
+      "depthHipMinusKneeTorso": -0.696,
+      "kneeVsAnkleTorso": 0.042,
+      "barOverMidfootTorso": 0.466,
+      "lockoutHipKneeAnkleDeg": 174.5,
+      "hipLeadAtStartTorso": 0.0,
+      "phases": {
+        "descent": [
+          21.833,
+          25.267
+        ],
+        "pause": [
+          25.267,
+          26.033
+        ],
+        "press": [
+          26.033,
+          29.767
+        ],
+        "lockout": [
+          29.767,
+          30.233
+        ]
+      },
+      "slowdownVsFastestPct": 86.6
+    },
+    {
+      "index": 4,
+      "touchAndGo": false,
+      "descentS": 0.933,
+      "pauseS": 2.833,
+      "concentricS": 0.9,
+      "romTorso": 2.199,
+      "concRiseTorso": 1.96,
+      "barDriftTorso": -0.389,
+      "towardShoulderTorso": 0.328,
+      "curveRatio": 0.273,
+      "touchOnTorso": 7.237,
+      "elbowAngleBottom": 146.4,
+      "elbowAngleLockout": 157.6,
+      "elbowFlareDeg": 47.4,
+      "wristAheadOfElbowTorso": 0.112,
+      "depthHipMinusKneeTorso": -0.65,
+      "kneeVsAnkleTorso": -0.026,
+      "barOverMidfootTorso": 0.384,
+      "lockoutHipKneeAnkleDeg": 176.6,
+      "hipLeadAtStartTorso": -0.031,
+      "phases": {
+        "descent": [
+          30.233,
+          33.533
+        ],
+        "pause": [
+          33.533,
+          36.367
+        ],
+        "press": [
+          36.367,
+          37.267
+        ],
+        "lockout": [
+          37.267,
+          39.967
+        ]
+      },
+      "slowdownVsFastestPct": 44.4
+    }
+  ],
+  "summary": {
+    "repCount": 4,
+    "firstRepConcentricS": 0.5,
+    "fastestRepConcentricS": 0.5,
+    "lastRepConcentricS": 0.9,
+    "rpeBand": null,
+    "velocityLossPct": 43.5,
+    "wallRepIndex": 3,
+    "rir": 3.1,
+    "rpe": 7.0,
+    "rpeConfidence": "estimated",
+    "barPathNote": "Deadlift ROM ~2.17 torso.",
+    "shoulderStabilityTorso": 0.819,
+    "hipStabilityTorso": 0.255,
+    "footMovementTorso": 0.086,
+    "formNotes": [
+      "Shoulders rise faster than the hips at lift-off (-0.08 torso) \u2014 load the hamstrings; don't let the hips drop into a squat-the-DL.",
+      "Some checks were skipped \u2014 they need a side-on camera. Film from the side for the full read."
+    ],
+    "cameraView": "nonside",
+    "cameraViewRatio": 0.565
+  },
+  "warnings": []
+}

@@ -1,0 +1,120 @@
+{
+  "lift": "deadlift",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 431,
+    "totalFrames": 431,
+    "coverage": 1.0,
+    "quality": "good"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.033,
+      "pauseS": 0.0,
+      "concentricS": 1.1,
+      "romTorso": 1.047,
+      "concRiseTorso": 1.034,
+      "barDriftTorso": -0.029,
+      "towardShoulderTorso": -0.331,
+      "curveRatio": 0.083,
+      "touchOnTorso": 1.688,
+      "elbowAngleBottom": 153.9,
+      "elbowAngleLockout": 162.8,
+      "elbowFlareDeg": 73.7,
+      "wristAheadOfElbowTorso": -0.008,
+      "depthHipMinusKneeTorso": -0.454,
+      "kneeVsAnkleTorso": -0.024,
+      "barOverMidfootTorso": 0.566,
+      "lockoutHipKneeAnkleDeg": 178.2,
+      "hipLeadAtStartTorso": -0.016,
+      "phases": {
+        "descent": [
+          6.9,
+          8.7
+        ],
+        "pause": [
+          8.7,
+          8.7
+        ],
+        "press": [
+          8.7,
+          9.8
+        ],
+        "lockout": [
+          9.8,
+          9.833
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    },
+    {
+      "index": 2,
+      "touchAndGo": true,
+      "descentS": 0.2,
+      "pauseS": 0.0,
+      "concentricS": 1.1,
+      "romTorso": 1.125,
+      "concRiseTorso": 1.115,
+      "barDriftTorso": -0.161,
+      "towardShoulderTorso": -0.444,
+      "curveRatio": 0.169,
+      "touchOnTorso": 1.976,
+      "elbowAngleBottom": 133.1,
+      "elbowAngleLockout": 161.8,
+      "elbowFlareDeg": 72.3,
+      "wristAheadOfElbowTorso": 0.187,
+      "depthHipMinusKneeTorso": -0.501,
+      "kneeVsAnkleTorso": -0.004,
+      "barOverMidfootTorso": 0.412,
+      "lockoutHipKneeAnkleDeg": 177.6,
+      "hipLeadAtStartTorso": -0.046,
+      "phases": {
+        "descent": [
+          9.833,
+          11.633
+        ],
+        "pause": [
+          11.633,
+          11.633
+        ],
+        "press": [
+          11.633,
+          12.733
+        ],
+        "lockout": [
+          12.733,
+          12.833
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 2,
+    "firstRepConcentricS": 1.1,
+    "fastestRepConcentricS": 1.1,
+    "lastRepConcentricS": 1.1,
+    "rpeBand": [
+      6.0,
+      8.0
+    ],
+    "velocityLossPct": null,
+    "wallRepIndex": null,
+    "rir": 3.0,
+    "rpe": 7.0,
+    "rpeConfidence": "rough",
+    "barPathNote": "Deadlift ROM ~1.09 torso.",
+    "shoulderStabilityTorso": 0.44,
+    "hipStabilityTorso": 0.287,
+    "footMovementTorso": 0.034,
+    "formNotes": [
+      "Some checks were skipped \u2014 they need a side-on camera. Film from the side for the full read."
+    ],
+    "cameraView": "nonside",
+    "cameraViewRatio": 0.657
+  },
+  "warnings": []
+}

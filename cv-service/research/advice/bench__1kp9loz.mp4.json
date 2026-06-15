@@ -1,0 +1,85 @@
+{
+  "lift": "bench",
+  "fps": 30.0,
+  "barSource": "wrist",
+  "pose": {
+    "detectedFrames": 419,
+    "totalFrames": 419,
+    "coverage": 1.0,
+    "quality": "good"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.067,
+      "pauseS": 1.033,
+      "concentricS": 1.233,
+      "romTorso": 1.403,
+      "concRiseTorso": 0.966,
+      "barDriftTorso": 2.0,
+      "towardShoulderTorso": -0.5,
+      "curveRatio": 1.924,
+      "touchOnTorso": 0.173,
+      "elbowAngleBottom": 55.5,
+      "elbowAngleLockout": 110.6,
+      "elbowFlareDeg": 119.6,
+      "wristAheadOfElbowTorso": -0.177,
+      "depthHipMinusKneeTorso": -0.748,
+      "kneeVsAnkleTorso": 0.241,
+      "barOverMidfootTorso": 2.027,
+      "lockoutHipKneeAnkleDeg": 118.1,
+      "hipLeadAtStartTorso": 0.031,
+      "phases": {
+        "descent": [
+          0.0,
+          5.533
+        ],
+        "pause": [
+          5.533,
+          6.567
+        ],
+        "press": [
+          6.567,
+          7.8
+        ],
+        "lockout": [
+          7.8,
+          9.7
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 1,
+    "firstRepConcentricS": 1.233,
+    "fastestRepConcentricS": 1.233,
+    "lastRepConcentricS": 1.233,
+    "rpeBand": [
+      8.0,
+      9.5
+    ],
+    "velocityLossPct": null,
+    "wallRepIndex": null,
+    "rir": 1.0,
+    "rpe": 9.0,
+    "rpeConfidence": "rough",
+    "barPathNote": "Bench bar path is a clear curve (horizontal travel ~2.00 torso on the press).",
+    "shoulderStabilityTorso": 0.388,
+    "hipStabilityTorso": 0.124,
+    "footMovementTorso": 0.402,
+    "formNotes": [
+      "Elbows flaring (~120 deg from torso) \u2014 tuck toward 45-75 deg.",
+      "Touch-and-go \u2014 no visible pause on the chest. If you compete, practice a motionless pause; meets require one.",
+      "Bar/wrist sits behind the elbow at the chest (~0.18 torso) \u2014 stack wrist over elbow or it becomes a front-delt raise.",
+      "Bar drifts AWAY from the shoulders on the press \u2014 poor leverage.",
+      "Hips move a lot \u2014 arch breaking down; reset leg drive.",
+      "Shoulders travel during the press \u2014 keep blades pinned and down.",
+      "Feet shifting \u2014 losing leg drive; plant and drive toward your head."
+    ],
+    "cameraView": "side",
+    "cameraViewRatio": 0.786
+  },
+  "warnings": []
+}

@@ -1,0 +1,27 @@
+{
+  "lift": "squat",
+  "fps": 30.0,
+  "barSource": "shoulder",
+  "pose": {
+    "detectedFrames": 597,
+    "totalFrames": 1200,
+    "coverage": 0.497,
+    "quality": "low"
+  },
+  "reps": [],
+  "summary": {
+    "repCount": 0,
+    "rir": null,
+    "rpe": null,
+    "rpeBand": null,
+    "rpeConfidence": "rough",
+    "velocityLossPct": null,
+    "barPathNote": "No reps segmented.",
+    "formNotes": [],
+    "cameraView": "nonside",
+    "cameraViewRatio": 4.236
+  },
+  "warnings": [
+    "Couldn't read clean reps \u2014 the lifter was only tracked in 50% of frames. Best results: film from the side with the whole body and the full squat (top to bottom to top) in frame, well lit and steady."
+  ]
+}

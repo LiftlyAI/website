@@ -1,0 +1,119 @@
+{
+  "lift": "squat",
+  "fps": 30.0,
+  "barSource": "plate",
+  "pose": {
+    "detectedFrames": 493,
+    "totalFrames": 1200,
+    "coverage": 0.411,
+    "quality": "low"
+  },
+  "reps": [
+    {
+      "index": 1,
+      "touchAndGo": true,
+      "descentS": 0.133,
+      "pauseS": 3.233,
+      "concentricS": 2.567,
+      "romTorso": 1.178,
+      "concRiseTorso": 1.178,
+      "barDriftTorso": -0.184,
+      "towardShoulderTorso": 1.399,
+      "curveRatio": 0.753,
+      "touchOnTorso": 509367.681,
+      "elbowAngleBottom": 175.7,
+      "elbowAngleLockout": 3.5,
+      "elbowFlareDeg": null,
+      "wristAheadOfElbowTorso": 0.276,
+      "depthHipMinusKneeTorso": 0.0,
+      "kneeVsAnkleTorso": 0.0,
+      "barOverMidfootTorso": 1.406,
+      "lockoutHipKneeAnkleDeg": 178.4,
+      "hipLeadAtStartTorso": 0.018,
+      "phases": {
+        "descent": [
+          0.0,
+          3.3
+        ],
+        "pause": [
+          3.3,
+          6.533
+        ],
+        "press": [
+          6.533,
+          9.1
+        ],
+        "lockout": [
+          9.1,
+          9.1
+        ]
+      },
+      "slowdownVsFastestPct": 80.5
+    },
+    {
+      "index": 2,
+      "touchAndGo": true,
+      "descentS": 0.1,
+      "pauseS": 0.0,
+      "concentricS": 0.5,
+      "romTorso": 1.638,
+      "concRiseTorso": 1.046,
+      "barDriftTorso": 0.48,
+      "towardShoulderTorso": -1.032,
+      "curveRatio": 0.643,
+      "touchOnTorso": 1.837,
+      "elbowAngleBottom": 150.7,
+      "elbowAngleLockout": 66.6,
+      "elbowFlareDeg": 38.0,
+      "wristAheadOfElbowTorso": -0.273,
+      "depthHipMinusKneeTorso": -0.188,
+      "kneeVsAnkleTorso": 0.119,
+      "barOverMidfootTorso": 0.198,
+      "lockoutHipKneeAnkleDeg": null,
+      "hipLeadAtStartTorso": 0.324,
+      "phases": {
+        "descent": [
+          9.1,
+          10.267
+        ],
+        "pause": [
+          10.267,
+          10.267
+        ],
+        "press": [
+          10.267,
+          10.767
+        ],
+        "lockout": [
+          10.767,
+          12.733
+        ]
+      },
+      "slowdownVsFastestPct": 0.0
+    }
+  ],
+  "summary": {
+    "repCount": 2,
+    "firstRepConcentricS": 2.567,
+    "fastestRepConcentricS": 0.5,
+    "lastRepConcentricS": 0.5,
+    "rpeBand": null,
+    "velocityLossPct": null,
+    "wallRepIndex": null,
+    "rir": null,
+    "rpe": null,
+    "rpeConfidence": "rough",
+    "barPathNote": "Squat bar path: ~0.33 torso horizontal drift, ROM ~1.41 torso.",
+    "shoulderStabilityTorso": 0.784,
+    "hipStabilityTorso": 1.121,
+    "footMovementTorso": 2.218,
+    "formNotes": [
+      "Squat is high \u2014 hip stays above the knee (-0.09 torso). Drop deeper.",
+      "Bar drifts ~0.33 torso horizontally \u2014 keep it stacked over mid-foot.",
+      "Hips rise faster than the chest out of the hole (+0.17 torso lead) \u2014 drive the chest up WITH the hips, don't fold forward."
+    ],
+    "cameraView": "side",
+    "cameraViewRatio": 0.177
+  },
+  "warnings": []
+}

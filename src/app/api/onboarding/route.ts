@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireSession } from '@/lib/auth';
 import { execute, uuid } from '@/lib/db';
 import { aiGenerate, safeParseJson } from '@/lib/ai';
+import { assertAiQuota, recordAiCall, QuotaError } from '@/lib/limits';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import { noviceMaxEstimate } from '@/lib/calculations';
 import type { AthleteProfile, Program } from '@/lib/types';
@@ -53,6 +54,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  try {
+    await assertAiQuota('athlete', session.id);
+  } catch (err) {
+    if (err instanceof QuotaError) {
+      return NextResponse.json(
+        { error: 'You’ve reached your AI generation limit for this period. Upgrade for more.', quota: err.info },
+        { status: 402 },
+      );
+    }
+    throw err;
+  }
+
   // Generate program
   try {
     const program = await generateProgram(profile);
@@ -68,6 +81,7 @@ export async function POST(req: NextRequest) {
         Date.now(),
       ],
     );
+    await recordAiCall('athlete', session.id, 'onboarding');
     return NextResponse.json({ ok: true, programId });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'program generation failed';

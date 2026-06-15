@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth';
 import { execute, queryOne, uuid } from '@/lib/db';
 import { aiGenerate, isAiKeyError, safeParseJson } from '@/lib/ai';
+import { assertAiQuota, recordAiCall, QuotaError } from '@/lib/limits';
 import { PROGRAM_SYSTEM_PROMPT, buildProgramUserPrompt } from '@/lib/prompts/program';
 import type { AthleteProfile, Program } from '@/lib/types';
 
@@ -11,6 +12,18 @@ export async function POST() {
     session = await requireSession();
   } catch {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  try {
+    await assertAiQuota('athlete', session.id);
+  } catch (err) {
+    if (err instanceof QuotaError) {
+      return NextResponse.json(
+        { error: 'You’ve reached your AI generation limit for this period. Upgrade for more.', quota: err.info },
+        { status: 402 },
+      );
+    }
+    throw err;
   }
 
   const row = await queryOne<{ profile_json: string }>(
@@ -61,6 +74,7 @@ export async function POST() {
       Date.now(),
     ],
   );
+  await recordAiCall('athlete', session.id, 'program');
 
   return NextResponse.json({ ok: true });
 }

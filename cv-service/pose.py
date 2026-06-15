@@ -142,7 +142,10 @@ def _unrotate_xy(xy: np.ndarray, code) -> np.ndarray:
 #    (mid-rep the torso can lean), but we still prefer an upright torso to
 #    exclude anyone sitting/lying nearby.
 HORIZ_LYING = 0.30       # bench: a track this horizontal (or more) is a lifter
-HORIZ_UPRIGHT = 0.35     # squat: med_horiz must be BELOW this
+HORIZ_UPRIGHT = 0.55     # squat: med_horiz must be BELOW this. Was 0.35,
+                         # which rejected a heavily-leaned LOW-BAR squatter
+                         # and fell back to a stationary bystander at 100%
+                         # "coverage" (F2b, squat_lowbar__1kn0yi5).
 # A conventional deadlift is HINGED — the torso is legitimately near-horizontal
 # at the floor and only stands fully upright at lockout, so the median horiz over
 # the pull sits much higher than a squat's. The squat gate (0.35) rejected the
@@ -343,6 +346,7 @@ def select_lifter_track(
             tr["vis_sum"] += c["mean_vis"]
             tr["horiz"].append(c["horiz"])
             tr["wrist_y"].append(_cand_wrist_y(c))
+            tr["sh_y"].append(float((c["xy"][L_SH, 1] + c["xy"][R_SH, 1]) / 2.0))
             tr["count"] += 1
             tr["frames"][f] = c
             used_t.add(ti)
@@ -359,6 +363,7 @@ def select_lifter_track(
                     "vis_sum": c["mean_vis"],
                     "horiz": [c["horiz"]],
                     "wrist_y": [_cand_wrist_y(c)],
+                    "sh_y": [float((c["xy"][L_SH, 1] + c["xy"][R_SH, 1]) / 2.0)],
                     "count": 1,
                     "frames": {f: c},
                 }
@@ -380,6 +385,13 @@ def select_lifter_track(
         wy = np.array(tr["wrist_y"])
         tr["wrist_range"] = (
             float(np.percentile(wy, 90) - np.percentile(wy, 10)) if len(wy) >= 4 else 0.0
+        )
+        sy = np.array(tr["sh_y"])
+        # Shoulder vertical travel: a working squatter/puller moves a lot;
+        # a bystander/rack dummy is ~static. The strongest lifter-vs-
+        # bystander discriminator for the standing lifts (F2b).
+        tr["sh_range"] = (
+            float(np.percentile(sy, 90) - np.percentile(sy, 10)) if len(sy) >= 4 else 0.0
         )
         # Bench presser's wrists ride ABOVE the shoulders (smaller image y) for
         # much of the lift; a seated/standing spotter's never do. This is the
@@ -437,10 +449,15 @@ def select_lifter_track(
             if tr["med_horiz"] <= horiz_max and tr["count"] >= min_count
         ]
         if gated:
-            lifter = max(gated, key=lambda tr: (tr["presence"], tr["mean_score"]))
+            # Presence alone picks whoever stands in frame longest — which
+            # in a busy gym is often NOT the lifter. Weight by vertical
+            # shoulder travel so the person actually squatting/pulling wins.
+            lifter = max(gated, key=lambda tr: tr["presence"] * (0.5 + tr["mean_vis"])
+                         * (0.3 + 3.0 * tr["sh_range"]))
         else:
             lifter = max(
                 tracks, key=lambda tr: tr["mean_score"] * (0.3 + tr["presence"])
+                * (0.3 + 3.0 * tr["sh_range"])
             )
             if lifter["count"] < min_count:
                 raise RuntimeError(

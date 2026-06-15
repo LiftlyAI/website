@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Upload, X, AlertTriangle, Check, ChevronRight, ChevronDown } from 'lucide-react';
@@ -21,6 +21,19 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [checks, setChecks] = useState(initialChecks);
+  const [remaining, setRemaining] = useState<number | null | undefined>(undefined);
+
+  // Show how many form checks remain this period (null = unlimited on a coached
+  // or coach plan). Re-fetched after each new clip is saved.
+  useEffect(() => {
+    fetch('/api/usage')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const fc = d?.athlete?.formChecks;
+        setRemaining(fc ? (fc.limit == null ? null : fc.remaining) : undefined);
+      })
+      .catch(() => {});
+  }, [checks]);
 
   return (
     <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
@@ -36,7 +49,16 @@ export function FormCheckClient({ initialChecks }: { initialChecks: FormCheckRes
             slow vs the first.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)}>+ Submit a clip</Button>
+        <div className="flex items-center gap-3">
+          {typeof remaining === 'number' && (
+            <span
+              className={`text-xs font-mono ${remaining <= 0 ? 'text-rpe-max' : 'text-chalk-mute'}`}
+            >
+              {remaining} left this week
+            </span>
+          )}
+          <Button onClick={() => setOpen(true)}>+ Submit a clip</Button>
+        </div>
       </div>
 
       {checks.length === 0 ? (
@@ -184,6 +206,8 @@ function FormCheckCard({
         {deep ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         {deep ? 'Hide deep analysis' : 'Deep analysis'}
       </button>
+
+      <FormCheckDisclaimer />
 
       {/* ---------- DEEP ANALYSIS (collapsible) ---------- */}
       {deep && (
@@ -482,6 +506,23 @@ function CalibrateControl({
   );
 }
 
+// Persistent liability footer rendered on every form-check analysis output.
+// AI coaching is not medical advice — this stays visible whether or not the
+// deep-analysis panel is open so it can't be missed.
+function FormCheckDisclaimer() {
+  return (
+    <div className="mt-4 pt-3 border-t border-iron-800 flex gap-2 text-[10px] font-mono text-chalk-mute leading-relaxed">
+      <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-chalk-mute" />
+      <span>
+        <span className="text-chalk">AI guidance, not medical advice.</span> Form-check
+        feedback is informational — it can&apos;t see pain, prior injury, or your full
+        medical context. If something hurts, stop and consult a qualified coach or
+        clinician before your next set.
+      </span>
+    </div>
+  );
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="stencil-heading text-xs tracking-widest mb-2 text-chalk-mute">
@@ -540,6 +581,7 @@ function UploadModal({
   const [context, setContext] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<'cv' | 'ai' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -548,11 +590,57 @@ function UploadModal({
       setError('Pick a video file first.');
       return;
     }
+
+    // Pre-flight the quota BEFORE the (expensive, GPU-backed) Modal upload, so an
+    // over-limit user never burns compute. /api/formcheck re-checks server-side.
+    const usage = await fetch('/api/usage')
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null);
+    const fc = usage?.athlete?.formChecks;
+    if (fc && fc.limit != null && fc.remaining <= 0) {
+      setError(
+        `You've used all ${fc.limit} form checks this ${fc.window}. Upgrade your plan for more.`,
+      );
+      return;
+    }
+
+    const cvBase = (process.env.NEXT_PUBLIC_CV_SERVICE_URL ?? '').trim();
+    if (!cvBase) {
+      setError('Bar-path analysis is not configured on this deployment.');
+      return;
+    }
+
     setSubmitting(true);
+    setPhase('cv');
     setError(null);
     try {
+      // Step 1: upload video directly to Modal — never touches Vercel's 4.5 MB limit.
+      const cvFd = new FormData();
+      cvFd.append('video', file, file.name);
+      cvFd.append('lift', lift);
+
+      let cvRes: Response;
+      try {
+        cvRes = await fetch(`${cvBase}/analyze`, { method: 'POST', body: cvFd });
+      } catch {
+        // A rejected cross-origin fetch is indistinguishable from a network
+        // drop here, but in practice it's the analyzer taking too long on a
+        // long clip (Modal 303s past ~150s) or briefly busy — either way it
+        // answers without CORS headers, so the browser blames CORS.
+        throw new Error(
+          "Couldn't reach the bar-path analyzer, or it took too long on this clip. Use a short clip — just the working set, a few reps — and try again in a moment.",
+        );
+      }
+      const cvData = await cvRes.json().catch(() => null);
+      if (!cvRes.ok || !cvData || typeof cvData !== 'object') {
+        const d = (cvData as Record<string, unknown> | null)?.detail;
+        throw new Error(typeof d === 'string' ? d : `CV analysis failed (${cvRes.status})`);
+      }
+
+      // Step 2: send the (small) CV JSON to Vercel for AI coaching + DB save.
+      setPhase('ai');
       const fd = new FormData();
-      fd.append('video', file, file.name);
+      fd.append('cv_json', JSON.stringify(cvData));
       fd.append('lift', lift);
       if (lift === 'deadlift') fd.append('stance', stance);
       if (load) {
@@ -568,6 +656,7 @@ function UploadModal({
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'failed');
       setSubmitting(false);
+      setPhase(null);
     }
   }
 
@@ -587,9 +676,13 @@ function UploadModal({
         <div className="p-5 space-y-4">
           {submitting ? (
             <div className="flex flex-col items-center py-8">
-              <PlateSpinner label={`Analysing ${lift}…`} />
+              <PlateSpinner
+                label={phase === 'ai' ? 'Generating coaching…' : `Tracking bar path…`}
+              />
               <p className="text-xs text-chalk-mute font-mono mt-2">
-                Find the lifter, track the plate, time reps & read form. 20–90s.
+                {phase === 'ai'
+                  ? 'Reading form, writing coaching cues.'
+                  : 'Find the lifter, track the bar, time reps. 20–90s.'}
               </p>
             </div>
           ) : (
