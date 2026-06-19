@@ -1,4 +1,4 @@
-import type { AthleteProfile, DietaryRestriction, MacroTargets } from '../types';
+import type { AthleteProfile, DietaryRestriction, MacroTargets, MealPlan } from '../types';
 
 export const NUTRITION_SYSTEM_PROMPT = `You are a sports nutritionist specializing in strength athletes, working from ISSN position stands, Morton et al. 2018 meta-analysis, and Helms/Aragon/Fitschen guidelines. You write meal plans that are:
 
@@ -49,8 +49,13 @@ You output a single JSON object with this exact structure:
   ],
   "preWorkout": "Concrete pre-workout meal (foods + quantities + timing, e.g. '90 min before: 1 cup oats + 1 scoop whey + banana').",
   "postWorkout": "Concrete post-workout meal (foods + quantities).",
-  "notes": ["short evidence-based tip", "short tip"]
+  "notes": ["short evidence-based tip", "short tip"],
+  "changes": ["optional — only when restructuring an existing diet or applying an edit"]
 }
+
+CHANGES FIELD:
+- Include "changes" ONLY when you are restructuring the athlete's existing diet or applying a requested edit. Omit it (or use []) for a from-scratch plan.
+- Each entry is one concrete, actionable instruction phrased as what to buy / swap / adjust vs. what they already do — e.g. "Buy 0% Greek yogurt instead of full-fat", "Add a 4th egg at breakfast", "Bump cooked rice from 150g to 250g". Keep the list short (3–8 items) and concrete; no vague advice.
 
 Output ONLY the JSON. No markdown. Meal macro totals must sum within ±5% of dailyTotals.`;
 
@@ -61,7 +66,10 @@ const RESTRICTION_TEXT: Record<Exclude<DietaryRestriction, 'none'>, string> = {
   gluten_free: 'gluten-free (no wheat, bread, pasta, barley, rye, or regular flour)',
 };
 
-export function buildNutritionUserPrompt(
+// The athlete + targets + constraints block shared by all three prompt builders
+// (generate, optimise, edit). Keeping it in one place means a change to how
+// restrictions/allergies/preferences are surfaced applies everywhere at once.
+function buildContextBlock(
   profile: AthleteProfile,
   targets: MacroTargets,
   steer?: string,
@@ -95,9 +103,7 @@ export function buildNutritionUserPrompt(
 
   const bwKg = (profile.unit === 'kg' ? profile.bodyweight : profile.bodyweight / 2.2046).toFixed(1);
 
-  return `Generate a training-day meal plan for this athlete.
-
-ATHLETE:
+  return `ATHLETE:
 - Sex: ${profile.sex}, Age: ${profile.age}
 - Bodyweight: ${profile.bodyweight} ${profile.unit} (${bwKg} kg)
 - Experience: ${profile.experience}
@@ -117,7 +123,71 @@ ${phaseContext}
 DIETARY RESTRICTIONS (hard — never include): ${restrictionLine}${sourceNote ? `\n${sourceNote}` : ''}
 ${allergies ? `ALLERGIES (hard — never include these, nor anything containing them): ${allergies}` : 'ALLERGIES: none declared'}
 ${prefs ? `TASTE PREFERENCES (soft — honour when compatible with the macros): ${prefs}` : ''}
-${steerClean ? `FOR THIS PLAN SPECIFICALLY (soft — honour when compatible with the macros): ${steerClean}` : ''}
+${steerClean ? `FOR THIS PLAN SPECIFICALLY (soft — honour when compatible with the macros): ${steerClean}` : ''}`;
+}
+
+export function buildNutritionUserPrompt(
+  profile: AthleteProfile,
+  targets: MacroTargets,
+  steer?: string,
+): string {
+  return `Generate a training-day meal plan for this athlete.
+
+${buildContextBlock(profile, targets, steer)}
 
 Protein must be distributed across all ${profile.mealsPerDay} meals (~${targets.perMealProteinG}g each). Include a casein-rich pre-sleep option as the last meal (or a vegan equivalent if the athlete is vegan/dairy-free). Place the majority of carbs in the pre- and post-training meals. The sum of meal macros must land within ±5% of the daily targets. Hard constraints override every preference above.`;
+}
+
+// "Optimise my diet" — the athlete describes what they already eat; restructure
+// THAT rather than inventing a plan from scratch. The whole point is minimal,
+// non-intrusive change: keep their foods and habits, fix the portions and a few
+// swaps, and tell them exactly what to buy.
+export function buildDietOptimizePrompt(
+  profile: AthleteProfile,
+  targets: MacroTargets,
+  currentDiet: string,
+  steer?: string,
+): string {
+  return `The athlete already eats roughly this every day — restructure THIS diet to hit the targets below. Do NOT invent an unrelated plan.
+
+WHAT THEY CURRENTLY EAT:
+${currentDiet.trim()}
+
+${buildContextBlock(profile, targets, steer)}
+
+HOW TO RESTRUCTURE (minimal, non-intrusive):
+- Keep the foods and meal structure they already use. Adjust QUANTITIES first to hit the macro targets.
+- Prefer swapping to a better VERSION of a food they already buy (leaner mince, 0%/2% dairy, more egg whites, whole-grain vs white) over introducing new foods.
+- Only add or remove a food when the math genuinely needs it (e.g. protein is far short). Keep additions cheap and ordinary.
+- Distribute protein across all ${profile.mealsPerDay} meals (~${targets.perMealProteinG}g each) and a casein-rich pre-sleep option; cluster carbs around training. Sum of meal macros within ±5% of targets.
+- Populate "changes" with the concrete shopping/swap list vs. what they wrote above (what to buy, what to swap, which portions to change). This is the most important output for the athlete.
+
+Hard constraints (restrictions/allergies) override everything, including foods they currently eat — if a current food violates a hard constraint, replace it and note that in "changes".`;
+}
+
+// Conversational edit — apply a single natural-language instruction to an
+// existing saved plan and return the FULL revised plan. Used by /api/nutrition/edit
+// so the athlete can just say "swap the chicken for beef" instead of editing fields.
+export function buildPlanEditPrompt(
+  profile: AthleteProfile,
+  targets: MacroTargets,
+  currentPlan: MealPlan,
+  instruction: string,
+): string {
+  return `Apply the athlete's requested change to their existing meal plan and return the FULL revised plan.
+
+CURRENT PLAN (JSON):
+${JSON.stringify(currentPlan, null, 2)}
+
+REQUESTED CHANGE:
+${instruction.trim()}
+
+${buildContextBlock(profile, targets)}
+
+RULES:
+- Make the requested change and only the knock-on adjustments needed to keep the day balanced. Do not silently rewrite unrelated meals.
+- Keep total macros within ±5% of the daily targets above; rebalance other meals if the change moves the totals.
+- Keep protein distributed across meals and a casein-rich pre-sleep option; carbs clustered around training.
+- Hard constraints (restrictions/allergies) override the instruction — if the request would introduce a forbidden food, pick the closest compliant alternative.
+- Put a short summary of what you changed in "changes" (1–4 items).`;
 }

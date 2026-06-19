@@ -18,19 +18,30 @@ export function NutritionView({
   initialStale?: boolean;
 }) {
   const [plan, setPlan] = useState<MealPlan | null>(initialPlan?.plan ?? null);
-  const [steer, setSteer] = useState(initialPlan?.steer ?? '');
+  const [currentDiet, setCurrentDiet] = useState(profile.currentDiet ?? '');
+  const [editInstruction, setEditInstruction] = useState('');
   const [stale, setStale] = useState(initialStale);
-  const [loading, setLoading] = useState(false);
+  // Three independent actions, each with its own in-flight flag so the right
+  // button spins and the others stay enabled.
+  const [optimizing, setOptimizing] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const busy = optimizing || generating || editing;
 
-  async function generate() {
-    setLoading(true);
+  // Restructure the athlete's existing diet (the primary path).
+  async function optimize() {
+    if (!currentDiet.trim()) {
+      setError('Tell us what you currently eat first.');
+      return;
+    }
+    setOptimizing(true);
     setError(null);
     try {
-      const res = await fetch('/api/nutrition/generate', {
+      const res = await fetch('/api/nutrition/optimize', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ steer: steer.trim() || undefined }),
+        body: JSON.stringify({ currentDiet: currentDiet.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'failed');
@@ -39,7 +50,51 @@ export function NutritionView({
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'failed');
     } finally {
-      setLoading(false);
+      setOptimizing(false);
+    }
+  }
+
+  // Build a plan from scratch (secondary path, kept for people without a routine).
+  async function generate() {
+    setGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/nutrition/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'failed');
+      setPlan(data.plan);
+      setStale(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'failed');
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  // Apply a plain-language tweak to the saved plan ("swap the chicken for beef").
+  async function applyEdit() {
+    if (!editInstruction.trim()) return;
+    setEditing(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/nutrition/edit', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ instruction: editInstruction.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'failed');
+      setPlan(data.plan);
+      setEditInstruction('');
+      setStale(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'failed');
+    } finally {
+      setEditing(false);
     }
   }
 
@@ -175,39 +230,66 @@ export function NutritionView({
             </div>
           )}
 
-          <div className="mb-4">
-            <Textarea
-              label="Steer this plan (optional)"
-              value={steer}
-              onChange={(e) => setSteer(e.target.value)}
-              placeholder="e.g. I have chicken, rice & spinach; want Mexican flavours; 20-min meals; on a budget"
-              hint="Ingredients on hand, cuisines, time/budget. Allergies & restrictions above are always enforced."
-              rows={2}
-            />
-          </div>
-
-          {!plan && !loading && (
+          {!plan && !busy && (
             <div>
-              <p className="text-sm text-chalk-mute mb-2">
-                Training-day plan: protein every 3–4 h, carbs clustered around your session, casein-rich pre-sleep meal.
+              <p className="text-sm text-chalk-mute mb-3">
+                Already eat the same things most days? Tell us what that looks like and we&apos;ll
+                restructure it to hit your macros — adjust portions, swap to better versions, and
+                give you a short shopping list. No need to overhaul what you eat.
               </p>
+              <Textarea
+                label="What do you eat on a normal day?"
+                value={currentDiet}
+                onChange={(e) => setCurrentDiet(e.target.value)}
+                placeholder={
+                  'e.g. Breakfast: 4 eggs + 1 cup oats + banana\nLunch: 200g chicken + white rice + broccoli\nSnack: protein shake\nDinner: ground beef + pasta'
+                }
+                hint="Rough is fine. Allergies & restrictions above are always enforced."
+                rows={5}
+              />
               {(isVegan || isVegetarian) && (
-                <div className="text-xs font-mono text-rpe-mod mb-3 border border-rpe-mod/30 px-3 py-2">
+                <div className="text-xs font-mono text-rpe-mod my-3 border border-rpe-mod/30 px-3 py-2">
                   {isVegan
                     ? 'Vegan: per-meal protein bumped +20% for leucine threshold; pea/rice/soy sources used.'
                     : 'Vegetarian: dairy + egg proteins prioritised for leucine density.'}
                 </div>
               )}
-              <Button onClick={generate}>Generate Meal Plan</Button>
+              <div className="flex flex-wrap items-center gap-3 mt-3">
+                <Button onClick={optimize}>Optimize my diet</Button>
+                <button
+                  type="button"
+                  onClick={generate}
+                  className="font-mono text-xs text-chalk-mute hover:text-chalk underline underline-offset-2"
+                >
+                  or build me a plan from scratch
+                </button>
+              </div>
             </div>
           )}
 
-          {loading && <PlateSpinner label="Cooking…" />}
+          {optimizing && <PlateSpinner label="Restructuring…" />}
+          {generating && <PlateSpinner label="Cooking…" />}
 
           {error && <div className="text-sm text-rpe-max font-mono mb-2">{error}</div>}
 
-          {plan && !loading && (
+          {plan && !optimizing && !generating && (
             <div className="space-y-5">
+              {plan.changes && plan.changes.length > 0 && (
+                <div className="chalk-card p-4 border border-blood/40">
+                  <div className="stencil-heading text-xs text-blood mb-2 tracking-widest">
+                    CHANGES TO MAKE
+                  </div>
+                  <ul className="text-sm text-chalk-dim space-y-1.5">
+                    {plan.changes.map((c, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-blood shrink-0">→</span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {plan.meals.map((m, i) => (
                   <div key={i} className="border-b border-iron-800 pb-4 last:border-b-0">
@@ -247,9 +329,39 @@ export function NutritionView({
                   </ul>
                 </div>
               )}
-              <Button variant="ghost" onClick={generate}>
-                Generate a different plan
-              </Button>
+
+              {/* Conversational editing — no fiddly fields, just tell the coach. */}
+              <div className="border-t border-iron-800 pt-4">
+                <Textarea
+                  label="Tell the coach to tweak it"
+                  value={editInstruction}
+                  onChange={(e) => setEditInstruction(e.target.value)}
+                  placeholder="e.g. swap the chicken for ground beef · add a 3pm snack · make breakfast bigger · I'm out of oats"
+                  hint="Plain language. The coach rewrites the plan and keeps your macros on target."
+                  rows={2}
+                />
+                <div className="flex flex-wrap items-center gap-3 mt-2">
+                  <Button onClick={applyEdit} disabled={editing || !editInstruction.trim()}>
+                    {editing ? 'Applying…' : 'Apply change'}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={optimize}
+                    disabled={busy}
+                    className="font-mono text-xs text-chalk-mute hover:text-chalk underline underline-offset-2 disabled:opacity-50"
+                  >
+                    re-optimize from what I eat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generate}
+                    disabled={busy}
+                    className="font-mono text-xs text-chalk-mute hover:text-chalk underline underline-offset-2 disabled:opacity-50"
+                  >
+                    start over from scratch
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </Card>
