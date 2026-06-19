@@ -5,12 +5,18 @@ import { execute, queryOne, uuid } from '@/lib/db';
 import { isAiKeyError } from '@/lib/ai';
 import type { AiMessage } from '@/lib/ai';
 import { assertAiQuota, recordAiCall, QuotaError } from '@/lib/limits';
-import { buildNutritionUserPrompt } from '@/lib/prompts/nutrition';
+import { buildDietOptimizePrompt } from '@/lib/prompts/nutrition';
 import { generateValidatedPlan } from '@/lib/nutrition-generate';
 import { macroTargets } from '@/lib/calculations';
 import type { AthleteProfile } from '@/lib/types';
 
-const Body = z.object({ steer: z.string().max(500).optional() });
+// "Optimise my diet": the athlete describes what they already eat and we
+// restructure THAT into a macro-hitting plan + a concrete buy/swap list, rather
+// than inventing one from scratch. Shares the generate→validate→retry pipeline.
+const Body = z.object({
+  currentDiet: z.string().min(1).max(1500),
+  steer: z.string().max(500).optional(),
+});
 
 export async function POST(req: NextRequest) {
   let session;
@@ -34,7 +40,11 @@ export async function POST(req: NextRequest) {
 
   const raw = await req.json().catch(() => ({}));
   const parsed = Body.safeParse(raw ?? {});
-  const steer = parsed.success ? parsed.data.steer?.trim() || null : null;
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Tell us what you currently eat first.' }, { status: 400 });
+  }
+  const currentDiet = parsed.data.currentDiet.trim();
+  const steer = parsed.data.steer?.trim() || null;
 
   const row = await queryOne<{ profile_json: string }>(
     'SELECT profile_json FROM athletes WHERE id = ?',
@@ -47,7 +57,7 @@ export async function POST(req: NextRequest) {
   const targets = macroTargets(profile);
 
   const messages: AiMessage[] = [
-    { role: 'user', content: buildNutritionUserPrompt(profile, targets, steer ?? undefined) },
+    { role: 'user', content: buildDietOptimizePrompt(profile, targets, currentDiet, steer ?? undefined) },
   ];
 
   let plan;
@@ -64,14 +74,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'Could not generate a plan that fully meets your dietary restrictions/allergies. ' +
-            'Try simplifying them or generating again.',
+            'Could not restructure your diet within your dietary restrictions/allergies. ' +
+            'Try simplifying them or editing what you eat.',
           violations,
         },
         { status: 422 },
       );
     }
     return NextResponse.json({ error: 'failed to parse meal plan' }, { status: 500 });
+  }
+
+  // Persist what they eat so the optimise box comes pre-filled next time.
+  if (profile.currentDiet !== currentDiet) {
+    profile.currentDiet = currentDiet;
+    await execute('UPDATE athletes SET profile_json = ? WHERE id = ?', [
+      JSON.stringify(profile),
+      session.id,
+    ]);
   }
 
   const id = uuid();
