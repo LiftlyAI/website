@@ -1,28 +1,12 @@
 import { requireSession } from '@/lib/auth';
-import { queryOne } from '@/lib/db';
-import type { AthleteProfile, Program } from '@/lib/types';
+import { getProgramData } from '@/lib/program';
 import { ProgramView } from './ProgramView';
 
 export default async function ProgramPage() {
   const session = await requireSession();
+  const data = await getProgramData(session.id);
 
-  const athlete = (await queryOne<{ profile_json: string }>(
-    'SELECT profile_json FROM athletes WHERE id = ?',
-    [session.id],
-  ))!;
-  const profile = JSON.parse(athlete.profile_json) as AthleteProfile;
-
-  const programRow = await queryOne<{
-    id: string;
-    program_json: string;
-    current_week: number;
-    current_block: string;
-  }>(
-    'SELECT id, program_json, current_week, current_block FROM programs WHERE athlete_id = ? ORDER BY created_at DESC LIMIT 1',
-    [session.id],
-  );
-
-  if (!programRow) {
+  if (!data) {
     return (
       <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
         <div className="page-kicker mb-2">// THE PLAN</div>
@@ -34,14 +18,12 @@ export default async function ProgramPage() {
     );
   }
 
-  const program = JSON.parse(programRow.program_json) as Program;
-
   return (
     <ProgramView
-      profile={profile}
-      program={program}
-      currentWeek={programRow.current_week}
-      programId={programRow.id}
+      profile={data.profile}
+      program={data.program}
+      currentWeek={data.currentWeek}
+      programId={data.programId}
     />
   );
 }

@@ -76,7 +76,12 @@ app = modal.App(APP_NAME, image=image)
     # this is belt-and-suspenders. Safe to drop back to 4096 once that's proven.
     memory=8192,
     timeout=600,
-    min_containers=1,
+    # Scale to zero when idle. min_containers=1 kept a 4-core/8GB container
+    # alive 24/7 (~$6/day) even with no traffic. With this at 0 you only pay
+    # while a clip is actually being analyzed; the first request after idle
+    # eats a cold start (~10-30s; ONNX weights are baked into the image).
+    # Set back to 1 only once there's steady traffic that justifies always-on.
+    min_containers=0,
 )
 @modal.asgi_app()
 def fastapi_app():

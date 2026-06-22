@@ -56,9 +56,12 @@ That's it — the browser's `/analyze` call now goes to Modal.
 
 ## Notes
 
-- `min_containers=1` in `modal_app.py` keeps one container always warm so
-  the first request after idle doesn't pay a cold start. Costs ~a few
-  cents/hour while idle. Drop it to `0` if you don't need always-on.
+- `min_containers` in `modal_app.py` controls always-on warming. Set to `1`
+  it keeps a container alive 24/7 so the first request after idle skips the
+  cold start — but with `cpu=4.0` + `memory=8192` that reservation is billed
+  the whole time, ~$0.25/hour (~$6/day) **even with zero traffic**. It's set
+  to `0` so idle costs nothing; raise it to `1` only when steady traffic
+  justifies paying for always-on.
 - `@modal.concurrent(max_inputs=4)` lets one container handle 4 uploads
   in parallel. Bump `cpu`/`memory` together if you raise it.
 - The rtmlib ONNX weights (~200 MB) are baked into the image at build
