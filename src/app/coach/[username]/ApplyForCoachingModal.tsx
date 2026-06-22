@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -17,9 +18,21 @@ export function ApplyForCoachingModal({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  // Render into document.body via a portal so the fixed overlay covers the whole
+  // viewport — the coach page's hero uses a `transform`-based entrance animation,
+  // which would otherwise trap this `fixed` element inside the profile box.
+  useEffect(() => {
+    setMounted(true);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
   const [f, setF] = useState({
     age: '',
     sex: '',
@@ -81,7 +94,9 @@ export function ApplyForCoachingModal({
     }
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
       onClick={onClose}
@@ -176,6 +191,7 @@ export function ApplyForCoachingModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -234,6 +234,13 @@ export function ProfileView({ profile, email }: { profile: AthleteProfile; email
               placeholder="Cuisines you like, foods you avoid, time or budget"
               hint="Soft preference, honoured when it fits your macros."
             />
+            <Textarea
+              label="What you currently eat"
+              value={draft.currentDiet ?? ''}
+              onChange={(e) => update('currentDiet', e.target.value)}
+              placeholder={'e.g. eggs + oats for breakfast, chicken + rice for lunch, beef + pasta for dinner'}
+              hint="Pre-fills the “optimize my diet” box on the Nutrition page."
+            />
           </div>
         </Card>
 

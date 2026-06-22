@@ -58,6 +58,10 @@ export interface AthleteProfile {
   /** Durable soft preferences: cuisines, liked/disliked foods, time or budget.
    *  Honoured by the meal generator when compatible with the macro targets. */
   foodPreferences?: string;
+  /** Free-text description of what the athlete already eats on a normal day.
+   *  Seeds the "optimise my diet" flow so the generator restructures their real
+   *  diet instead of inventing one from scratch. Persisted so it's not retyped. */
+  currentDiet?: string;
 }
 
 export interface Exercise {
@@ -249,6 +253,11 @@ export interface MealPlan {
   preWorkout: string;
   postWorkout: string;
   notes: string[];
+  /** Concrete shopping/swap actions vs. the athlete's current diet — populated
+   *  when restructuring an existing diet ("optimise") or applying an edit, e.g.
+   *  "Buy 0% Greek yogurt instead of full-fat", "Add a 4th egg at breakfast".
+   *  Omitted/empty for from-scratch generation. */
+  changes?: string[];
 }
 
 // ---------- Loop handoff (what the next stage should do after a log) ----------

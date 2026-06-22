@@ -99,6 +99,11 @@ function* itemTexts(plan: MealPlan): Generator<{ text: string; meal: string }> {
   }
   if (plan.preWorkout) yield { text: plan.preWorkout, meal: 'Pre-workout' };
   if (plan.postWorkout) yield { text: plan.postWorkout, meal: 'Post-workout' };
+  // The buy/swap list can name foods too — a "swap for chicken" tip must not slip
+  // past for a vegetarian just because it lives outside the meals array.
+  for (const c of plan.changes ?? []) {
+    if (c) yield { text: c, meal: 'Changes' };
+  }
 }
 
 /** Scan a generated plan against the athlete's hard constraints. Empty array
