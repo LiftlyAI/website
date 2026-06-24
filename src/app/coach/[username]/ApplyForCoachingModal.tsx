@@ -113,7 +113,7 @@ export function ApplyForCoachingModal({
         className="chalk-card my-auto flex max-h-[calc(100vh-3rem)] w-full max-w-2xl flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-iron-800 p-6">
+        <div className="flex items-start justify-between gap-4 border-b border-iron-800 p-4 sm:p-6">
           <div>
             <div className="page-kicker mb-1">// APPLY FOR COACHING</div>
             <h2 className="stencil-heading text-2xl text-chalk">Apply to {coachName}</h2>
@@ -135,7 +135,7 @@ export function ApplyForCoachingModal({
             <Button onClick={onClose}>Done</Button>
           </div>
         ) : (
-          <div className="flex-1 space-y-4 overflow-y-auto p-6">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-3">
               <Input label="Age" type="number" value={f.age} onChange={(e) => set('age', e.target.value)} />
               <Select
@@ -190,7 +190,7 @@ export function ApplyForCoachingModal({
         )}
 
         {!done && (
-          <div className="space-y-3 border-t border-iron-800 p-6">
+          <div className="space-y-3 border-t border-iron-800 p-4 sm:p-6">
             {error && <div className="font-mono text-sm text-rpe-max">{error}</div>}
             <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={onClose}>

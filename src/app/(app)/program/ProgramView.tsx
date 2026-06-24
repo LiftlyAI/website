@@ -38,21 +38,38 @@ export function ProgramView({
     day: ProgramDay;
   } | null>(null);
   const [adjustments, setAdjustments] = useState<AdjustMap>({});
+  const [adjusting, setAdjusting] = useState(false);
+  const [adjustError, setAdjustError] = useState(false);
 
   // Re-pull autoregulated targets whenever the lifter switches weeks; this is
-  // how a logged set on Monday flows into Wednesday's suggested load.
+  // how a logged set on Monday flows into Wednesday's suggested load. If the
+  // call fails we fall back to the program's planned weights and say so, rather
+  // than silently showing stale numbers from the previous week.
   useEffect(() => {
     let cancelled = false;
+    setAdjusting(true);
+    setAdjustError(false);
     fetch('/api/program/adjust', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ weekNumber: selectedWeek }),
     })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.adjustments) setAdjustments(data.adjustments);
+      .then((r) => {
+        if (!r.ok) throw new Error('adjust failed');
+        return r.json();
       })
-      .catch(() => undefined);
+      .then((data) => {
+        if (!cancelled) setAdjustments(data?.adjustments ?? {});
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAdjustments({});
+          setAdjustError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setAdjusting(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -93,6 +110,16 @@ export function ProgramView({
           })}
         </div>
       </div>
+
+      {adjusting && (
+        <div className="mb-4 font-mono text-xs text-chalk-mute">Tuning weights from recent sessions…</div>
+      )}
+      {adjustError && !adjusting && (
+        <div className="mb-4 flex items-center gap-2 font-mono text-xs text-rpe-mod">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Showing planned weights — couldn&apos;t auto-tune from recent sessions.
+        </div>
+      )}
 
       {/* Block & theme */}
       <div className="mb-6 chalk-card p-5">

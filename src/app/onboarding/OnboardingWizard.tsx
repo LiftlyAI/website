@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { PlateSpinner } from '@/components/ui/PlateSpinner';
 import type { AthleteProfile } from '@/lib/types';
+import { fetchWithTimeout } from '@/lib/utils';
 
 const TOTAL_STEPS = 5;
 
@@ -57,12 +58,16 @@ export function OnboardingWizard({ email, initialName }: { email: string; initia
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch('/api/onboarding', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ profile }),
-      });
-      const data = await res.json();
+      const res = await fetchWithTimeout(
+        '/api/onboarding',
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ profile }),
+        },
+        150_000,
+      );
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'failed to save');
       router.push('/dashboard');
       router.refresh();

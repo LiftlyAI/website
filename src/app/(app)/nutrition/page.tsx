@@ -2,6 +2,7 @@ import { requireSession } from '@/lib/auth';
 import { queryOne } from '@/lib/db';
 import { macroTargets } from '@/lib/calculations';
 import type { AthleteProfile, MacroTargets, MealPlan, SavedMealPlan } from '@/lib/types';
+import { safeJsonParse } from '@/lib/utils';
 import { NutritionView } from './NutritionView';
 
 export default async function NutritionPage() {
@@ -10,7 +11,7 @@ export default async function NutritionPage() {
     'SELECT profile_json FROM athletes WHERE id = ?',
     [session.id],
   ))!;
-  const profile = JSON.parse(row.profile_json) as AthleteProfile;
+  const profile = safeJsonParse<AthleteProfile>(row.profile_json, {} as AthleteProfile);
   const targets = macroTargets(profile);
 
   const planRow = await queryOne<{
@@ -26,11 +27,12 @@ export default async function NutritionPage() {
 
   let initialPlan: SavedMealPlan | null = null;
   let initialStale = false;
-  if (planRow) {
-    const savedTargets = JSON.parse(planRow.targets_json) as MacroTargets;
+  const savedPlan = planRow ? safeJsonParse<MealPlan | null>(planRow.plan_json, null) : null;
+  if (planRow && savedPlan) {
+    const savedTargets = safeJsonParse<MacroTargets>(planRow.targets_json, targets);
     initialPlan = {
       id: planRow.id,
-      plan: JSON.parse(planRow.plan_json) as MealPlan,
+      plan: savedPlan,
       targets: savedTargets,
       steer: planRow.steer,
       createdAt: planRow.created_at,

@@ -42,12 +42,22 @@ export function PostsManager({ initial }: { initial: CoachPost[] }) {
   }
 
   async function del(id: string) {
-    await fetch('/api/coach/posts', {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    router.refresh();
+    if (!confirm('Delete this post? Your followers will no longer see it.')) return;
+    setError(null);
+    try {
+      const res = await fetch('/api/coach/posts', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not delete post.');
+      }
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not delete post.');
+    }
   }
 
   return (

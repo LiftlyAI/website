@@ -48,12 +48,22 @@ export function CredentialsManager({ initial }: { initial: CoachCredential[] }) 
   }
 
   async function del(id: string) {
-    await fetch('/api/coach/credentials', {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    router.refresh();
+    if (!confirm('Remove this credential? If it was verified you will lose that badge.')) return;
+    setError(null);
+    try {
+      const res = await fetch('/api/coach/credentials', {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not remove credential.');
+      }
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Could not remove credential.');
+    }
   }
 
   return (

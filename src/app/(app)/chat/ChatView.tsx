@@ -45,11 +45,20 @@ export function ChatView({
       { id: assistantId, athleteId: '', role: 'assistant', content: '', createdAt: Date.now() },
     ]);
 
+    // Inactivity guard: if the stream stalls (no bytes for 45s) abort so the
+    // user gets an error instead of a bubble stuck on "…" forever.
+    const controller = new AbortController();
+    let idle: ReturnType<typeof setTimeout> | undefined;
+    const resetIdle = () => {
+      if (idle) clearTimeout(idle);
+      idle = setTimeout(() => controller.abort(), 45_000);
+    };
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ message: text }),
+        signal: controller.signal,
       });
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
@@ -58,16 +67,32 @@ export function ChatView({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = '';
+      resetIdle();
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
+        resetIdle();
         acc += decoder.decode(value, { stream: true });
         setMessages((m) =>
           m.map((x) => (x.id === assistantId ? { ...x, content: acc } : x)),
         );
       }
+      if (!acc.trim()) {
+        setMessages((m) =>
+          m.map((x) =>
+            x.id === assistantId
+              ? { ...x, content: '⚠ No response came back. Try sending that again.' }
+              : x,
+          ),
+        );
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'failed';
+      const aborted = err instanceof DOMException && err.name === 'AbortError';
+      const msg = aborted
+        ? 'The coach took too long to respond. Check your connection and try again.'
+        : err instanceof Error
+          ? err.message
+          : 'failed';
       setMessages((m) =>
         m.map((x) =>
           x.id === assistantId
@@ -76,6 +101,7 @@ export function ChatView({
         ),
       );
     } finally {
+      if (idle) clearTimeout(idle);
       setStreaming(false);
     }
   }

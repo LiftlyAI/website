@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +20,13 @@ export function ProfileView({ profile, email }: { profile: AthleteProfile; email
   const [regenerating, setRegenerating] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
+  // Auto-clear the success toast so it doesn't linger and confuse the next save.
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), 4000);
+    return () => clearTimeout(t);
+  }, [msg]);
 
   function update<K extends keyof AthleteProfile>(k: K, v: AthleteProfile[K]) {
     setDraft((d) => ({ ...d, [k]: v }));

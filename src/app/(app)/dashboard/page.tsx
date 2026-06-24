@@ -14,7 +14,7 @@ import { estimatedOneRM } from '@/lib/calculations';
 import { computeHandoff } from '@/lib/handoff';
 import { assessReadinessLog } from '@/lib/readiness';
 import { computeWeeklyReview } from '@/lib/review-data';
-import { fmtDate } from '@/lib/utils';
+import { fmtDate, safeJsonParse } from '@/lib/utils';
 import { TodayLoopCard, type LoopStep } from './TodayLoopCard';
 import { WeeklyReviewCard } from './WeeklyReviewCard';
 
@@ -25,7 +25,7 @@ export default async function Dashboard() {
     'SELECT profile_json FROM athletes WHERE id = ?',
     [session.id],
   ))!;
-  const profile = JSON.parse(athlete.profile_json) as AthleteProfile;
+  const profile = safeJsonParse<AthleteProfile>(athlete.profile_json, {} as AthleteProfile);
 
   const programRow = await queryOne<{
     program_json: string;
@@ -36,7 +36,7 @@ export default async function Dashboard() {
     [session.id],
   );
 
-  const program = programRow ? (JSON.parse(programRow.program_json) as Program) : null;
+  const program = programRow ? safeJsonParse<Program | null>(programRow.program_json, null) : null;
   const currentWeekNum = programRow?.current_week ?? 1;
   const currentWeek = program?.weeks.find((w) => w.weekNumber === currentWeekNum);
 
@@ -48,10 +48,10 @@ export default async function Dashboard() {
 
   const e1RMs: Record<string, number> = {};
   for (const s of recentSessions) {
-    const exs = JSON.parse(s.exercises_json) as {
+    const exs = safeJsonParse<{
       exercise: string;
       sets: { reps: number; weight: number }[];
-    }[];
+    }[]>(s.exercises_json, []);
     for (const ex of exs) {
       const lower = ex.exercise.toLowerCase();
       let key: string | null = null;
@@ -86,9 +86,9 @@ export default async function Dashboard() {
 
   let weeklyTonnage = 0;
   for (const s of weekSessions) {
-    const exs = JSON.parse(s.exercises_json) as {
+    const exs = safeJsonParse<{
       sets: { reps: number; weight: number }[];
-    }[];
+    }[]>(s.exercises_json, []);
     for (const ex of exs) for (const set of ex.sets) weeklyTonnage += set.weight * set.reps;
   }
 

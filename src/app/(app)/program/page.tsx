@@ -1,6 +1,7 @@
 import { requireSession } from '@/lib/auth';
 import { queryOne } from '@/lib/db';
 import type { AthleteProfile, Program } from '@/lib/types';
+import { safeJsonParse } from '@/lib/utils';
 import { ProgramView } from './ProgramView';
 
 export default async function ProgramPage() {
@@ -10,7 +11,7 @@ export default async function ProgramPage() {
     'SELECT profile_json FROM athletes WHERE id = ?',
     [session.id],
   ))!;
-  const profile = JSON.parse(athlete.profile_json) as AthleteProfile;
+  const profile = safeJsonParse<AthleteProfile>(athlete.profile_json, {} as AthleteProfile);
 
   const programRow = await queryOne<{
     id: string;
@@ -22,7 +23,11 @@ export default async function ProgramPage() {
     [session.id],
   );
 
-  if (!programRow) {
+  const program = programRow
+    ? safeJsonParse<Program | null>(programRow.program_json, null)
+    : null;
+
+  if (!programRow || !program) {
     return (
       <div className="stagger px-4 sm:px-6 lg:px-8 py-6 lg:py-10 max-w-5xl">
         <div className="page-kicker mb-2">// THE PLAN</div>
@@ -33,8 +38,6 @@ export default async function ProgramPage() {
       </div>
     );
   }
-
-  const program = JSON.parse(programRow.program_json) as Program;
 
   return (
     <ProgramView
