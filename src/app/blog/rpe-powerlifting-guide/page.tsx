@@ -29,8 +29,8 @@ const jsonLd = {
         'The full RPE scale, Tuchscherer percentages, how to calibrate your RPE, and why autoregulation beats fixed loading.',
       author: { '@type': 'Organization', name: 'Liftly', url: 'https://liftly.tech' },
       publisher: { '@type': 'Organization', name: 'Liftly', url: 'https://liftly.tech' },
-      datePublished: '2025-06-12',
-      dateModified: '2025-06-12',
+      datePublished: '2026-06-12',
+      dateModified: '2026-06-12',
       url: 'https://liftly.tech/blog/rpe-powerlifting-guide',
     },
     {
@@ -41,7 +41,7 @@ const jsonLd = {
           name: 'What does RPE mean in powerlifting?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'RPE (Rate of Perceived Exertion) is a 1–10 scale measuring how hard a set felt relative to maximum effort. In powerlifting, RPE 10 is a true max — no more reps possible. Each point below 10 represents one additional rep in reserve: RPE 9 means one rep left, RPE 8 means two reps left.',
+            text: 'RPE (Rate of Perceived Exertion) is a 1–10 scale measuring how hard a set felt relative to maximum effort. In powerlifting, RPE 10 is a true max with no more reps possible. Each point below 10 represents one additional rep in reserve: RPE 9 means one rep left, RPE 8 means two reps left.',
           },
         },
         {
@@ -57,7 +57,7 @@ const jsonLd = {
           name: 'Is RPE better than percentages for powerlifting?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'For intermediate and advanced lifters, RPE is more accurate because it accounts for daily strength variation caused by fatigue, sleep, stress, and hydration. Percentages assume a fixed 1RM that doesn\'t change — RPE adapts to your actual strength on that day.',
+            text: 'For intermediate and advanced lifters, RPE is more accurate because it accounts for daily strength variation caused by fatigue, sleep, stress, and hydration. Percentages assume a fixed 1RM that doesn\'t change; RPE adapts to your actual strength on that day.',
           },
         },
         {
@@ -65,7 +65,7 @@ const jsonLd = {
           name: 'What is RPE 8 in powerlifting?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'RPE 8 means two reps in reserve — you completed the set and felt you could have done two more before failure. For a single rep at RPE 8, you\'re lifting approximately 94% of your 1RM according to the Tuchscherer RPE chart.',
+            text: 'RPE 8 means two reps in reserve: you completed the set and felt you could have done two more before failure. For a single rep at RPE 8, you\'re lifting about 94% of your 1RM according to the Tuchscherer RPE chart.',
           },
         },
       ],
@@ -82,23 +82,22 @@ export default function RPEGuidePage() {
       />
       <BlogPost
         title="RPE in Powerlifting: The Complete Guide"
-        date="June 2025"
+        date="June 2026"
         readTime="6 min read"
         category="TRAINING METHODOLOGY"
       >
         <DefinitionBlock>
           RPE (Rate of Perceived Exertion) is a 1–10 scale used in powerlifting to gauge how hard a
-          set felt relative to maximum effort. RPE 10 is a true maximum — no additional reps were
-          possible. Each point below 10 represents one rep left in reserve: RPE 9 means one rep left,
-          RPE 8 means two reps left. The scale was adapted for powerlifting by Mike Tuchscherer of
-          Reactive Training Systems.
+          set felt relative to maximum effort. RPE 10 is a true maximum, with no rep left in the tank.
+          Each point below 10 represents one rep left in reserve: RPE 9 means one rep left, RPE 8
+          means two reps left. Mike Tuchscherer of Reactive Training Systems adapted the scale for
+          powerlifting.
         </DefinitionBlock>
 
         <P>
-          RPE transforms training from a fixed prescription into a conversation between the athlete
-          and the bar. Rather than hitting a rigid percentage of a 1RM that may have shifted due to
-          fatigue or a good night's sleep, you work to a level of effort — and the program adapts
-          accordingly.
+          RPE turns training from a fixed prescription into a back-and-forth between you and the bar.
+          Rather than chasing a rigid percentage of a 1RM that may have shifted overnight from fatigue
+          or a good night's sleep, you work to a level of effort, and the program adapts to it.
         </P>
 
         <H2>The RPE scale</H2>
@@ -113,7 +112,7 @@ export default function RPEGuidePage() {
           </thead>
           <tbody>
             {[
-              ['10', '0', 'Max effort — could not have done another rep.'],
+              ['10', '0', 'Max effort. Could not have done another rep.'],
               ['9.5', '0–1', 'Could maybe do 1 more rep, not certain.'],
               ['9', '1', 'Could definitely do 1 more rep.'],
               ['8.5', '1–2', 'Could do 1–2 more reps.'],
@@ -135,9 +134,9 @@ export default function RPEGuidePage() {
         <H2>RPE and percentage of 1RM</H2>
         <P>
           Each combination of reps × RPE corresponds to a known percentage of your 1RM. This is the
-          Tuchscherer chart — the same one Liftly uses to estimate your e1RM from every logged set.
+          Tuchscherer chart, the same one Liftly uses to estimate your e1RM from every logged set.
           A set of 3 reps at RPE 9, for example, tells the program you lifted 91% of your current
-          maximum, which gives a precise e1RM estimate without needing a true max attempt.
+          maximum, which gives a precise e1RM estimate without a true max attempt.
         </P>
 
         <DataTable>
@@ -180,17 +179,17 @@ export default function RPEGuidePage() {
         <Ul>
           <Li>
             <strong className="text-chalk">Accounts for daily variation.</strong> A harder day
-            doesn't force you into missed reps — the weight stays appropriate to how you're actually
-            performing.
+            doesn't force you into missed reps; the weight stays matched to how you're performing
+            today.
           </Li>
           <Li>
             <strong className="text-chalk">Works without a known 1RM.</strong> You don't need to test
-            your max to use RPE-based programming — you back-calculate it from working sets.
+            your max to use RPE-based programming; you back-calculate it from working sets.
           </Li>
           <Li>
             <strong className="text-chalk">Autoregulates fatigue.</strong> As a block progresses and
-            fatigue accumulates, the same weight starts feeling harder — RPE captures that signal
-            automatically.
+            fatigue accumulates, the same weight starts to feel harder, and RPE catches that signal
+            for you.
           </Li>
           <Li>
             <strong className="text-chalk">Keeps progression honest.</strong> Strong days push load
@@ -215,7 +214,7 @@ export default function RPEGuidePage() {
               ['Requires calibration period', 'Yes', 'No'],
               ['Good for beginners', 'Less ideal', 'Better'],
               ['Captures accumulated fatigue', 'Yes', 'No'],
-              ['Prescribes exact weights', 'No — works to effort', 'Yes'],
+              ['Prescribes exact weights', 'No, works to effort', 'Yes'],
             ].map(([feat, rpe, pct]) => (
               <tr key={feat}>
                 <Td highlight>{feat}</Td>
@@ -228,9 +227,9 @@ export default function RPEGuidePage() {
 
         <H2>How to calibrate your RPE</H2>
         <P>
-          New lifters consistently underrate their RPE — they call hard sets RPE 8 when they're true
-          9s, because they haven't yet hit a real 10 to anchor the scale. Calibration takes time and
-          deliberate practice.
+          New lifters underrate their RPE. They call hard sets RPE 8 when they're true 9s, because
+          they haven't hit a real 10 to anchor the scale yet. Calibration takes time and deliberate
+          practice.
         </P>
         <Ol>
           <Oli num={1}>
@@ -240,17 +239,17 @@ export default function RPEGuidePage() {
           </Oli>
           <Oli num={2}>
             <strong className="text-chalk">Occasionally push to RPE 10.</strong> You can't calibrate
-            the scale without anchoring the top end. Attempt a true max periodically — carefully, with
-            a spotter — so you know what 10 actually feels like.
+            the scale without anchoring the top end. Attempt a true max now and then, with a spotter,
+            so you know what 10 feels like.
           </Oli>
           <Oli num={3}>
             <strong className="text-chalk">Review your misses.</strong> If you miss a rep, that prior
             set was RPE 10, not the 8.5 you called it. Recalibrate backward from missed attempts.
           </Oli>
           <Oli num={4}>
-            <strong className="text-chalk">Give yourself 3–6 months.</strong> RPE accuracy improves
-            meaningfully with training age. Early calibration errors are normal — the goal is
-            progressive improvement, not precision from day one.
+            <strong className="text-chalk">Give yourself 3–6 months.</strong> RPE accuracy climbs with
+            training age. Early calibration errors are normal; aim for steady improvement, not
+            precision from day one.
           </Oli>
         </Ol>
 
@@ -260,19 +259,19 @@ export default function RPEGuidePage() {
           corresponding percentage in the Tuchscherer chart, calculates an e1RM, takes a rolling best
           across recent sessions (so one bad day can't tank your numbers), and recalculates your next
           session's targets. You see the new prescribed weight, the old one struck through, and a
-          one-line reason — "from your last squat session's e1RM."
+          one-line reason: "from your last squat session's e1RM."
         </P>
 
         <Callout>
           Example: logging a squat triple at a higher e1RM than the program expected moved the next
-          squat target from 125 lbs to 165 lbs, automatically. Grind harder than expected on a lift
-          and the number goes down instead — no manual recalculation needed.
+          squat target from 125 lbs to 165 lbs on its own. Grind harder than expected on a lift and
+          the number drops instead, with no manual recalculation.
         </Callout>
 
         <FAQSection>
           <FAQItem question="What does RPE mean in powerlifting?">
             RPE (Rate of Perceived Exertion) is a 1–10 scale measuring how hard a set felt relative
-            to maximum effort. RPE 10 is a true max — no more reps possible. Each point below 10
+            to maximum effort. RPE 10 is a true max, with no more reps possible. Each point below 10
             represents one additional rep in reserve: RPE 9 means one rep left, RPE 8 means two reps
             left.
           </FAQItem>
@@ -283,14 +282,14 @@ export default function RPEGuidePage() {
           </FAQItem>
           <FAQItem question="Is RPE better than percentages for powerlifting?">
             For intermediate and advanced lifters, yes. RPE accounts for daily variation in strength
-            caused by fatigue, sleep, stress, and hydration — factors that fixed percentages ignore.
+            caused by fatigue, sleep, stress, and hydration, the factors that fixed percentages ignore.
             Beginners benefit from the simplicity of percentage-based loading while they develop their
             RPE calibration.
           </FAQItem>
           <FAQItem question="What is RPE 8 in powerlifting?">
-            RPE 8 means two reps in reserve — you completed the set and felt you could have done two
-            more before failure. For a single rep at RPE 8, you're lifting approximately 94% of your
-            1RM according to the Tuchscherer RPE chart.
+            RPE 8 means two reps in reserve: you completed the set and felt you could have done two
+            more before failure. For a single rep at RPE 8, you're lifting about 94% of your 1RM
+            according to the Tuchscherer RPE chart.
           </FAQItem>
         </FAQSection>
       </BlogPost>

@@ -4,6 +4,7 @@
 // request. Login/signup happen client-side (see app/login/page.tsx); logout is
 // app/api/auth/logout. There is no local file DB here — all access goes through
 // the Postgres helpers in ./db (Vercel's filesystem is read-only).
+import { headers } from 'next/headers';
 import { createSupabaseServerClient } from './supabase/server';
 import { execute, queryOne, uuid } from './db';
 
@@ -21,9 +22,18 @@ export async function getSession(): Promise<SessionAthlete | null> {
     return null;
   }
   const supabase = await createSupabaseServerClient();
+  // Web requests carry the session in cookies; native apps (Android/iOS) send the
+  // Supabase access token as `Authorization: Bearer <jwt>`. Validate the bearer
+  // token when present, otherwise fall back to the cookie-based session. This is
+  // backward-compatible: existing web behavior is unchanged when no header is set.
+  const authHeader = (await headers()).get('authorization');
+  const bearer =
+    authHeader && authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7).trim()
+      : null;
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = bearer ? await supabase.auth.getUser(bearer) : await supabase.auth.getUser();
   if (!user) return null;
 
   const row = await queryOne<{

@@ -1,0 +1,17 @@
+{
+  "userIgnoreFilters": [
+    "node_modules/",
+    "android/",
+    "ios/",
+    "capacitor/",
+    "public/",
+    "sample_videos/",
+    "ui-shots/",
+    "legal-preview/",
+    "graphify-out/",
+    ".next/",
+    "out/",
+    "dist/",
+    "build/"
+  ]
+}

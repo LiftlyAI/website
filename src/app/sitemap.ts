@@ -11,7 +11,7 @@ const BLOG_POSTS = [
 export default function sitemap(): MetadataRoute.Sitemap {
   const blogEntries: MetadataRoute.Sitemap = BLOG_POSTS.map((slug) => ({
     url: `https://liftly.tech/blog/${slug}`,
-    lastModified: new Date('2025-06-12'),
+    lastModified: new Date('2026-06-12'),
     changeFrequency: 'monthly',
     priority: 0.8,
   }));

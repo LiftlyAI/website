@@ -8,11 +8,11 @@ import {
 export const metadata: Metadata = {
   title: 'Powerlifting Nutrition: How to Eat for Strength and a Meet',
   description:
-    'Calorie targets using Mifflin-St Jeor and Katch-McArdle, protein per kg lean body mass, training-day cycling, and the meet-week protocol — grounded in the research.',
+    'Calorie targets using Mifflin-St Jeor and Katch-McArdle, protein per kg lean body mass, training-day cycling, and the meet-week protocol, grounded in the research.',
   openGraph: {
     title: 'Powerlifting Nutrition: How to Eat for Strength and a Meet',
     description:
-      'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol — all grounded in the research.',
+      'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol, all grounded in the research.',
     type: 'article',
     url: 'https://liftly.tech/blog/powerlifting-nutrition-guide',
   },
@@ -26,11 +26,11 @@ const jsonLd = {
       '@type': 'Article',
       headline: 'Powerlifting Nutrition: How to Eat for Strength and a Meet',
       description:
-        'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol — grounded in the research.',
+        'Calorie targets, protein per kg LBM, training-day cycling, and the meet-week protocol, grounded in the research.',
       author: { '@type': 'Organization', name: 'Liftly', url: 'https://liftly.tech' },
       publisher: { '@type': 'Organization', name: 'Liftly', url: 'https://liftly.tech' },
-      datePublished: '2025-06-12',
-      dateModified: '2025-06-12',
+      datePublished: '2026-06-12',
+      dateModified: '2026-06-12',
       url: 'https://liftly.tech/blog/powerlifting-nutrition-guide',
     },
     {
@@ -57,7 +57,7 @@ const jsonLd = {
           name: 'What should I eat the day of a powerlifting meet?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Eat a normal meal 2–3 hours before lifting. Between attempts and sessions, eat simple carbs (rice cakes, bananas, sports drinks) and moderate protein. Avoid anything that causes GI distress. Stay hydrated. Most lifters eat more than they feel hungry for on meet day — that is correct.',
+            text: 'Eat a normal meal 2–3 hours before lifting. Between attempts and sessions, eat simple carbs (rice cakes, bananas, sports drinks) and moderate protein. Avoid anything that causes GI distress. Stay hydrated. Most lifters eat more than they feel hungry for on meet day, which is correct.',
           },
         },
         {
@@ -82,16 +82,16 @@ export default function NutritionGuidePage() {
       />
       <BlogPost
         title="Powerlifting Nutrition: How to Eat for Strength and a Meet"
-        date="June 2025"
+        date="June 2026"
         readTime="7 min read"
         category="NUTRITION"
       >
         <DefinitionBlock>
-          Powerlifting nutrition means eating to maximize strength output across a training cycle —
-          not to minimize bodyweight or achieve a general health outcome. Calorie and protein targets
-          are calculated from training frequency, bodyweight, body composition, and phase goal:
-          gaining, maintaining, or cutting into a weight class. The math differs meaningfully from
-          general fitness nutrition, particularly around protein targets and meet-week protocol.
+          Powerlifting nutrition means eating to maximize strength output across a training cycle,
+          not to minimize bodyweight or chase a general health outcome. Calorie and protein targets
+          come from training frequency, bodyweight, body composition, and phase goal: gaining,
+          maintaining, or cutting into a weight class. The math differs from general fitness
+          nutrition, above all around protein targets and meet-week protocol.
         </DefinitionBlock>
 
         <H2>Calorie targets</H2>
@@ -163,9 +163,9 @@ export default function NutritionGuidePage() {
           <tbody>
             {[
               ['Gaining (novice)', '+400 kcal/day', 'Novices build muscle faster and tolerate a larger surplus'],
-              ['Gaining (intermediate/advanced)', '+250 kcal/day', 'Smaller surplus — reduces fat accumulation without limiting muscle growth (Iraki/Helms, Slater et al.)'],
-              ['Maintaining', '±0 kcal', 'TDEE — supports performance without body composition change'],
-              ['Cutting', '−400 kcal/day', 'Mid-range of −300 to −500 kcal — preserves strength while losing weight'],
+              ['Gaining (intermediate/advanced)', '+250 kcal/day', 'Smaller surplus that limits fat gain without capping muscle growth (Iraki/Helms, Slater et al.)'],
+              ['Maintaining', '±0 kcal', 'TDEE, which supports performance without body composition change'],
+              ['Cutting', '−400 kcal/day', 'Mid-range of −300 to −500 kcal, preserving strength while losing weight'],
             ].map(([phase, adj, rat]) => (
               <tr key={phase}>
                 <Td highlight>{phase}</Td>
@@ -178,9 +178,9 @@ export default function NutritionGuidePage() {
 
         <H2>Protein targets</H2>
         <P>
-          Protein targets are calculated from lean body mass (LBM), not total bodyweight. Fat mass
-          doesn't drive muscle protein synthesis — using total bodyweight overprescribes protein for
-          heavier lifters and underprescribes for leaner ones.
+          Protein targets come from lean body mass (LBM), not total bodyweight. Fat mass doesn't drive
+          muscle protein synthesis, so total bodyweight overprescribes protein for heavier lifters and
+          underprescribes for leaner ones.
         </P>
 
         <DataTable>
@@ -194,7 +194,7 @@ export default function NutritionGuidePage() {
           <tbody>
             {[
               ['Gaining', '2.0 g/kg', 'Morton 2018 meta-analysis (practical default; CI reaches 2.2 g/kg)'],
-              ['Maintaining', '1.8 g/kg', 'ISSN position stand — mid of 1.4–2.0 g/kg range'],
+              ['Maintaining', '1.8 g/kg', 'ISSN position stand, mid of the 1.4–2.0 g/kg range'],
               ['Cutting', '2.3 g/kg', 'Elevated to preserve muscle mass during a calorie deficit'],
             ].map(([phase, prot, res]) => (
               <tr key={phase}>
@@ -208,23 +208,23 @@ export default function NutritionGuidePage() {
 
         <Callout>
           Example: a 90 kg lifter at 15% body fat has an LBM of 76.5 kg. In a gaining phase, the
-          protein target is 153 g/day (76.5 × 2.0). Using total bodyweight would give 180 g/day —
+          protein target is 153 g/day (76.5 × 2.0). Using total bodyweight would give 180 g/day,
           27 g/day more than the evidence supports.
         </Callout>
 
         <H3>Per-meal protein distribution</H3>
         <P>
-          Approximately 0.4 g/kg LBM per meal is the muscle protein synthesis (MPS) threshold per
-          sitting. For the lifter above, that's about 31 g per meal. Spread total protein across 3–6
-          meals across the day — the precise number matters less than hitting the daily total.
+          The muscle protein synthesis (MPS) threshold per sitting is about 0.4 g/kg LBM per meal.
+          For the lifter above, that's about 31 g per meal. Spread total protein across 3–6 meals
+          through the day; the exact number matters less than hitting the daily total.
         </P>
 
         <H2>Fat targets</H2>
         <P>
           Fat is set at 25% of total calories (mid of the ISSN recommendation of 20–35%), with a
           floor of 15% to protect hormonal function. For most competitive powerlifters, this lands
-          between 0.8–1.2 g/kg total bodyweight per day. Remaining calories after protein and fat
-          are filled with carbohydrates — the primary fuel for high-intensity lifting.
+          between 0.8–1.2 g/kg total bodyweight per day. Carbohydrates fill the calories left after
+          protein and fat, and they're the primary fuel for high-intensity lifting.
         </P>
 
         <H2>Training-day vs. rest-day cycling</H2>
@@ -248,7 +248,7 @@ export default function NutritionGuidePage() {
         <H3>If you are not cutting weight</H3>
         <P>
           Eat normally throughout meet week. Maintain protein, keep carbohydrates moderate to high,
-          and sleep well. The only change is reducing training volume — food stays the same.
+          and sleep well. The only change is cutting training volume; food stays the same.
         </P>
 
         <H3>If you are cutting weight</H3>
@@ -262,7 +262,7 @@ export default function NutritionGuidePage() {
           <tbody>
             {[
               ['7 days out', 'Normal calories, moderate carbs, full protein'],
-              ['3–4 days out', 'Begin water management if cutting — reduce sodium, increase water intake then restrict day before'],
+              ['3–4 days out', 'Begin water management if cutting: reduce sodium, increase water intake, then restrict the day before'],
               ['24 hours out', 'Carb load: 6–10 g carbs/kg LBM over the day before weigh-in'],
               ['Day of (post weigh-in)', 'Eat immediately after weigh-in. Simple carbs between flights. Keep protein moderate.'],
               ['Between attempts', 'Simple carbs (rice cakes, bananas, sports drinks). Small amounts, nothing that causes GI distress.'],
@@ -283,8 +283,8 @@ export default function NutritionGuidePage() {
           calorie budget after protein and fat are accounted for.
         </P>
         <P>
-          When your bodyweight or training phase changes, the targets update automatically. If you
-          entered body fat percentage, Katch-McArdle is used; otherwise the app falls back to
+          When your bodyweight or training phase changes, the targets update on their own. If you
+          entered body fat percentage, the app uses Katch-McArdle; otherwise it falls back to
           Mifflin-St Jeor.
         </P>
 
@@ -299,13 +299,13 @@ export default function NutritionGuidePage() {
             Cut 2–4 weeks out using a modest calorie deficit (−300 to −400 kcal/day) to lose
             0.5–1% of bodyweight per week. Avoid aggressive cuts that impair training performance.
             If a same-day or 24-hour water cut is required, manage it with fluid and sodium
-            reduction — not food restriction.
+            reduction, not food restriction.
           </FAQItem>
           <FAQItem question="What should I eat the day of a powerlifting meet?">
             Eat a normal meal 2–3 hours before your first lift. Between attempts and sessions: simple
             carbs (rice cakes, bananas, fruit, sports drinks) and moderate protein. Avoid anything
             that causes GI distress. Stay hydrated. Most lifters eat more than they feel hungry for
-            on meet day — that is correct.
+            on meet day, which is correct.
           </FAQItem>
           <FAQItem question="Should powerlifters eat more than bodybuilders?">
             In a gaining phase, calorie and protein requirements are similar. The key difference is

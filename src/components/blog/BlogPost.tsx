@@ -55,7 +55,7 @@ export function BlogPost({ title, date, readTime, category, children }: BlogPost
           Let the AI handle the programming.
         </h2>
         <p className="mx-auto mb-8 max-w-md font-body text-chalk-dim">
-          Block periodization, RPE autoregulation, form check, and nutrition — all in one app.
+          Block periodization, RPE autoregulation, form check, and nutrition, all in one app.
         </p>
         <Link href="/login" className="btn-primary !px-8 !py-3.5">
           Start Lifting Free →
