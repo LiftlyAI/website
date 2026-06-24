@@ -66,8 +66,16 @@ export default function LoginPage() {
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw new Error(signInError.message);
-        const res = await fetch('/api/auth/status');
-        const { hasProfile } = await res.json();
+        // Sign-in succeeded. Route by whether they've onboarded; if the status
+        // check fails for any reason, fall back to the dashboard rather than
+        // surfacing a scary error on a successful login.
+        let hasProfile = true;
+        try {
+          const res = await fetch('/api/auth/status');
+          if (res.ok) ({ hasProfile } = await res.json());
+        } catch {
+          /* keep default — dashboard will handle a missing profile */
+        }
         router.push(hasProfile ? '/dashboard' : '/onboarding');
         router.refresh();
       }

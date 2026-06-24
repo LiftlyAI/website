@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { PlateSpinner } from '@/components/ui/PlateSpinner';
 import { Textarea } from '@/components/ui/Input';
 import type { AthleteProfile, MacroTargets, MealPlan, SavedMealPlan } from '@/lib/types';
+import { fetchWithTimeout } from '@/lib/utils';
 
 export function NutritionView({
   profile,
@@ -38,12 +39,12 @@ export function NutritionView({
     setOptimizing(true);
     setError(null);
     try {
-      const res = await fetch('/api/nutrition/optimize', {
+      const res = await fetchWithTimeout('/api/nutrition/optimize', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ currentDiet: currentDiet.trim() }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'failed');
       setPlan(data.plan);
       setStale(false);
@@ -59,12 +60,12 @@ export function NutritionView({
     setGenerating(true);
     setError(null);
     try {
-      const res = await fetch('/api/nutrition/generate', {
+      const res = await fetchWithTimeout('/api/nutrition/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({}),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'failed');
       setPlan(data.plan);
       setStale(false);
@@ -81,12 +82,12 @@ export function NutritionView({
     setEditing(true);
     setError(null);
     try {
-      const res = await fetch('/api/nutrition/edit', {
+      const res = await fetchWithTimeout('/api/nutrition/edit', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ instruction: editInstruction.trim() }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'failed');
       setPlan(data.plan);
       setEditInstruction('');

@@ -45,7 +45,7 @@ export default function CoachLoginPage() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email, name }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'login failed');
       router.push('/coach');
       router.refresh();

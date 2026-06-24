@@ -1,6 +1,7 @@
 import { query, queryOne } from '@/lib/db';
 import type { AthleteProfile } from '@/lib/types';
 import { estimatedOneRM } from '@/lib/calculations';
+import { safeJsonParse } from '@/lib/utils';
 
 export interface E1RMPoint {
   date: string;
@@ -34,11 +35,12 @@ export interface ProgressData {
  * both call this so the lift-history math lives in exactly one place.
  */
 export async function getProgressData(athleteId: string): Promise<ProgressData> {
-  const profile = JSON.parse(
+  const profile = safeJsonParse<AthleteProfile>(
     (await queryOne<{ profile_json: string }>('SELECT profile_json FROM athletes WHERE id = ?', [
       athleteId,
     ]))!.profile_json,
-  ) as AthleteProfile;
+    {} as AthleteProfile,
+  );
 
   const sessions = await query<{ date: string; exercises_json: string }>(
     'SELECT date, exercises_json FROM session_logs WHERE athlete_id = ? ORDER BY date ASC',
@@ -47,10 +49,10 @@ export async function getProgressData(athleteId: string): Promise<ProgressData> 
 
   // e1RM time series (best e1RM per session per lift)
   const e1rms: E1RMPoint[] = sessions.map((s) => {
-    const exs = JSON.parse(s.exercises_json) as {
+    const exs = safeJsonParse<{
       exercise: string;
       sets: { reps: number; weight: number }[];
-    }[];
+    }[]>(s.exercises_json, []);
     const point: E1RMPoint = { date: s.date };
     for (const ex of exs) {
       const lower = ex.exercise.toLowerCase();
@@ -93,10 +95,10 @@ export async function getProgressData(athleteId: string): Promise<ProgressData> 
     const wk = week.toISOString().slice(0, 10);
     if (!volumeMap.has(wk)) volumeMap.set(wk, { week: wk, squat: 0, bench: 0, deadlift: 0 });
     const point = volumeMap.get(wk)!;
-    const exs = JSON.parse(s.exercises_json) as {
+    const exs = safeJsonParse<{
       exercise: string;
       sets: { reps: number; weight: number }[];
-    }[];
+    }[]>(s.exercises_json, []);
     for (const ex of exs) {
       const lower = ex.exercise.toLowerCase();
       let key: 'squat' | 'bench' | 'deadlift' | null = null;

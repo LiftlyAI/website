@@ -5,6 +5,7 @@ import { listSuggestions } from '@/lib/coach-data';
 import { computeWeeklyReview } from '@/lib/review-data';
 import { Card, CardHeader } from '@/components/ui/Card';
 import type { AthleteProfile, DecisionSeverity } from '@/lib/types';
+import { safeJsonParse } from '@/lib/utils';
 import { SuggestionQueue } from './SuggestionQueue';
 import { ClientTools } from './ClientTools';
 
@@ -29,7 +30,7 @@ export default async function ClientPage({ params }: { params: { id: string } })
   }>('SELECT name, email, profile_json FROM athletes WHERE id = ?', [params.id]);
   if (!aRow) notFound();
   const profile = aRow.profile_json
-    ? (JSON.parse(aRow.profile_json) as AthleteProfile)
+    ? safeJsonParse<AthleteProfile | null>(aRow.profile_json, null)
     : null;
 
   const review = profile ? await computeWeeklyReview(params.id) : null;

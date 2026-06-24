@@ -5,6 +5,7 @@ import { feedbackForAthlete, sharedFormCheckIds } from '@/lib/form-review-data';
 import { FormCheckClient } from './FormCheckClient';
 import { FormCheckCoachPanel, type CoachPanelItem } from './FormCheckCoachPanel';
 import type { FormCheckResult } from '@/lib/types';
+import { safeJsonParse } from '@/lib/utils';
 
 export default async function FormCheckPage() {
   const session = await requireSession();
@@ -39,7 +40,7 @@ export default async function FormCheckPage() {
     estimatedRPE: r.estimated_rpe,
     rpeConfidence: (r.rpe_confidence as FormCheckResult['rpeConfidence']) ?? null,
     loadKg: r.load_kg,
-    cv: r.cv_json ? (JSON.parse(r.cv_json) as FormCheckResult['cv']) : null,
+    cv: r.cv_json ? safeJsonParse<FormCheckResult['cv']>(r.cv_json, null) : null,
     createdAt: r.created_at,
   }));
 

@@ -124,7 +124,8 @@ function ProgramStep() {
     <div>
       <div className="stencil-heading text-xl text-chalk">No program yet</div>
       <p className="text-sm text-chalk-mute mt-1">
-        Generation may have failed. Build one from your profile to start the loop.
+        Build your block-periodized program from your profile to start the loop. (If a
+        previous attempt failed, try again here.)
       </p>
       <Link href="/profile" className="btn-primary mt-4 inline-flex items-center gap-2">
         Generate a program <ArrowRight className="w-4 h-4" />

@@ -29,10 +29,15 @@ export function ApplyForCoachingModal({
   useEffect(() => {
     setMounted(true);
     document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
     };
-  }, []);
+  }, [onClose]);
   const [f, setF] = useState({
     age: '',
     sex: '',
@@ -98,17 +103,20 @@ export function ApplyForCoachingModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-6"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Apply to ${coachName}`}
     >
       <div
-        className="chalk-card my-8 w-full max-w-lg p-6"
+        className="chalk-card my-auto flex max-h-[calc(100vh-3rem)] w-full max-w-2xl flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 border-b border-iron-800 p-4 sm:p-6">
           <div>
             <div className="page-kicker mb-1">// APPLY FOR COACHING</div>
-            <h2 className="stencil-heading text-xl text-chalk">Apply to {coachName}</h2>
+            <h2 className="stencil-heading text-2xl text-chalk">Apply to {coachName}</h2>
           </div>
           <button
             onClick={onClose}
@@ -120,14 +128,14 @@ export function ApplyForCoachingModal({
         </div>
 
         {done ? (
-          <div className="space-y-4 py-4 text-center">
+          <div className="space-y-4 p-8 text-center">
             <p className="font-body text-sm text-chalk">
               Application sent to {coachName}. You&apos;ll see the status in your coaching tab.
             </p>
             <Button onClick={onClose}>Done</Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-3">
               <Input label="Age" type="number" value={f.age} onChange={(e) => set('age', e.target.value)} />
               <Select
@@ -178,7 +186,11 @@ export function ApplyForCoachingModal({
             </div>
             <Textarea label="Meet history" value={f.meetHistory} onChange={(e) => set('meetHistory', e.target.value)} placeholder="Federations, totals, dates (optional)" />
             <Textarea label="Injuries / limitations" value={f.injuries} onChange={(e) => set('injuries', e.target.value)} placeholder="Anything the coach should know (optional)" />
+          </div>
+        )}
 
+        {!done && (
+          <div className="space-y-3 border-t border-iron-800 p-4 sm:p-6">
             {error && <div className="font-mono text-sm text-rpe-max">{error}</div>}
             <div className="flex justify-end gap-3">
               <Button variant="ghost" onClick={onClose}>

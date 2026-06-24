@@ -9,7 +9,7 @@ import { Select, Textarea, Input } from '@/components/ui/Input';
 import { RPEBadge } from '@/components/ui/RPEBadge';
 import { PlateSpinner } from '@/components/ui/PlateSpinner';
 import type { FormCheckResult, CvAnalysis, RpeConfidence } from '@/lib/types';
-import { fmtDate } from '@/lib/utils';
+import { fmtDate, fetchWithTimeout } from '@/lib/utils';
 
 const CONF_LABEL: Record<RpeConfidence, string> = {
   measured: 'Measured · your slowdown→RPE profile',
@@ -394,7 +394,7 @@ function RepTable({ cv }: { cv: CvAnalysis }) {
     <div>
       <SectionTitle>Per-rep</SectionTitle>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm font-mono tabular-nums">
+        <table className="w-full min-w-[560px] text-sm font-mono tabular-nums">
           <thead>
             <tr className="text-chalk-mute text-[10px] uppercase tracking-widest border-b border-iron-800">
               <th className="text-left py-1.5 pr-4">Rep</th>
@@ -621,7 +621,7 @@ function UploadModal({
 
       let cvRes: Response;
       try {
-        cvRes = await fetch(`${cvBase}/analyze`, { method: 'POST', body: cvFd });
+        cvRes = await fetchWithTimeout(`${cvBase}/analyze`, { method: 'POST', body: cvFd }, 160_000);
       } catch {
         // A rejected cross-origin fetch is indistinguishable from a network
         // drop here, but in practice it's the analyzer taking too long on a
@@ -649,8 +649,8 @@ function UploadModal({
       }
       fd.append('userContext', context);
 
-      const res = await fetch('/api/formcheck', { method: 'POST', body: fd });
-      const data = await res.json();
+      const res = await fetchWithTimeout('/api/formcheck', { method: 'POST', body: fd }, 140_000);
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'analysis failed');
       onSuccess(data.formCheck as FormCheckResult);
     } catch (err: unknown) {
